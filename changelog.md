@@ -17,6 +17,7 @@
 - 作用域列表实时轮询刷新，无需重新打开页面即可反映授权变化
 - 「清空 DexKit 缓存」文案不再标注需要 Root（主页已标注 Root 状态）
 - 关于页项目地址 / 反馈渠道改为字符串资源驱动，展示与跳转同源
+- **顶栏模糊改用 Haze 实现**：`TopBarBlurConfig` 统一 `BlurRadius` / `SurfaceAlpha` / `FullStrengthFraction` / `ScrollFadeDistance`，渐进遮罩为「顶部满强度 → 底边渐隐」，`BlurredBar` 只接受 `HazeState`
 - 模块版本号更新为 `0.2.0`
 
 ### 修复
@@ -25,6 +26,7 @@
 - 修复作用域页刷新与打开动画冲突导致动画丢失
 - 修复非作用域内应用无法加载应用信息（新增 `QUERY_ALL_PACKAGES` 权限）
 - 修复二级页面（作用域页 / 示例二级页）顶栏不随滚动收起
+- **修复顶栏模糊下卡片等硬边缘透出**：Haze 会先原样绘制来源内容再叠加模糊副本，模糊层必须用不透明 `backgroundColor`（surface）作为底层，否则卡片边缘会从模糊中透出，看起来像「组件盖在模糊之上」
 - 实现 Android 自动备份规则，去除模板遗留 TODO
 
 ## 0.1.0

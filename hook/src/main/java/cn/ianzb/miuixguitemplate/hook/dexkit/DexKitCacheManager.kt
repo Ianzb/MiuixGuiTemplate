@@ -22,7 +22,7 @@ import org.luckypray.dexkit.wrap.ISerializable
 import java.io.File
 
 /**
- * DexKit CacheBridge 生命周期与带缓存的成员解析（参考 HyperCeiler）。
+ * DexKit CacheBridge 生命周期与带缓存的成员解析。
  *
  * 缓存命中：直接从 [JsonFileCache] 反序列化，不创建原生桥。
  * 缓存未命中：通过 [RecyclableBridge.withBridge] 执行查询，序列化后写回缓存。

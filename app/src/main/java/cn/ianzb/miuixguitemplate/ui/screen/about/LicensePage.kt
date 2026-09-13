@@ -32,8 +32,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.ui.util.BlurredBar
+import cn.ianzb.miuixguitemplate.ui.util.blurSource
 import cn.ianzb.miuixguitemplate.ui.util.pageScrollModifiers
-import cn.ianzb.miuixguitemplate.ui.util.rememberBlurBackdrop
+import cn.ianzb.miuixguitemplate.ui.util.rememberBlurState
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -41,7 +42,6 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.preference.ArrowPreference
@@ -176,13 +176,13 @@ fun LicensePageContent(
     isBlurEnabled: Boolean = true,
 ) {
     val topAppBarScrollBehavior = MiuixScrollBehavior()
-    val backdrop = rememberBlurBackdrop()
-    val blurActive = isBlurEnabled && backdrop != null
+    val hazeState = rememberBlurState()
+    val blurActive = isBlurEnabled && hazeState != null
     val barColor = if (blurActive) Color.Transparent else colorScheme.surface
 
     Scaffold(
         topBar = {
-            BlurredBar(backdrop, blurActive, topAppBarScrollBehavior) {
+            BlurredBar(hazeState, blurActive, topAppBarScrollBehavior) {
                 TopAppBar(
                     title = stringResource(R.string.third_party_licenses_title),
                     color = barColor,
@@ -218,7 +218,7 @@ fun LicensePageContent(
         )
 
         Box(
-            modifier = if (isBlurEnabled && backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier
+            modifier = Modifier.blurSource(if (isBlurEnabled) hazeState else null)
         ) {
             LazyColumn(
                 state = lazyListState,

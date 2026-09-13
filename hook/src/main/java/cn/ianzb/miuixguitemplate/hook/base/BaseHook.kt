@@ -6,7 +6,7 @@ import cn.ianzb.miuixguitemplate.hook.dexkit.IDexKitList
 import cn.ianzb.miuixguitemplate.hook.xposed.HookHelper
 
 /**
- * 单条 hook 规则基类。参考 HyperCeiler 的 BaseHook。
+ * 单条 hook 规则基类。
  *
  * 子类实现 [init]，在其中使用 [HookHelper] 完成挂载。
  * 若需要 DexKit，覆写 [useDexKit] 并在 [initDexKit] 中解析成员。

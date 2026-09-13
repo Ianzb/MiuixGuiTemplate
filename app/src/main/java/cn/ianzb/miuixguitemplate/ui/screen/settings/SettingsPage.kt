@@ -40,8 +40,9 @@ import cn.ianzb.miuixguitemplate.hook.dexkit.DexKitCacheManager
 import cn.ianzb.miuixguitemplate.prefs.ConfigBackup
 import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
 import cn.ianzb.miuixguitemplate.ui.util.BlurredBar
+import cn.ianzb.miuixguitemplate.ui.util.blurSource
 import cn.ianzb.miuixguitemplate.ui.util.pageScrollModifiers
-import cn.ianzb.miuixguitemplate.ui.util.rememberBlurBackdrop
+import cn.ianzb.miuixguitemplate.ui.util.rememberBlurState
 import cn.ianzb.miuixguitemplate.xposed.HookStatusReader
 import cn.ianzb.miuixguitemplate.xposed.RootHelper
 import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
@@ -53,7 +54,6 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.preference.WindowDropdownPreference
@@ -85,8 +85,8 @@ fun SettingsPageView(
     val scrollBehavior = MiuixScrollBehavior()
     val title = stringResource(R.string.tab_settings)
 
-    val backdrop = rememberBlurBackdrop()
-    val blurActive = isBlurEnabled && backdrop != null
+    val hazeState = rememberBlurState()
+    val blurActive = isBlurEnabled && hazeState != null
     val barColor = if (blurActive) Color.Transparent else MiuixTheme.colorScheme.surface
 
     val appVersion = remember {
@@ -132,7 +132,7 @@ fun SettingsPageView(
 
     Scaffold(
         topBar = {
-            BlurredBar(backdrop, blurActive, scrollBehavior) {
+            BlurredBar(hazeState, blurActive, scrollBehavior) {
                 TopAppBar(
                     title = title,
                     color = barColor,
@@ -142,12 +142,11 @@ fun SettingsPageView(
         },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal),
     ) { innerPadding ->
-        Box(
-            modifier = if (isBlurEnabled && backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier
-        ) {
+        Box {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
+                    .blurSource(if (isBlurEnabled) hazeState else null)
                     .pageScrollModifiers(
                         showTopAppBar = true,
                         topAppBarScrollBehavior = scrollBehavior,

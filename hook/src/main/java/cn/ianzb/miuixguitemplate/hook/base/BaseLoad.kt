@@ -5,7 +5,7 @@ import cn.ianzb.miuixguitemplate.hook.xposed.HookHelper
 import cn.ianzb.miuixguitemplate.hook.xposed.HookStatusWriter
 
 /**
- * 按目标包组织的一组 hook。参考 HyperCeiler 的 BaseLoad。
+ * 按目标包组织的一组 hook。
  *
  * 子类在 [onPackageLoaded] 中通过 [initHook] 声明本包需要安装的 hook 及其开关。
  */

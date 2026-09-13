@@ -44,9 +44,10 @@ import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
 import cn.ianzb.miuixguitemplate.ui.screen.scope.ScopeListActivity
 import cn.ianzb.miuixguitemplate.ui.util.BlurredBar
+import cn.ianzb.miuixguitemplate.ui.util.blurSource
 import cn.ianzb.miuixguitemplate.ui.util.isInDarkTheme
 import cn.ianzb.miuixguitemplate.ui.util.pageScrollModifiers
-import cn.ianzb.miuixguitemplate.ui.util.rememberBlurBackdrop
+import cn.ianzb.miuixguitemplate.ui.util.rememberBlurState
 import cn.ianzb.miuixguitemplate.ui.util.shouldShowSplitPane
 import cn.ianzb.miuixguitemplate.util.SystemVersionDetector
 import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
@@ -59,7 +60,6 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
@@ -77,8 +77,8 @@ fun HomePageView(
     val scrollBehavior = MiuixScrollBehavior()
     val title = stringResource(R.string.tab_home)
 
-    val backdrop = rememberBlurBackdrop()
-    val blurActive = isBlurEnabled && backdrop != null
+    val hazeState = rememberBlurState()
+    val blurActive = isBlurEnabled && hazeState != null
     val barColor = if (blurActive) Color.Transparent else MiuixTheme.colorScheme.surface
 
     // 已激活但无 Root 时自动轮询检测，用户授予权限后卡片自动更新。
@@ -96,7 +96,7 @@ fun HomePageView(
 
     Scaffold(
         topBar = {
-            BlurredBar(backdrop, blurActive, scrollBehavior) {
+            BlurredBar(hazeState, blurActive, scrollBehavior) {
                 TopAppBar(
                     title = title,
                     color = barColor,
@@ -107,7 +107,7 @@ fun HomePageView(
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal),
     ) { innerPadding ->
         Box(
-            modifier = if (isBlurEnabled && backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier
+            modifier = Modifier.blurSource(if (isBlurEnabled) hazeState else null)
         ) {
             LazyColumn(
                 modifier = Modifier

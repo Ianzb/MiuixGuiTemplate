@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * [DexKitCacheBridge.Cache] 的 JSON 文件实现（参考 HyperCeiler）。
+ * [DexKitCacheBridge.Cache] 的 JSON 文件实现。
  *
  * 缓存保存在 JSON 文件中，构造时做版本校验；写入先入队，再由单消费者串行应用，
  * 最后在 [flush] 时统一落盘。

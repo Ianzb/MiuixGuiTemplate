@@ -65,4 +65,5 @@ dependencies {
     implementation(libs.miuix.squircle)
     implementation(libs.miuix.navigation)
     implementation(libs.material.icons.extended)
+    implementation(libs.haze)
 }
