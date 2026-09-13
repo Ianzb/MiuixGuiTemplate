@@ -14,6 +14,7 @@ import cn.ianzb.miuixguitemplate.LocaleHelper
 import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.ui.component.SubPageScaffold
 import cn.ianzb.miuixguitemplate.ui.theme.AppTheme
+import cn.ianzb.miuixguitemplate.ui.util.applyWindowBackground
 import top.yukonga.miuix.kmp.theme.ColorSchemeMode
 
 /**
@@ -48,6 +49,9 @@ abstract class BaseSubPageActivity : ComponentActivity() {
         } catch (_: Exception) {
             ColorSchemeMode.System
         }
+
+        // 与主页一致的窗口背景，避免二级页打开瞬间闪现浅色/深色底。
+        applyWindowBackground(settings.themeMode)
 
         setContent {
             AppTheme(themeMode = themeMode) {

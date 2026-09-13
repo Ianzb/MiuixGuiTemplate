@@ -250,9 +250,11 @@ class MyHook : BaseHook() {
 }
 ```
 
-### 2.5 清空缓存（Root）
+### 2.5 清空缓存
 
 App 侧通过 `RootHelper.deleteDexKitCache(scope, DexKitCacheManager.CACHE_DIR)` 以 `su` 删除各作用域应用缓存目录。
+
+> 是否具备 Root 权限由主页「模块状态」卡片标注，无需在文案中额外说明；无 Root 时该操作会失败。
 
 ---
 
@@ -289,7 +291,7 @@ data class OptionSpec(
 )
 ```
 
-`OptionType`：`SWITCH` / `CHECKBOX` / `ARROW` / `DROPDOWN` / `SPINNER` / `RADIO` / `SLIDER` / `TEXT`
+`OptionType`：`SWITCH` / `CHECKBOX` / `ARROW` / `DROPDOWN` / `SPINNER` / `RADIO` / `SLIDER` / `TEXT` / `PACKAGE_LIST`
 
 字段用途对照：
 
@@ -299,6 +301,7 @@ data class OptionSpec(
 | `titleRes` / `summaryRes` | 全部 | 标题 / 副标题字符串资源 |
 | `defaultBoolean` | SWITCH / CHECKBOX | 默认开关 |
 | `defaultString` / `entryResIds` / `entryValues` | DROPDOWN / RADIO / SPINNER | 选项文本与取值，默认取第一项 |
+| `defaultString` | TEXT / PACKAGE_LIST | 文本内容 / 包名列表（换行、逗号、分号或空格分隔） |
 | `dependsOn` / `dependsOnValue` | 全部 | 依赖其他键启用 / 禁用 |
 | `masterKey` | SLIDER | 主开关键，控制滑块显隐与生效 |
 | `sliderMin/Max/Step/Decimals` | SLIDER | 范围、步长、小数位 |
@@ -388,9 +391,12 @@ object HookPrefs {
 ```kotlin
 object XposedServiceManager {
     var isActivated: Boolean            // Compose 可观察
+    var isRootAvailable: Boolean        // Compose 可观察（异步检测）
+    var rootChecked: Boolean            // 是否已完成 Root 检测
     var scope: List<String>             // Compose 可观察
 
-    fun init()                          // 在 Application.onCreate 调用
+    fun init()                          // 在 Application.onCreate 调用（含 Root 检测）
+    fun checkRoot()                     // 异步检测 Root 权限
     fun getService(): XposedService?
     fun refreshScope()
     fun isInScope(packageName: String): Boolean
@@ -434,6 +440,45 @@ object RootHelper {
 }
 ```
 
+### 4.5 `AppRestarter`
+
+```kotlin
+object AppRestarter {
+    fun isSystemPackage(packageName: String): Boolean   // system / android / system_server
+    fun restart(context: Context, packageName: String): Boolean  // 无 Root 返回 false
+    fun reboot(): Boolean
+}
+```
+
+- 普通应用：Root 下 `am force-stop <pkg>` 后拉起启动 Activity。
+- 系统目标（`system` / `android` / `system_server`）：执行 `reboot`。
+- 无 Root 时返回 `false`，调用方据此提示用户。
+
+### 4.6 `SafeModeReader`（Hook 兜底 / 安全模式）
+
+Hook 进程通过 `:hook` 的 `SafeModeManager` 把崩溃记录写入远程偏好分组 `miuix_template_safe_mode`，App 侧读取并支持重置。
+
+```kotlin
+object SafeModeReader {
+    const val GROUP = "miuix_template_safe_mode"   // 与 :hook SafeModeManager.GROUP 一致
+    var safeModePackages: Set<String>              // Compose 可观察：被自动禁用的包
+    fun attach(service: XposedService?)            // 服务绑定/断开时调用
+    fun refresh()
+    fun isInSafeMode(packageName: String): Boolean
+    fun crashCount(packageName: String): Int
+    fun reset(packageName: String)
+    fun resetAll()
+}
+```
+
+**兜底机制（`:hook` 的 `SafeModeManager`）**
+
+- 每次目标进程加载 hook 前写入「正在加载」时间戳；进程存活超过 15s 后清除并重置计数。
+- 若在存活窗口（60s）内再次启动，判定为一次疑似 hook 崩溃并累加；达到阈值（普通 3 次、关键应用 2 次）后自动进入安全模式，跳过该包全部 hook。
+- 关键应用：`system` / `android` / `com.android.systemui` / `com.android.settings` / `com.miui.home` / `com.miui.securitycenter`。
+- `XposedEntry.onPackageReady` 与 `onSystemServerStarting` 均已接入，避免系统应用反复崩溃导致无法开机。
+- 作用域页会标注「安全模式」并提供一键恢复（`SafeModeReader.reset`）。
+
 ---
 
 ## 5. UI 组件（`:app`）
@@ -453,6 +498,7 @@ object RootHelper {
 | `HookRadioCard` | `CheckboxPreference`(End) | 右侧复选框表示选中项（单选语义） |
 | `HookSliderCard` | `SliderPreference` | 主开关控制显隐与生效，支持整数/小数/范围，数值类型说明居左、当前值紧邻箭头，点击弹出输入对话框 |
 | `HookTextCard` | `ArrowPreference` + `WindowDialog` | 点击弹出文本输入对话框 |
+| `HookPackageListCard` | `ArrowPreference` + `WindowDialog` | 包名列表输入（多行），驱动页面右上角「快捷操作」按钮 |
 | `HookOptionView` | 分发器 | 按 `OptionSpec.type` 渲染对应组件 |
 | `HookOptionsPage` | `Scaffold` + `SearchBar` | 通用组件页面（顶栏 + 搜索 + 分区列表） |
 | `HookSectionCard` | `SmallTitle` + `Card` | 组件分区卡片容器 |
@@ -520,6 +566,7 @@ fun HookOptionsPage(
     isBlurEnabled: Boolean = true,
     extraBottomPadding: Dp = 0.dp,
     onArrowClick: (OptionSpec) -> Unit = {},
+    customActionPackages: List<String> = emptyList(),   // 额外注入快捷操作包名
 )
 
 @Composable
@@ -538,6 +585,9 @@ fun HookSectionCard(
 - 搜索结果为可点击列表项（标题 = 配置项标题，摘要 = 所属分区标题）；点击后收起搜索、清空输入并滚动定位到对应分区，**不内联渲染组件**。
 - 结果按分区去重（同一分区只显示一条），并包含通过 `masterKey` 引用的配置项（如滑块主开关）。
 - 箭头卡片点击回调 `onArrowClick(spec)`。
+- **快捷操作**：当分区内存在 `PACKAGE_LIST` 选项，或传入 `customActionPackages` 时，顶栏右上角出现「更多」按钮。点击弹出 `QuickActionDialog`，对汇总后的包名批量执行「热重载」「重启」（重启需 Root），并提供「全部热重载」。
+  - 包名来源 = 全部 `PACKAGE_LIST` 选项解析结果 + `customActionPackages`，去重。
+  - 二次开发可通过 `customActionPackages` 直接暴露任意自定义应用，无需用户手动输入。
 
 ### 5.5 完整使用示例
 

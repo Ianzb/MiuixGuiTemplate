@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.ui.util.BlurredBar
+import cn.ianzb.miuixguitemplate.ui.util.LocalSubPageScrollBehavior
 import cn.ianzb.miuixguitemplate.ui.util.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -64,7 +66,9 @@ fun SubPageScaffold(
         Box(
             modifier = if (isBlurEnabled && backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier
         ) {
-            content(innerPadding)
+            CompositionLocalProvider(LocalSubPageScrollBehavior provides scrollBehavior) {
+                content(innerPadding)
+            }
         }
     }
 }

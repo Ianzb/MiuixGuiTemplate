@@ -38,6 +38,10 @@ val LocalEnableBlur: ProvidableCompositionLocal<Boolean> = staticCompositionLoca
 
 val LocalIsWideScreen: ProvidableCompositionLocal<Boolean> = staticCompositionLocalOf { false }
 
+/** 二级页面脚手架提供的滚动行为，供内容页 LazyColumn 绑定顶栏收起。 */
+val LocalSubPageScrollBehavior: ProvidableCompositionLocal<ScrollBehavior?> =
+    staticCompositionLocalOf { null }
+
 /**
  * 顶栏渐进模糊（Progressive Blur）统一参数。
  *
@@ -47,8 +51,23 @@ object TopBarBlurConfig {
     /** 模糊半径（dp），模糊最强处的强度 */
     const val BlurRadius: Float = 15f
 
-    /** 渐变曲线指数：1 = 线性；>1 让模糊更快衰减到清晰端（示例为 2.2） */
-    const val GradientCurve: Float = 10f
+    /** 渐变方向（度）：90 = 顶→底（顶部最强、底部清晰） */
+    const val Angle: Float = 90f
+
+    /** 模糊最强处的位置比例（0 = 顶边）；>0 时顶部形成一段均匀最强模糊 */
+    const val StartFraction: Float = 0.3f
+
+    /** 模糊为 0 处的位置比例（1 = 底边） */
+    const val EndFraction: Float = 1f
+
+    /**
+     * 渐变曲线指数：`radius = max * (1 - smoothstep(raw)^curve)`（raw: 0 最强端 → 1 清晰端）。
+     * - `> 1`：半径变化集中在清晰端（先斜后平）。
+     * - `< 1`：半径变化集中在最强端（先平后斜）。
+     * - `1`：标准 S 形过渡。
+     * 取值范围 [0.05, 20]。参考 HyperLight（Haze 线性渐变 + 缓动）取较柔和的缓出。
+     */
+    const val GradientCurve: Float = 4f
 
     /** 顶栏 surface 背景混合透明度（0~1），越大栏越实 */
     const val SurfaceAlpha: Float = 0.3f
@@ -105,7 +124,12 @@ fun BlurredBar(
                     .progressiveTextureBlur(
                         backdrop = backdrop,
                         shape = RectangleShape,
-                        gradient = ProgressiveBlur.Top.copy(curve = TopBarBlurConfig.GradientCurve),
+                        gradient = ProgressiveBlur(
+                            angle = TopBarBlurConfig.Angle,
+                            startFraction = TopBarBlurConfig.StartFraction,
+                            endFraction = TopBarBlurConfig.EndFraction,
+                            curve = TopBarBlurConfig.GradientCurve,
+                        ),
                         blurRadius = TopBarBlurConfig.BlurRadius,
                         colors = BlurDefaults.blurColors(
                             blendColors = listOf(

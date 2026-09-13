@@ -5,6 +5,7 @@ import android.os.Bundle
 import cn.ianzb.miuixguitemplate.hook.base.HookEntryRegistry
 import cn.ianzb.miuixguitemplate.hook.base.PackageTarget
 import cn.ianzb.miuixguitemplate.hook.prefs.HookPrefs
+import cn.ianzb.miuixguitemplate.hook.safemode.SafeModeManager
 import io.github.libxposed.api.XposedModule
 import io.github.libxposed.api.XposedModuleInterface.HotReloadedParam
 import io.github.libxposed.api.XposedModuleInterface.HotReloadingParam
@@ -25,6 +26,7 @@ class XposedEntry : XposedModule() {
     override fun onModuleLoaded(param: ModuleLoadedParam) {
         HookHelper.init(this)
         HookPrefs.init(getRemotePreferences(HookPrefs.GROUP))
+        SafeModeManager.init(this)
         HookStatusWriter.init(this)
         HookHelper.log("module loaded in ${param.processName}")
     }
@@ -33,6 +35,9 @@ class XposedEntry : XposedModule() {
         if (!param.isFirstPackage) return
         // 保证开机 / 冷启动时即使 onModuleLoaded 顺序异常也能读到最新配置。
         HookPrefs.init(getRemotePreferences(HookPrefs.GROUP))
+        SafeModeManager.init(this)
+        // 兜底：重复崩溃时自动跳过该包全部 hook，避免系统应用反复崩溃导致无法开机。
+        if (SafeModeManager.handleStart(param.packageName)) return
         val target = PackageTarget.from(param)
         lastTarget = target
         HookEntryRegistry.loadsFor(target.packageName).forEach { load ->
@@ -43,6 +48,11 @@ class XposedEntry : XposedModule() {
 
     override fun onSystemServerStarting(param: SystemServerStartingParam) {
         // 模板默认不处理 system_server；如需支持可在此注册对应 Load。
+        // 同样接入兜底机制，防止 system_server 崩溃导致无法开机。
+        SafeModeManager.init(this)
+        if (SafeModeManager.handleStart("system")) {
+            HookHelper.log("SafeMode: system_server is in safe mode, skip hooks")
+        }
     }
 
     override fun onHotReloading(param: HotReloadingParam): Boolean {
@@ -63,6 +73,7 @@ class XposedEntry : XposedModule() {
         HookRegistry.unhookAll()
         HookHelper.init(this)
         HookPrefs.init(getRemotePreferences(HookPrefs.GROUP))
+        SafeModeManager.init(this)
         HookStatusWriter.init(this)
 
         val saved = (param.savedInstanceState as? Bundle) ?: param.extras

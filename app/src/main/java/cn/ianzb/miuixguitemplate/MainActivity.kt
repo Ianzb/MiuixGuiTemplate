@@ -56,9 +56,11 @@ import cn.ianzb.miuixguitemplate.ui.screen.examples.ExamplesPageView
 import cn.ianzb.miuixguitemplate.ui.screen.home.HomePageView
 import cn.ianzb.miuixguitemplate.ui.screen.settings.SettingsPageView
 import cn.ianzb.miuixguitemplate.ui.theme.AppTheme
+import cn.ianzb.miuixguitemplate.ui.util.applyWindowBackground
 import cn.ianzb.miuixguitemplate.ui.util.isInDarkTheme
 import cn.ianzb.miuixguitemplate.ui.util.shouldExpandNavigationRail
 import cn.ianzb.miuixguitemplate.ui.util.shouldShowSplitPane
+import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.FloatingNavigationBar
@@ -94,6 +96,12 @@ class MainActivity : ComponentActivity() {
         super.attachBaseContext(LocaleHelper.wrapContext(newBase, language))
     }
 
+    override fun onResume() {
+        super.onResume()
+        // 回到前台时重新检测 Root（用户可能刚刚授予权限）。
+        XposedServiceManager.checkRoot()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -102,6 +110,9 @@ class MainActivity : ComponentActivity() {
         }
 
         val savedSettings = AppSettings.load(this)
+
+        // 覆盖 XML 主题的窗口背景，兼容「系统浅色但应用内手动强制深色」的情况，避免启动白屏闪烁。
+        applyWindowBackground(savedSettings.themeMode)
 
         setContent {
             var themeMode by remember {

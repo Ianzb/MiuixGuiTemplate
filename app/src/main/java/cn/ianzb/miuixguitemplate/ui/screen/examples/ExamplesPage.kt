@@ -85,6 +85,11 @@ private fun exampleSections(specs: List<OptionSpec>): List<HookSection> = listOf
         specs = listOf(specByKey(specs, "example_text")),
     ),
     HookSection(
+        titleRes = R.string.example_section_package_list,
+        titleEn = "PackageListPreference",
+        specs = listOf(specByKey(specs, "example_package_list")),
+    ),
+    HookSection(
         titleRes = R.string.example_section_status,
         titleEn = "HookStatus",
         specs = listOf(
@@ -178,6 +183,13 @@ internal fun exampleSpecs(): List<OptionSpec> = listOf(
         summaryRes = R.string.example_text_summary,
         defaultString = "",
         targetPackages = listOf("com.example.target"),
+    ),
+    OptionSpec(
+        key = "example_package_list",
+        type = OptionType.PACKAGE_LIST,
+        titleRes = R.string.example_package_list_title,
+        summaryRes = R.string.example_package_list_summary,
+        defaultString = "",
     ),
     OptionSpec(
         key = "example_status_success",

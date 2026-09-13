@@ -10,6 +10,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.ui.screen.subpage.BaseSubPageActivity
+import cn.ianzb.miuixguitemplate.ui.util.LocalSubPageScrollBehavior
+import cn.ianzb.miuixguitemplate.ui.util.pageScrollModifiers
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 
@@ -25,8 +27,20 @@ class ExampleSubPageActivity : BaseSubPageActivity() {
         isBlurEnabled: Boolean,
         contentPadding: PaddingValues,
     ) {
+        val scrollBehavior = LocalSubPageScrollBehavior.current
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .then(
+                    if (scrollBehavior != null) {
+                        Modifier.pageScrollModifiers(
+                            showTopAppBar = true,
+                            topAppBarScrollBehavior = scrollBehavior,
+                        )
+                    } else {
+                        Modifier
+                    }
+                ),
             contentPadding = contentPadding,
         ) {
             item {

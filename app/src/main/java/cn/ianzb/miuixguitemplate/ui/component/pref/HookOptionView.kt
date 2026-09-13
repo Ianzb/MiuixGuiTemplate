@@ -20,6 +20,7 @@ fun HookOptionView(
         OptionType.RADIO -> HookRadioCard(spec, modifier)
         OptionType.SLIDER -> HookSliderCard(spec, modifier)
         OptionType.TEXT -> HookTextCard(spec, modifier)
+        OptionType.PACKAGE_LIST -> HookPackageListCard(spec, modifier)
         OptionType.SPINNER -> HookDropdownCard(spec, modifier)
     }
 }

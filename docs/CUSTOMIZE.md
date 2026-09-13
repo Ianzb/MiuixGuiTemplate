@@ -171,6 +171,8 @@ com.yourname.targetapp
 ```
 
 > 该文件声明模块默认作用域，也是「申请作用域」的默认目标来源之一。新增 Hook 目标时务必在此加入对应包名。
+>
+> 主页「作用域」二级页会读取作用域应用的图标 / 名称 / 版本，依赖 `AndroidManifest.xml` 中的 `android.permission.QUERY_ALL_PACKAGES` 权限（模板已声明）；如移除该权限，未对应用可见的包将只能显示包名。
 
 ---
 
@@ -222,6 +224,21 @@ class MyHook : BaseHook() {
 `hook/.../dexkit/DexKitCacheManager.kt` → `CACHE_DIR = "miuix_template"`。
 
 > 该目录用于清空缓存时的路径拼接，改名后 App 端 `RootHelper.deleteDexKitCache(scope, DexKitCacheManager.CACHE_DIR)` 会自动使用新值。
+> 清空缓存需要 Root，但**无需在文案中说明**——主页「模块状态」卡片已标注是否具备 Root。
+
+### 6.6 兜底 / 安全模式（可选调整）
+
+`hook/.../safemode/SafeModeManager.kt`：
+
+| 常量 | 默认 | 说明 |
+|---|---|---|
+| `CRASH_WINDOW_MS` | `60_000` | 该窗口内再次启动视为一次崩溃 |
+| `SURVIVE_MS` | `15_000` | 存活该时长后重置计数 |
+| `DEFAULT_THRESHOLD` | `3` | 普通应用崩溃阈值 |
+| `CRITICAL_THRESHOLD` | `2` | 关键应用崩溃阈值 |
+| `CRITICAL_PACKAGES` | system / systemui / settings / home / securitycenter | 崩溃可能导致无法开机的关键应用 |
+
+> `SafeModeManager.GROUP` 必须与 App 侧 `xposed/SafeModeReader.kt` 的 `GROUP` 一致；作用域页会展示并允许重置安全模式。
 
 ---
 
@@ -271,17 +288,48 @@ HookOptionsPage(
 exportLauncher.launch("YourModuleName_settings.json")
 ```
 
+### 7.5 包名列表与快捷操作（热重载 / 重启）
+
+声明 `OptionType.PACKAGE_LIST` 选项后，用户在二级页面输入包名，页面右上角即出现「快捷操作」按钮，可批量热重载 / 重启：
+
+```kotlin
+OptionSpec(
+    key = "quick_action_packages",
+    type = OptionType.PACKAGE_LIST,
+    titleRes = R.string.quick_action_packages,
+    summaryRes = R.string.quick_action_packages_summary,
+    defaultString = "",
+)
+```
+
+也可直接注入自定义应用，无需用户输入：
+
+```kotlin
+HookOptionsPage(
+    title = ...,
+    sections = ...,
+    customActionPackages = listOf("com.a", "com.b"),
+)
+```
+
+> 重启需要 Root（主页「模块状态」已标注）；热重载通过 LSPosed 服务完成，无需 Root。
+
 ---
 
 ## 8. 主题与颜色
 
 | 文件 | 说明 |
 |---|---|
-| `res/values/themes.xml` | 应用主题（`Theme.MiuixGuiTemplate`） |
+| `res/values/themes.xml` | 应用主题（`Theme.MiuixGuiTemplate`），并设置启动窗口背景 |
+| `res/values-night/themes.xml` | 深色模式主题（深色窗口背景），避免启动白屏闪烁 |
+| `res/values/colors.xml` → `window_background` | 浅色启动窗口背景（默认 `#FFF7F7F7`） |
+| `res/values-night/colors.xml` → `window_background` | 深色启动窗口背景（默认 `#FF000000`，与 Miuix 深色 surface 一致） |
 | `res/values/colors.xml` | 基础颜色与 `ic_launcher_background` |
 | `ui/theme/Theme.kt` | `AppTheme`（Miuix 主题、深浅色、系统栏图标），一般无需修改 |
 
 > 若要改主题名，请同步替换 `AndroidManifest.xml` 与 `themes.xml` 中的 `Theme.MiuixGuiTemplate`。
+>
+> `window_background` 必须与页面实际背景（Miuix 主题的 `surface`：浅色 `0xFFF7F7F7`、深色 `0xFF000000`）一致，否则冷启动瞬间会闪现底色。`MainActivity` 还会按应用内主题模式（含手动强制深/浅色）动态覆盖窗口背景，覆盖逻辑见 `ui/util/WindowBackground.kt`。
 
 ---
 

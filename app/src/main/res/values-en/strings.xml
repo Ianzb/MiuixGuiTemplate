@@ -54,6 +54,8 @@
     <string name="module_status">Module Status</string>
     <string name="module_status_summary_activated">Activated</string>
     <string name="module_status_summary_inactive">Not activated</string>
+    <string name="module_status_summary_no_root">Activated (No Root)</string>
+    <string name="module_status_root_hint">Root not granted, restart and other features unavailable</string>
     <string name="module_scope">Scope</string>
     <string name="module_scope_count">%d apps authorized</string>
     <string name="module_scope_request">Request All Scopes</string>
@@ -65,9 +67,20 @@
     <string name="module_hot_reload_no_target">No running target process</string>
     <string name="module_hot_reload_result">Hot reload result: %s</string>
     <string name="module_clear_dexkit">Clear DexKit Cache</string>
-    <string name="module_clear_dexkit_summary">Delete DexKit cache files of all scoped apps (root required)</string>
+    <string name="module_clear_dexkit_summary">Delete DexKit cache files of all scoped apps</string>
     <string name="module_clear_dexkit_success">DexKit cache cleared</string>
-    <string name="module_clear_dexkit_failed">Failed, make sure root permission is granted</string>
+    <string name="module_clear_dexkit_failed">Failed, check permission and scope</string>
+
+    <!-- Scope page -->
+    <string name="scope_hot_reload">Hot Reload</string>
+    <string name="scope_restart">Restart</string>
+    <string name="scope_restart_need_root">Restarting an app requires root</string>
+    <string name="scope_safe_mode">Safe mode</string>
+    <string name="scope_safe_mode_reset">Restore</string>
+    <string name="scope_safe_mode_reset_done">Restored %s</string>
+    <string name="restart_system_confirm_title">Restart System</string>
+    <string name="restart_system_confirm_message">The target includes system processes. Restarting will reboot the device. Continue?</string>
+    <string name="restart_system_confirm_action">Restart</string>
 
     <!-- Hook status -->
     <string name="hook_status_success">Applied</string>
@@ -92,6 +105,18 @@
     <string name="hook_text_default">Default: %1$s</string>
     <string name="hook_text_dialog_values">Current: %1$s\nDefault: %2$s</string>
 
+    <!-- Package list -->
+    <string name="hook_package_list_count">%d package(s) configured</string>
+    <string name="hook_package_list_dialog_summary">Enter package names, one per line or comma separated</string>
+    <string name="hook_package_list_placeholder">com.example.app</string>
+    <string name="hook_package_list_hint">Supports newline, comma, semicolon or space separators</string>
+
+    <!-- Quick actions -->
+    <string name="quick_action_title">Quick Actions</string>
+    <string name="quick_action_summary">Hot reload or restart these apps</string>
+    <string name="quick_action_hot_reload_all">Hot Reload All</string>
+    <string name="quick_action_restart_all">Restart All</string>
+
     <!-- Examples -->
     <string name="example_section_switch">Switch card</string>
     <string name="example_section_checkbox">Checkbox card</string>
@@ -101,6 +126,7 @@
     <string name="example_section_radio">Radio card</string>
     <string name="example_section_slider">Slider card</string>
     <string name="example_section_text">Text input card</string>
+    <string name="example_section_package_list">Package list card (quick actions top-right)</string>
     <string name="example_section_status">Status</string>
 
     <string name="example_switch_title">Enable Experimental Features</string>
@@ -136,6 +162,8 @@
     <string name="example_slider_value_label">Scale ratio</string>
     <string name="example_text_title">Custom Suffix</string>
     <string name="example_text_summary">Add a custom suffix to exported files</string>
+    <string name="example_package_list_title">Custom App List</string>
+    <string name="example_package_list_summary">Enter package names; batch hot reload / restart from the top-right button</string>
     <string name="example_status_success_title">Applied example</string>
     <string name="example_status_success_summary">Shows a green check at the start of the title</string>
     <string name="example_status_failed_title">Failed example</string>

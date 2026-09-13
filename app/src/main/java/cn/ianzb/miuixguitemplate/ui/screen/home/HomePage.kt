@@ -26,11 +26,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircleOutline
 import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.RemoveCircleOutline
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +50,7 @@ import cn.ianzb.miuixguitemplate.ui.util.rememberBlurBackdrop
 import cn.ianzb.miuixguitemplate.ui.util.shouldShowSplitPane
 import cn.ianzb.miuixguitemplate.util.SystemVersionDetector
 import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
+import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
@@ -76,6 +80,19 @@ fun HomePageView(
     val backdrop = rememberBlurBackdrop()
     val blurActive = isBlurEnabled && backdrop != null
     val barColor = if (blurActive) Color.Transparent else MiuixTheme.colorScheme.surface
+
+    // 已激活但无 Root 时自动轮询检测，用户授予权限后卡片自动更新。
+    val rootPollActivated = XposedServiceManager.isActivated
+    val rootPollChecked = XposedServiceManager.rootChecked
+    val rootPollAvailable = XposedServiceManager.isRootAvailable
+    LaunchedEffect(rootPollActivated, rootPollChecked, rootPollAvailable) {
+        if (rootPollActivated && rootPollChecked && !rootPollAvailable) {
+            while (true) {
+                delay(3000)
+                XposedServiceManager.checkRoot()
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -110,29 +127,57 @@ fun HomePageView(
                     val darkTheme = isInDarkTheme()
                     val dynamicColor = MiuixTheme.isDynamicColor
                     val activated = XposedServiceManager.isActivated
+                    val rootChecked = XposedServiceManager.rootChecked
+                    val rootAvailable = XposedServiceManager.isRootAvailable
+                    // 模块已激活但无 Root：重启等功能不可用，单独提示。
+                    val rootMissing = activated && rootChecked && !rootAvailable
                     val scopeCount = XposedServiceManager.scope.size
                     val featureCount = OptionRegistry.all().size
 
-                    val statusColor = if (activated) {
-                        when {
-                            dynamicColor -> MiuixTheme.colorScheme.secondaryContainer
-                            darkTheme -> Color(0xFF1A3825)
-                            else -> Color(0xFFDFFAE4)
-                        }
-                    } else {
-                        when {
+                    val statusColor = when {
+                        !activated -> when {
                             dynamicColor -> MiuixTheme.colorScheme.errorContainer
                             darkTheme -> Color(0xFF3D1C1C)
                             else -> Color(0xFFFDE8E8)
                         }
+                        rootMissing -> when {
+                            dynamicColor -> MiuixTheme.colorScheme.secondaryContainer
+                            darkTheme -> Color(0xFF3D3520)
+                            else -> Color(0xFFFDF6E3)
+                        }
+                        else -> when {
+                            dynamicColor -> MiuixTheme.colorScheme.secondaryContainer
+                            darkTheme -> Color(0xFF1A3825)
+                            else -> Color(0xFFDFFAE4)
+                        }
                     }
-                    val iconTint = if (activated) {
-                        if (dynamicColor) MiuixTheme.colorScheme.primary.copy(alpha = 0.8f) else Color(0xFF36D167)
+                    val iconTint = when {
+                        !activated -> if (dynamicColor) MiuixTheme.colorScheme.error.copy(alpha = 0.8f) else Color(0xFFDC3545)
+                        rootMissing -> if (dynamicColor) MiuixTheme.colorScheme.primary.copy(alpha = 0.8f) else Color(0xFFE0A800)
+                        else -> if (dynamicColor) MiuixTheme.colorScheme.primary.copy(alpha = 0.8f) else Color(0xFF36D167)
+                    }
+                    val statusSummary = stringResource(
+                        when {
+                            !activated -> R.string.module_status_summary_inactive
+                            rootMissing -> R.string.module_status_summary_no_root
+                            else -> R.string.module_status_summary_activated
+                        }
+                    )
+                    val statusDetail = if (rootMissing) {
+                        stringResource(R.string.module_status_root_hint)
                     } else {
-                        if (dynamicColor) MiuixTheme.colorScheme.error.copy(alpha = 0.8f) else Color(0xFFDC3545)
+                        ""
+                    }
+                    // 未激活 = 叉号；已激活但无 Root = 圈中横线；正常 = 对号。
+                    val statusIcon: ImageVector = when {
+                        !activated -> Icons.Rounded.ErrorOutline
+                        rootMissing -> Icons.Rounded.RemoveCircleOutline
+                        else -> Icons.Rounded.CheckCircleOutline
                     }
 
                     val openScopeList = {
+                        // 进入二级页面前先刷新作用域，避免页面内刷新打断打开动画。
+                        XposedServiceManager.refreshScope()
                         context.startActivity(Intent(context, ScopeListActivity::class.java))
                     }
 
@@ -151,12 +196,9 @@ fun HomePageView(
                         ) {
                             StatusCard(
                                 titleText = stringResource(R.string.module_status),
-                                versionText = stringResource(
-                                    if (activated) R.string.module_status_summary_activated
-                                    else R.string.module_status_summary_inactive
-                                ),
-                                statusText = "",
-                                success = activated,
+                                versionText = statusSummary,
+                                statusText = statusDetail,
+                                imageVector = statusIcon,
                                 iconTint = iconTint,
                                 statusColor = statusColor,
                                 onClick = {},
@@ -184,12 +226,9 @@ fun HomePageView(
                         ) {
                             StatusCard(
                                 titleText = stringResource(R.string.module_status),
-                                versionText = stringResource(
-                                    if (activated) R.string.module_status_summary_activated
-                                    else R.string.module_status_summary_inactive
-                                ),
-                                statusText = "",
-                                success = activated,
+                                versionText = statusSummary,
+                                statusText = statusDetail,
+                                imageVector = statusIcon,
                                 iconTint = iconTint,
                                 statusColor = statusColor,
                                 onClick = {},
@@ -284,7 +323,7 @@ private fun StatusCard(
     titleText: String,
     versionText: String,
     statusText: String,
-    success: Boolean,
+    imageVector: ImageVector,
     iconTint: Color,
     statusColor: Color,
     onClick: () -> Unit,
@@ -310,7 +349,7 @@ private fun StatusCard(
             ) {
                 Icon(
                     modifier = Modifier.size(iconSize),
-                    imageVector = if (success) Icons.Rounded.CheckCircleOutline else Icons.Rounded.ErrorOutline,
+                    imageVector = imageVector,
                     tint = iconTint,
                     contentDescription = null
                 )

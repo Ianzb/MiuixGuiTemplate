@@ -28,13 +28,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cn.ianzb.miuixguitemplate.R
+import cn.ianzb.miuixguitemplate.prefs.ConfigState
 import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
 import cn.ianzb.miuixguitemplate.prefs.OptionSpec
+import cn.ianzb.miuixguitemplate.prefs.OptionType
 import cn.ianzb.miuixguitemplate.ui.util.BlurredBar
 import cn.ianzb.miuixguitemplate.ui.util.pageScrollModifiers
 import cn.ianzb.miuixguitemplate.ui.util.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
@@ -42,6 +46,8 @@ import top.yukonga.miuix.kmp.basic.SearchBar
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 
@@ -79,6 +85,7 @@ fun hookSectionTitle(section: HookSection): String = buildString {
  * @param isBlurEnabled 是否启用背景模糊。
  * @param extraBottomPadding 额外底部内边距（用于底部导航栏遮挡）。
  * @param onArrowClick 箭头卡片点击回调，参数为被点击的 [OptionSpec]。
+ * @param customActionPackages 额外注入快捷操作的包名（供二次开发直接暴露自定义应用）。
  */
 @Composable
 fun HookOptionsPage(
@@ -87,6 +94,7 @@ fun HookOptionsPage(
     isBlurEnabled: Boolean = true,
     extraBottomPadding: Dp = 0.dp,
     onArrowClick: (OptionSpec) -> Unit = {},
+    customActionPackages: List<String> = emptyList(),
 ) {
     val context = LocalContext.current
     val scrollBehavior = MiuixScrollBehavior()
@@ -98,6 +106,15 @@ fun HookOptionsPage(
     var query by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var pendingScrollIndex by remember { mutableStateOf<Int?>(null) }
+    var showQuickActions by remember { mutableStateOf(false) }
+
+    // 汇总「包名列表」选项中的包名，并叠加二次开发注入的自定义包名。
+    val configActionPackages = sections.flatMap { it.specs }
+        .filter { it.type == OptionType.PACKAGE_LIST }
+        .flatMap { parsePackageList(ConfigState.string(it.key, it.defaultString)) }
+    val quickActionPackages = remember(configActionPackages, customActionPackages) {
+        (configActionPackages + customActionPackages).distinct()
+    }
 
     // 配置键 → 所在分区（含滑块主开关等被引用的键）。
     val specKeyToSection = remember(sections) {
@@ -131,6 +148,17 @@ fun HookOptionsPage(
                     title = title,
                     color = barColor,
                     scrollBehavior = scrollBehavior,
+                    actions = {
+                        if (quickActionPackages.isNotEmpty()) {
+                            IconButton(onClick = { showQuickActions = true }) {
+                                Icon(
+                                    imageVector = MiuixIcons.More,
+                                    contentDescription = stringResource(R.string.quick_action_title),
+                                    tint = MiuixTheme.colorScheme.onSurface,
+                                )
+                            }
+                        }
+                    },
                 )
             }
         },
@@ -228,6 +256,13 @@ fun HookOptionsPage(
                 }
             }
         }
+    }
+
+    if (showQuickActions) {
+        QuickActionDialog(
+            packages = quickActionPackages,
+            onDismiss = { showQuickActions = false },
+        )
     }
 }
 

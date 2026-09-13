@@ -1,5 +1,6 @@
 package cn.ianzb.miuixguitemplate.ui.screen.scope
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -7,7 +8,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -17,39 +23,76 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import cn.ianzb.miuixguitemplate.R
+import cn.ianzb.miuixguitemplate.ui.component.SystemRestartConfirmDialog
 import cn.ianzb.miuixguitemplate.ui.screen.subpage.BaseSubPageActivity
+import cn.ianzb.miuixguitemplate.ui.util.LocalSubPageScrollBehavior
+import cn.ianzb.miuixguitemplate.ui.util.pageScrollModifiers
+import cn.ianzb.miuixguitemplate.xposed.AppRestarter
+import cn.ianzb.miuixguitemplate.xposed.HookStatusReader
+import cn.ianzb.miuixguitemplate.xposed.SafeModeReader
 import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.Button
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 
 /**
- * 作用域列表二级页面，实时反映当前已授权的作用域应用。
+ * 作用域列表二级页面。
  *
- * 每项显示：应用图标 + 应用名称 + 包名 + 版本号。
+ * - 页面可见期间轮询刷新作用域，实时反映 LSPosed 中的授权变化。
+ * - 每项右侧提供「热重载」「重启」按钮（重启需要 Root）。
+ * - 被兜底机制自动禁用的应用会标注「安全模式」，并提供一键恢复。
  */
 class ScopeListActivity : BaseSubPageActivity() {
 
     override val titleRes: Int = R.string.home_scope
-
-    override fun onResume() {
-        super.onResume()
-        XposedServiceManager.refreshScope()
-    }
 
     @Composable
     override fun SubPageContent(
         isBlurEnabled: Boolean,
         contentPadding: PaddingValues,
     ) {
+        // 进入页面前已在主页刷新过；这里延后刷新，避免与打开动画冲突（动画优先）。
+        LaunchedEffect(Unit) {
+            delay(400)
+            XposedServiceManager.refreshScope()
+            SafeModeReader.refresh()
+            // 轮询保持列表实时更新（含安全模式状态）。
+            while (true) {
+                delay(1500)
+                XposedServiceManager.refreshScope()
+                SafeModeReader.refresh()
+            }
+        }
+
         val context = LocalContext.current
         val density = LocalDensity.current
         val scope = XposedServiceManager.scope
+        val safeModePackages = SafeModeReader.safeModePackages
+        val coroutineScope = rememberCoroutineScope()
+        val scrollBehavior = LocalSubPageScrollBehavior.current
 
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .then(
+                    if (scrollBehavior != null) {
+                        Modifier.pageScrollModifiers(
+                            showTopAppBar = true,
+                            topAppBarScrollBehavior = scrollBehavior,
+                        )
+                    } else {
+                        Modifier
+                    }
+                ),
             contentPadding = contentPadding,
         ) {
             if (scope.isEmpty()) {
@@ -86,6 +129,32 @@ class ScopeListActivity : BaseSubPageActivity() {
                             }.getOrNull()
                         }
                     }
+                    val inSafeMode = packageName in safeModePackages
+
+                    val summary = buildString {
+                        append(packageName)
+                        if (version.isNotBlank()) append(" · v").append(version)
+                        if (inSafeMode) {
+                            append(" · ")
+                            append(context.getString(R.string.scope_safe_mode))
+                        }
+                    }
+
+                    var showRebootConfirm by remember(packageName) { mutableStateOf(false) }
+                    val doRestart: () -> Unit = {
+                        coroutineScope.launch {
+                            val ok = withContext(Dispatchers.IO) {
+                                AppRestarter.restart(context, packageName)
+                            }
+                            if (!ok) {
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.scope_restart_need_root),
+                                    Toast.LENGTH_SHORT,
+                                ).show()
+                            }
+                        }
+                    }
 
                     Card(
                         modifier = Modifier
@@ -94,7 +163,7 @@ class ScopeListActivity : BaseSubPageActivity() {
                     ) {
                         BasicComponent(
                             title = appName,
-                            summary = if (version.isNotBlank()) "$packageName · v$version" else packageName,
+                            summary = summary,
                             startAction = icon?.let { bitmap ->
                                 {
                                     Icon(
@@ -105,6 +174,62 @@ class ScopeListActivity : BaseSubPageActivity() {
                                     )
                                 }
                             },
+                            endActions = {
+                                if (inSafeMode) {
+                                    TextButton(
+                                        text = stringResource(R.string.scope_safe_mode_reset),
+                                        onClick = {
+                                            SafeModeReader.reset(packageName)
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.scope_safe_mode_reset_done, appName),
+                                                Toast.LENGTH_SHORT,
+                                            ).show()
+                                        },
+                                        colors = ButtonDefaults.textButtonColors(textColor = Color(0xFFDC3545)),
+                                        minWidth = 0.dp,
+                                    )
+                                }
+                                TextButton(
+                                    text = stringResource(R.string.scope_hot_reload),
+                                    onClick = {
+                                        XposedServiceManager.hotReload(listOf(packageName)) { result ->
+                                            HookStatusReader.refresh()
+                                            val text = if (result == "no running target") {
+                                                context.getString(R.string.module_hot_reload_no_target)
+                                            } else {
+                                                context.getString(R.string.module_hot_reload_result, result)
+                                            }
+                                            Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    colors = ButtonDefaults.textButtonColors(),
+                                    minWidth = 0.dp,
+                                )
+                                Button(
+                                    onClick = {
+                                        if (AppRestarter.isSystemPackage(packageName)) {
+                                            showRebootConfirm = true
+                                        } else {
+                                            doRestart()
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColorsPrimary(),
+                                    minWidth = 0.dp,
+                                ) {
+                                    MiuixText(text = stringResource(R.string.scope_restart))
+                                }
+                            },
+                        )
+                    }
+
+                    if (showRebootConfirm) {
+                        SystemRestartConfirmDialog(
+                            onConfirm = {
+                                showRebootConfirm = false
+                                doRestart()
+                            },
+                            onDismiss = { showRebootConfirm = false },
                         )
                     }
                 }

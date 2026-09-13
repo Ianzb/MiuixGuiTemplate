@@ -10,4 +10,5 @@ enum class OptionType {
     RADIO,
     SLIDER,
     TEXT,
+    PACKAGE_LIST,
 }
