@@ -27,7 +27,7 @@ fun HookSwitchCard(
         },
         enabled = enabled,
         modifier = modifier,
-        startAction = HookStatusStartAction(spec),
+        titleColor = HookStatusTitleColor(spec),
     )
 }
 
@@ -49,7 +49,7 @@ fun HookCheckboxCard(
         },
         enabled = enabled,
         modifier = modifier,
-        startAction = HookStatusStartAction(spec),
+        titleColor = HookStatusTitleColor(spec),
     )
 }
 

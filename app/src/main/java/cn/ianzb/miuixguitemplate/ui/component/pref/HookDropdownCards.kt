@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import cn.ianzb.miuixguitemplate.prefs.ConfigState
 import cn.ianzb.miuixguitemplate.prefs.OptionSpec
+import top.yukonga.miuix.kmp.basic.BasicComponentDefaults
 import top.yukonga.miuix.kmp.preference.CheckboxLocation
 import top.yukonga.miuix.kmp.preference.CheckboxPreference
 import top.yukonga.miuix.kmp.preference.WindowDropdownPreference
@@ -29,7 +30,7 @@ fun HookDropdownCard(
         summary = spec.summaryRes.takeIf { it != 0 }?.let { stringResource(it) },
         enabled = enabled,
         modifier = modifier,
-        startAction = HookStatusStartAction(spec),
+        titleColor = HookStatusTitleColor(spec),
         onSelectedIndexChange = { index ->
             ConfigState.set(spec.key, spec.entryValues.getOrElse(index) { spec.defaultString })
             if (index != defaultIndex(spec)) ensureScopeFor(spec)
@@ -47,7 +48,7 @@ fun HookRadioCard(
 ) {
     val enabled = rememberDependencyEnabled(spec)
     val value = ConfigState.string(spec.key, spec.defaultString)
-    val statusAction = HookStatusStartAction(spec)
+    val statusTitleColor = HookStatusTitleColor(spec)
     Column(modifier = modifier) {
         spec.entryResIds.forEachIndexed { index, resId ->
             val entryValue = spec.entryValues.getOrElse(index) { spec.defaultString }
@@ -61,7 +62,7 @@ fun HookRadioCard(
                 },
                 enabled = enabled,
                 checkboxLocation = CheckboxLocation.End,
-                startAction = if (selected) statusAction else null,
+                titleColor = if (selected) statusTitleColor else BasicComponentDefaults.titleColor(),
             )
         }
     }

@@ -165,11 +165,11 @@
     <string name="example_package_list_title">自定义应用列表</string>
     <string name="example_package_list_summary">输入包名后，页面右上角可批量热重载 / 重启</string>
     <string name="example_status_success_title">应用成功示例</string>
-    <string name="example_status_success_summary">标题左侧显示绿色对号</string>
+    <string name="example_status_success_summary">标题显示为绿色</string>
     <string name="example_status_failed_title">应用失败示例</string>
-    <string name="example_status_failed_summary">标题左侧显示红色叉号</string>
+    <string name="example_status_failed_summary">标题显示为红色</string>
     <string name="example_status_none_title">未应用示例</string>
-    <string name="example_status_none_summary">不显示状态图标</string>
+    <string name="example_status_none_summary">标题保持默认颜色</string>
 
     <!-- Update -->
     <string name="check_update_on_launch">自动检查更新</string>

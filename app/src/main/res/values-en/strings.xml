@@ -165,11 +165,11 @@
     <string name="example_package_list_title">Custom App List</string>
     <string name="example_package_list_summary">Enter package names; batch hot reload / restart from the top-right button</string>
     <string name="example_status_success_title">Applied example</string>
-    <string name="example_status_success_summary">Shows a green check at the start of the title</string>
+    <string name="example_status_success_summary">Title text turns green</string>
     <string name="example_status_failed_title">Failed example</string>
-    <string name="example_status_failed_summary">Shows a red cross at the start of the title</string>
+    <string name="example_status_failed_summary">Title text turns red</string>
     <string name="example_status_none_title">Not applied example</string>
-    <string name="example_status_none_summary">No status icon is shown</string>
+    <string name="example_status_none_summary">Title keeps the default color</string>
 
     <!-- Update -->
     <string name="check_update_on_launch">Check for Updates on Launch</string>

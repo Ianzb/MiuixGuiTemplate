@@ -26,7 +26,7 @@ import cn.ianzb.miuixguitemplate.xposed.HookStatus
  * @param sliderUnitRes 单位文本资源（0 表示无）
  * @param sliderValueLabelRes 数值类型说明资源（显示在滑动条上方数值左侧，0 表示无）
  * @param hookId 状态上报使用的 hook 标识（默认取 [key]）
- * @param demoStatus 仅用于示例 / 预览：强制指定状态图标，非空时覆盖真实状态
+ * @param demoStatus 仅用于示例 / 预览：强制指定状态（驱动标题染色），非空时覆盖真实状态
  */
 data class OptionSpec(
     val key: String,

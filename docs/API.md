@@ -287,7 +287,7 @@ data class OptionSpec(
     val sliderUnitRes: Int = 0,
     val sliderValueLabelRes: Int = 0,           // 数值类型说明（滑块行左侧）
     val hookId: String? = null,
-    val demoStatus: HookStatus? = null,         // 仅示例/预览：强制状态图标，非空时覆盖真实状态
+    val demoStatus: HookStatus? = null,         // 仅示例/预览：强制状态（驱动标题染色），非空时覆盖真实状态
 )
 ```
 
@@ -308,7 +308,7 @@ data class OptionSpec(
 | `sliderUnitRes` / `sliderValueLabelRes` | SLIDER | 单位、数值类型说明 |
 | `targetPackages` | 全部 | 目标包，用于作用域申请与状态判断 |
 | `hookId` | 全部 | 状态上报标识，默认取 `key` |
-| `demoStatus` | 全部 | 仅示例/预览用：强制指定状态（成功/失败/未应用），用于展示状态图标 |
+| `demoStatus` | 全部 | 仅示例/预览用：强制指定状态（成功/失败/未应用），用于展示状态效果 |
 
 ### 3.2 `OptionRegistry`
 
@@ -450,7 +450,7 @@ object AppRestarter {
 }
 ```
 
-- 普通应用：Root 下 `am force-stop <pkg>` 后拉起启动 Activity。
+- 普通应用：应用在运行时才执行 Root 下 `am force-stop <pkg>` 并拉起启动 Activity；未运行则不更改、不打开。
 - 系统目标（`system` / `android` / `system_server`）：执行 `reboot`。
 - 无 Root 时返回 `false`，调用方据此提示用户。
 
@@ -526,14 +526,14 @@ object SafeModeReader {
 ```kotlin
 @Composable fun rememberDependencyEnabled(spec: OptionSpec): Boolean
 @Composable fun rememberHookStatus(spec: OptionSpec): HookStatus
-@Composable fun HookStatusStartAction(spec: OptionSpec): (@Composable () -> Unit)?
+@Composable fun HookStatusTitleColor(spec: OptionSpec): BasicComponentColors
 @Composable fun hookSectionTitle(section: HookSection): String
 fun ensureScopeFor(spec: OptionSpec)
 ```
 
 - `rememberDependencyEnabled`：根据 `spec.dependsOn` / `spec.dependsOnValue` 返回是否启用；依赖项不满足时组件 `enabled = false`。
 - `rememberHookStatus`：计算当前状态（成功 / 失败 / 未应用）；若 `spec.demoStatus != null` 则直接返回该值。
-- `HookStatusStartAction`：返回标题左侧状态图标（成功=对号 / 失败=叉号），未应用时返回 `null`（不显示图标）。
+- `HookStatusTitleColor`：返回标题 `titleColor`（成功=绿色 / 失败=红色），未应用时返回默认标题色；零额外占位。
 - `hookSectionTitle`：把 `HookSection` 拼成 `中文（English）` 标题。
 - `ensureScopeFor`：为 `spec.targetPackages` 中未授权的包申请作用域。
 
@@ -672,7 +672,7 @@ HookSectionCard(
 | 组件行内边距 | `BasicComponentDefaults.InsideMargin`（16dp） | 由 Miuix 组件默认提供，不要覆盖 |
 | 页面顶/底内边距 | 使用 `Scaffold` 的 `innerPadding` + `extraBottomPadding` | 不要额外加固定 top 间距 |
 | 顶部搜索栏间距 | `Modifier.padding(top = 12.dp, bottom = 8.dp)` | 搜索栏与上方顶栏、下方首个分区的间距 |
-| 状态图标 | 标题左侧 `startAction` | 成功=绿色对号，失败=红色叉号，未应用不显示（`null`） |
+| 状态提示 | 标题颜色 `titleColor` | 成功=绿色标题，失败=红色标题，未应用保持默认色 |
 | 二级页面 | 继承 `BaseSubPageActivity`，内容用 `SubPageScaffold` 提供的 `contentPadding` | 不要自行处理系统栏 / 顶栏间距 |
 
 **标题规范（强制）：** 分区标题必须为 **单行 `中文（English）`**（例如 `开关卡片（SwitchPreference）`），不得拆成「英文标题 + 中文副标题」两行；由 `HookSection(titleRes, specs, titleEn)` + `hookSectionTitle()` 统一生成。
@@ -681,7 +681,7 @@ HookSectionCard(
 
 ### 5.7 组件行为细则
 
-| 组件 | 配置写入 | 作用域申请 | 状态图标 | 备注 |
+| 组件 | 配置写入 | 作用域申请 | 状态提示 | 备注 |
 |---|---|---|---|---|
 | `HookSwitchCard` | 开/关均写入 | 仅开启时 | 有 | 关=不 hook，开=hook |
 | `HookCheckboxCard` | 勾选/取消均写入 | 仅勾选时 | 有 | 语义同开关 |
@@ -702,7 +702,7 @@ HookSectionCard(
 
 **`HookTextCard` 细则：** 主界面为一行（标题 + 当前值摘要），点击弹出与滑块一致的对话框：当前值 / 默认值同行左右显示 + `TextField` + 取消 / 恢复默认 / 确定。
 
-**状态示例：** 通过 `OptionSpec.demoStatus` 可强制指定状态图标，仅用于示例 / 预览。示例页 `HookStatus` 分区演示了成功 / 失败 / 未应用三种状态。
+**状态示例：** 通过 `OptionSpec.demoStatus` 可强制指定状态，仅用于示例 / 预览。示例页 `HookStatus` 分区演示了成功 / 失败 / 未应用三种状态。
 
 ---
 
@@ -821,7 +821,7 @@ Card { HookSwitchCard(spec) }
 启用开关时，`HookSwitchCard` 会：
 1. 写入配置（`ConfigState.set` → `PrefsStore` → 远程偏好）
 2. 自动 `ensureScopeFor(spec)` 申请作用域
-3. 状态图标显示成功 / 失败 / 未应用
+3. 标题颜色显示成功（绿色）/ 失败（红色）/ 未应用（默认色）
 
 ---
 

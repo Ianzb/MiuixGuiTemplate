@@ -45,7 +45,7 @@ fun HookTextCard(
         onClick = { if (enabled) showDialog = true },
         enabled = enabled,
         modifier = modifier,
-        startAction = HookStatusStartAction(spec),
+        titleColor = HookStatusTitleColor(spec),
     )
 
     if (showDialog) {

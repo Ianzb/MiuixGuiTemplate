@@ -1,11 +1,13 @@
 # 更新日志
 
-## 0.2.1
+## 0.3.0
 
 > 发布于 2026-09-22
 
 ### 变更
 
+- **Hook 状态提示改为标题染色**：规则生效时标题显示为绿色、失败为红色、未应用保持默认色；不再在标题左侧显示对号 / 叉号，`HookStatusStartAction` 更名为 `HookStatusTitleColor`（经 `titleColor` 传入，零额外占位）
+- **重启目标应用仅在运行时执行**：应用在运行才 `force-stop` 并重新拉起，未运行则不更改、不自动打开应用
 - **开源协议调整为 LGPL-3.0**：仓库同时包含 LGPL-3.0 与 Apache-2.0（自 miuix 引入的文件保留原始声明）许可的代码，按传染性要求整体以 LGPL-3.0 授权分发；新增根目录 `LICENSE`
 - 依赖升级：Miuix `0.9.4-rc01` → `0.9.4`；`miuix-navigation3-ui` 更换为 `miuix-nav`
 - 主页 Pager 统一为 **Cross-Axis** 拦截模式（`pagerGestureOverride` + `springAnimateToPage`），列表惯性滚动 / 回弹期间可横滑切页

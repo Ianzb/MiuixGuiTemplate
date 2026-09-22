@@ -65,7 +65,7 @@ fun HookSliderCard(
                     if (it) ensureScopeFor(spec)
                 },
                 enabled = enabled,
-                startAction = HookStatusStartAction(spec),
+                titleColor = HookStatusTitleColor(spec),
             )
         }
 

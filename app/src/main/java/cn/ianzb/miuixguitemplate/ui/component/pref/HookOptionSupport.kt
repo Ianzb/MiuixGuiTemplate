@@ -1,20 +1,16 @@
 package cn.ianzb.miuixguitemplate.ui.component.pref
 
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import cn.ianzb.miuixguitemplate.prefs.ConfigState
 import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
 import cn.ianzb.miuixguitemplate.prefs.OptionSpec
+import cn.ianzb.miuixguitemplate.ui.util.isInDarkTheme
 import cn.ianzb.miuixguitemplate.xposed.HookStatus
 import cn.ianzb.miuixguitemplate.xposed.HookStatusReader
 import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
-import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.BasicComponentColors
+import top.yukonga.miuix.kmp.basic.BasicComponentDefaults
 
 /** 解析依赖项：依赖项满足条件时组件启用。 */
 @Composable
@@ -53,20 +49,18 @@ fun rememberHookStatus(spec: OptionSpec): HookStatus {
 }
 
 /**
- * 标题左侧的状态图标：成功显示对号，失败显示叉号，未应用时不显示（返回 null）。
+ * 标题颜色随 hook 状态变化：成功 = 绿色，失败 = 红色，未应用 = 默认色。
+ * 作为各卡片的 `titleColor` 传入，不额外占用布局空间。
  */
 @Composable
-fun HookStatusStartAction(spec: OptionSpec): (@Composable () -> Unit)? {
+fun HookStatusTitleColor(spec: OptionSpec): BasicComponentColors {
     val status = rememberHookStatus(spec)
-    if (status == HookStatus.NOT_APPLIED) return null
-    val imageVector = if (status == HookStatus.SUCCESS) Icons.Rounded.Check else Icons.Rounded.Close
-    val tint = if (status == HookStatus.SUCCESS) Color(0xFF36D167) else Color(0xFFDC3545)
-    return {
-        Icon(
-            imageVector = imageVector,
-            contentDescription = null,
-            tint = tint,
-            modifier = Modifier.size(20.dp),
-        )
+    if (status == HookStatus.NOT_APPLIED) return BasicComponentDefaults.titleColor()
+    val isDark = isInDarkTheme()
+    val color = if (status == HookStatus.SUCCESS) {
+        if (isDark) Color(0xFF4ADE80) else Color(0xFF16A34A)
+    } else {
+        if (isDark) Color(0xFFF87171) else Color(0xFFDC3545)
     }
+    return BasicComponentDefaults.titleColor(color = color)
 }
