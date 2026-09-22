@@ -48,7 +48,7 @@
     <string name="language_default">默认</string>
     <string name="language_zh_cn">简体中文</string>
     <string name="language_en">English</string>
-    <string name="copyright">© 2026 Your Name.</string>
+    <string name="copyright">© 2026 Ianzb.</string>
 
     <!-- Module status -->
     <string name="module_status">模块状态</string>
@@ -195,14 +195,15 @@
     <string name="about_source_code_summary">https://github.com/your-name/your-repo</string>
     <string name="about_telegram">反馈渠道</string>
     <string name="about_telegram_summary">https://t.me/your-channel</string>
-    <string name="about_dependencies">第三方许可证</string>
-    <string name="license_apache">Apache License 2.0</string>
-    <string name="license_apache_summary">查看完整协议文本</string>
+    <string name="about_dependencies">第三方许可证与致谢</string>
+    <string name="about_based_on">Based on MiuixGuiTemplate 0.3.0</string>
+    <string name="license_lgpl">GNU LGPL v3.0</string>
+    <string name="license_lgpl_summary">查看完整协议文本</string>
     <string name="third_party_licenses_title">第三方许可证</string>
-    <string name="licenses_header">本应用使用了以下开源库，感谢所有贡献者。</string>
+    <string name="licenses_header">本应用使用或参考了以下开源项目，谨向所有作者与贡献者致谢。</string>
     <string name="licenses_section_core">核心</string>
     <string name="licenses_section_ui">界面</string>
     <string name="licenses_section_androidx">AndroidX</string>
     <string name="licenses_section_hook">Hook 框架</string>
-    <string name="licenses_section_test">测试</string>
+    <string name="licenses_section_refs">参考项目</string>
 </resources>

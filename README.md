@@ -11,7 +11,7 @@
 
 </div>
 
-**MiuixGuiTemplate** 是一个开箱即用的 **LSPosed 模块模板**，基于 [libxposed API 102](https://libxposed.github.io/api/index-all.html) 与 [Miuix](https://github.com/YuKongA/Miuix) Compose 组件库，提供一套完整的 Hook 二次封装接口与可复用 UI 组件，帮助你快速构建自己的 Xposed 模块。
+**MiuixGuiTemplate** 是一个开箱即用的 **LSPosed 模块模板**，基于 [libxposed API 102](https://libxposed.github.io/api/index-all.html) 与 [Miuix](https://github.com/compose-miuix-ui/miuix) Compose 组件库，提供一套完整的 Hook 二次封装接口与可复用 UI 组件，帮助你快速构建自己的 Xposed 模块。
 
 <br>
 
@@ -74,13 +74,44 @@ cd MiuixGuiTemplate
 
 # 第三方库
 
-- [Miuix](https://github.com/YuKongA/Miuix) — HyperOS 风格 Compose UI 组件库
+- [miuix](https://github.com/compose-miuix-ui/miuix) — HyperOS 风格 Compose UI 组件库
 - [libxposed API](https://github.com/libxposed/api) — 现代 Xposed 模块 API（102）
 - [DexKit](https://github.com/LuckyPray/DexKit) — Dex 解析与缓存
 - [AndroidX Compose](https://developer.android.com/jetpack/compose) — 声明式 UI 框架
 
 <br>
 
+# 参考与致谢
+
+MiuixGuiTemplate 是个人 Android 模块开发所使用的脚手架模板。部分代码实现与界面效果参考了以下优秀开源项目，在此向其作者致谢：
+
+- [HyperCeiler](https://github.com/ReChronoRain/HyperCeiler)
+- [HyperLight](https://github.com/KiminonawaResa/HyperLight)
+
+完整的第三方许可与致谢清单见应用内「关于 → 第三方许可证与致谢」页面。
+
+<br>
+
+# 使用本模板的项目（Based on 约定）
+
+基于本模板的衍生项目**须**在 `README.md` 与应用内「关于」页保留如下形式的文本，并将版本号更新为所依据的脚手架版本，以便后续同步脚手架的修复与改进：
+
+```text
+Based on MiuixGuiTemplate <版本号>
+```
+
+当前使用本模板的项目：
+
+| 项目 | 标注 |
+|---|---|
+| [HyperNavBar](https://github.com/HyperNavBar/HyperNavBar) | `Based on MiuixGuiTemplate 0.3.0` |
+
+该约定连同开源协议义务已汇总为一张核对清单，见[二次开发指南 · 开源协议与致谢](docs/CUSTOMIZE.md#11-开源协议与致谢必读)。
+
+<br>
+
 # 许可证
 
-本项目基于 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) 开源。
+本项目以 [GNU Lesser General Public License v3.0](LICENSE)（LGPL-3.0）开源。
+
+本仓库同时包含 Apache-2.0 许可的第三方代码（自 [miuix](https://github.com/compose-miuix-ui/miuix) 等引入的文件保留其原始版权与许可声明）。按照 LGPL-3.0 的传染性要求，本项目整体以 LGPL-3.0 授权分发；基于本模板的衍生作品须以 LGPL-3.0 或 GPL-3.0 授权公开，并保留上述「参考与致谢」与 Based on 标注。

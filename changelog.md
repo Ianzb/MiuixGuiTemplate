@@ -1,5 +1,22 @@
 # 更新日志
 
+## 0.2.1
+
+> 发布于 2026-09-22
+
+### 变更
+
+- **开源协议调整为 LGPL-3.0**：仓库同时包含 LGPL-3.0 与 Apache-2.0（自 miuix 引入的文件保留原始声明）许可的代码，按传染性要求整体以 LGPL-3.0 授权分发；新增根目录 `LICENSE`
+- 依赖升级：Miuix `0.9.4-rc01` → `0.9.4`；`miuix-navigation3-ui` 更换为 `miuix-nav`
+- 主页 Pager 统一为 **Cross-Axis** 拦截模式（`pagerGestureOverride` + `springAnimateToPage`），列表惯性滚动 / 回弹期间可横滑切页
+- 「关于」页许可证入口改为 GNU LGPL v3.0，「第三方许可证」更名「第三方许可证与致谢」并新增参考项目分组
+
+### 新增
+
+- **参考与致谢**：README 与应用内说明本模板的脚手架定位，并致谢参考项目 [HyperCeiler](https://github.com/ReChronoRain/HyperCeiler)、[HyperLight](https://github.com/KiminonawaResa/HyperLight)、[miuix](https://github.com/compose-miuix-ui/miuix)
+- **Based on 约定**：衍生项目须在 `README.md` 与「关于」页标注 `Based on MiuixGuiTemplate <版本号>`；示例程序已内建该标注（当前为 `Based on MiuixGuiTemplate 0.3.0`）
+- `docs/CUSTOMIZE.md` 新增「开源协议与致谢（必读）」核对清单，二次开发可一次性对照完成
+
 ## 0.2.0
 
 > 发布于 2026-09-13

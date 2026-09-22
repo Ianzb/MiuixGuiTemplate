@@ -19,6 +19,9 @@
 | 应用图标 | `res/drawable/ic_launcher_*.xml`、`res/mipmap-anydpi*/ic_launcher*.xml`、`colors.xml` → `ic_launcher_background` | |
 | 关于页链接 | `strings.xml` → `about_source_code_summary`、`about_telegram_summary` | 显示与跳转均使用该值 |
 | 版权 | `strings.xml` → `copyright` | |
+| **Based on 标注** | `strings.xml` → `about_based_on`、`README.md` 「Based on 约定」 | 保留 `Based on MiuixGuiTemplate <版本号>` 并更新为所依据的脚手架版本 |
+| 参考与致谢 | `README.md`「参考与致谢」、`LicensePage.kt` → `licenses_section_credits` | 保留对 HyperCeiler / HyperLight / miuix 的致谢，可增不可删 |
+| 开源协议 | 根目录 `LICENSE`、`README.md`「许可证」、`strings.xml` → `license_lgpl*` | **须保持 LGPL-3.0（或更弱兼容的 GPL-3.0）**，见第 11 节 |
 | 许可证列表 | `ui/screen/about/LicensePage.kt` → `licenseSections` | 增删依赖库 |
 | 模块元数据 | `hook/src/main/resources/META-INF/xposed/{module.prop,scope.list,java_init.list}` | |
 | Hook 目标 | `hook/.../base/HookEntryRegistry.kt`、`BaseLoad` 子类 | |
@@ -112,7 +115,7 @@ android {
 
 `res/values-en/strings.xml` 同步修改英文文案。
 
-关于页的「Apache License 2.0」跳转链接固定为官方协议地址，如需替换可修改 `AboutPage.kt` 中对应的 `uriHandler.openUri("https://www.apache.org/licenses/LICENSE-2.0.txt")`。
+关于页的「GNU LGPL v3.0」跳转链接为协议官方文本地址；「参考项目」条目跳转第三方许可证页，其中 `licenses_section_credits` 分组列出 HyperCeiler / HyperLight / miuix 等参考项目，可增不可删。关于页 Logo 下方的 `about_based_on` 即 **Based on 标注**，须保留并随脚手架版本更新（见第 11 节）。
 
 ---
 
@@ -354,3 +357,46 @@ HookOptionsPage(
 4. `META-INF/xposed/java_init.list` 指向正确的入口类。
 5. 运行 `./gradlew :hook:compileDebugKotlin :app:assembleDebug` 构建通过。
 6. 安装到设备，确认模块在 LSPosed 中被识别、作用域正确、Hook 生效。
+7. **完成第 11 节「开源协议与致谢」核对表**（协议、致谢、Based on 标注，一次核对到位）。
+
+---
+
+## 11. 开源协议与致谢（必读）
+
+本模板同时包含 LGPL-3.0 与 Apache-2.0 许可的代码（自 [miuix](https://github.com/compose-miuix-ui/miuix) 等引入的文件保留其原始版权与 SPDX 声明），并引用了 LGPL/Apache 双许可的 [DexKit](https://github.com/LuckyPray/DexKit)。按 LGPL-3.0 的传染性要求，**本仓库及其衍生作品须以 LGPL-3.0（或 GPL-3.0）整体授权公开**。
+
+### 11.1 参考与致谢
+
+本模板的定位是**个人 Android 模块项目的脚手架模板**，部分代码实现与界面效果参考了以下项目，衍生项目**可增不可删**该致谢：
+
+| 项目 | 链接 | 参考内容 |
+|---|---|---|
+| HyperCeiler | <https://github.com/ReChronoRain/HyperCeiler> | 模块架构 / 实现思路 |
+| HyperLight | <https://github.com/KiminonawaResa/HyperLight> | 界面显示效果 |
+| miuix | <https://github.com/compose-miuix-ui/miuix> | UI 组件库与视觉规范 |
+
+落点：`README.md`「参考与致谢」、`LicensePage.kt` → `licenses_section_refs` 分组（关于页不再单列「参考项目」入口，统一由此页承载）。
+
+### 11.2 Based on 约定
+
+衍生项目**必须**在以下两处保留形如 `Based on MiuixGuiTemplate <版本号>` 的文本（示例：`Based on MiuixGuiTemplate 0.3.0`），并把版本号更新为**所依据的脚手架版本**：
+
+| 落点 | 文件 |
+|---|---|
+| `README.md`「使用本模板的项目（Based on 约定）」 | 项目根目录 |
+| 应用内「关于」页 Logo 下方 | `strings.xml` → `about_based_on`（两套语言均改） |
+
+用途：同步脚手架的修复与改进时，以该版本号判断差异范围。当前已知衍生项目：**HyperNavBar**（`Based on MiuixGuiTemplate 0.3.0`）。
+
+### 11.3 一次性核对清单
+
+| # | 事项 | 判定标准 |
+|---|---|---|
+| 1 | `LICENSE` 为 LGPL-3.0 全文 | 根目录存在且未删改条款 |
+| 2 | README「许可证」章节声明 LGPL-3.0 并保留第三方许可说明 | 不得改回 Apache-2.0 |
+| 3 | 关于页协议条目指向 LGPL-3.0 | `license_lgpl*` + `openUri` 指向 LGPL-3.0 文本 |
+| 4 | 保留参考与致谢 | `README.md` 11.1 表中三项 + `LicensePage.kt` 分组 |
+| 5 | 保留并更新 Based on 标注 | `README.md` 与关于页两处，版本号 = 所依据脚手架版本 |
+| 6 | 第三方许可证页完整 | `licenseSections` 覆盖实际依赖 |
+| 7 | 引入的第三方源文件保留原始版权 / SPDX 声明 | 如自 miuix 复制的 `Apache-2.0` 文件头 |
+| 8 | 修改过的第三方源文件标注改动 | 文件头或相邻注释注明修改点 |

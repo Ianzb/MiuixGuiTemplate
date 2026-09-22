@@ -48,7 +48,7 @@
     <string name="language_default">Default</string>
     <string name="language_zh_cn">简体中文</string>
     <string name="language_en">English</string>
-    <string name="copyright">© 2026 Your Name.</string>
+    <string name="copyright">© 2026 Ianzb.</string>
 
     <!-- Module status -->
     <string name="module_status">Module Status</string>
@@ -195,14 +195,15 @@
     <string name="about_source_code_summary">https://github.com/your-name/your-repo</string>
     <string name="about_telegram">Feedback</string>
     <string name="about_telegram_summary">https://t.me/your-channel</string>
-    <string name="about_dependencies">Third Party Licenses</string>
-    <string name="license_apache">Apache License 2.0</string>
-    <string name="license_apache_summary">View full license text</string>
+    <string name="about_dependencies">Third Party Licenses &amp; Credits</string>
+    <string name="about_based_on">Based on MiuixGuiTemplate 0.3.0</string>
+    <string name="license_lgpl">GNU LGPL v3.0</string>
+    <string name="license_lgpl_summary">View full license text</string>
     <string name="third_party_licenses_title">Third Party Licenses</string>
-    <string name="licenses_header">This app uses the following open-source libraries. Thanks to all contributors.</string>
+    <string name="licenses_header">This app uses or references the following open-source projects. Thanks to all authors and contributors.</string>
     <string name="licenses_section_core">Core</string>
     <string name="licenses_section_ui">UI</string>
     <string name="licenses_section_androidx">AndroidX</string>
     <string name="licenses_section_hook">Hook Framework</string>
-    <string name="licenses_section_test">Test</string>
+    <string name="licenses_section_refs">Referenced Projects</string>
 </resources>

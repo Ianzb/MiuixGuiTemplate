@@ -80,7 +80,7 @@ private val licenseSections: List<LicenseSection> = listOf(
         libraries = listOf(
             LibraryInfo(
                 "Miuix (compose-miuix-ui)",
-                "0.9.4-rc01",
+                "0.9.4",
                 "Apache-2.0",
                 "https://github.com/compose-miuix-ui/miuix",
             ),
@@ -151,20 +151,19 @@ private val licenseSections: List<LicenseSection> = listOf(
         ),
     ),
     LicenseSection(
-        titleRes = R.string.licenses_section_test,
+        titleRes = R.string.licenses_section_refs,
         libraries = listOf(
-            LibraryInfo("JUnit 4", "4.13.2", "EPL-1.0", "https://junit.org/junit4/"),
             LibraryInfo(
-                "AndroidX Test JUnit",
-                "1.3.0",
-                "Apache-2.0",
-                "https://developer.android.com/jetpack/androidx/releases/test",
+                "HyperCeiler",
+                "-",
+                "AGPL-3.0",
+                "https://github.com/ReChronoRain/HyperCeiler",
             ),
             LibraryInfo(
-                "AndroidX Test Espresso",
-                "3.7.0",
-                "Apache-2.0",
-                "https://developer.android.com/jetpack/androidx/releases/test",
+                "HyperLight",
+                "-",
+                "",
+                "https://github.com/KiminonawaResa/HyperLight",
             ),
         ),
     ),
