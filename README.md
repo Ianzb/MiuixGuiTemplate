@@ -141,9 +141,9 @@ MiuixGuiTemplate 是个人 Android 模块开发所使用的脚手架模板，开
 
 <br>
 
-# 使用本模板的项目（Based on 约定）
+# 使用本模板的项目
 
-基于本模板的衍生项目**须**在 `README.md` 与应用内「关于」页保留如下形式的文本，并将版本号更新为所依据的脚手架版本，以便后续同步脚手架的修复与改进：
+基于本模板的衍生项目**无需**在各自的 `README.md` 中标注来源；只需保留应用内「关于」页 Logo 下方的文本，并将版本号更新为所依据的脚手架版本，便于同步脚手架的修复与改进：
 
 ```text
 Based on MiuixGuiTemplate <版本号>
@@ -163,4 +163,4 @@ Based on MiuixGuiTemplate <版本号>
 
 本项目以 [GNU Lesser General Public License v3.0](LICENSE)（LGPL-3.0）开源。
 
-本仓库同时包含 Apache-2.0 许可的第三方代码（自 [miuix](https://github.com/compose-miuix-ui/miuix) 等引入的文件保留其原始版权与许可声明）。按照 LGPL-3.0 的传染性要求，本项目整体以 LGPL-3.0 授权分发；基于本模板的衍生作品须以 LGPL-3.0 或 GPL-3.0 授权公开，并保留上述「参考与致谢」与 Based on 标注。
+本仓库同时包含 Apache-2.0 许可的第三方代码（自 [miuix](https://github.com/compose-miuix-ui/miuix) 等引入的文件保留其原始版权与许可声明）。按照 LGPL-3.0 的传染性要求，本项目整体以 LGPL-3.0 授权分发；基于本模板的衍生作品须以 LGPL-3.0 或 GPL-3.0 授权公开，并保留应用内「参考与致谢」与 Based on 标注。
