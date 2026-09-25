@@ -377,6 +377,7 @@ HookOptionsPage(
 | 检查更新 | `SettingsPage.kt` / `MainActivity.kt` | 当前为占位（点击仅提示），接入真实更新逻辑时替换 |
 | 清空 DexKit 缓存 | `SettingsPage.kt` + `xposed/RootHelper.kt` | 需要 Root，删除作用域应用的 `cache/<CACHE_DIR>` |
 | README | `README.md` | 项目简介、链接、构建说明 |
+| 发布与 CI | `.github/workflows/` + `app/build.gradle.kts` | CI 构建 Debug 产物；Release 走签名发布（`release.keystore`、环境变量 / GitHub Secrets 配置见 [README · 发布与 CI](../README.md#发布与-ci)） |
 | 更新日志 | `changelog.md` | 按版本记录变更 |
 | 接口文档 | `docs/API.md` | 全部对外接口与布局规范 |
 | 模块开发工作流 | `docs/WORKFLOW.md` | Hook 需求实现、真机 `adb` 扫描授权与第三方复用合规 |

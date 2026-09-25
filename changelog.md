@@ -16,12 +16,13 @@
 - **顶栏扩展槽与重启应用**：`HookOptionsPage` / `SubPageScaffold` / `BaseSubPageActivity` 新增 `topBarActions` 扩展槽；新增通用 `QuickActionsAction`（`MiuixIcons.Refresh` 重启图标 → `QuickActionDialog`），统一右上角「重启」入口样式；`QuickActionDialog` 统一为「重启应用」：标题「重启应用」且无小标题，列表用 `Card` 圆角容器，每行 `CheckboxPreference`（对勾在右、默认全选），底部「全选 / 全不选」+「重启」（无勾选时禁用）
 - **SystemUI 重启优化**：新增 `AppRestarter.restartSystemUi()`（`pkill -f` → `killall` → `force-stop` 兜底），`restart()` 对 `com.android.systemui` 特判，结束进程由系统自动拉起而不再触发系统重启
 - **`BaseHook.target`**：新增 `protected lateinit var target: PackageTarget`，由 `BaseLoad` 在安装前注入，`init()` 内可直接使用 `target.classLoader`
+- **CI / Release 工作流**：新增 GitHub Actions `.github/workflows/ci.yml`（Debug 构建 + Artifact）与 `release.yml`（签名 Release + GitHub Release + 可选 Telegram）；`app/build.gradle.kts` 增加基于环境变量的 `signingConfigs.release` 与 arm64-v8a ABI 拆分；`release.keystore` 与 GitHub Secrets 配置方式见 [README · 发布与 CI](README.md#发布与-ci)
 
 ### 变更
 
 - **示例页 → 功能页**：`ui/screen/examples/ExamplesPage.kt` 更名为 `ui/screen/features/FeaturesPage.kt`（`ExamplesPageView` → `FeaturesPageView`、`exampleSpecs` → `featureSpecs`、子页 `ExampleSubPageActivity` → `FeatureSubPageActivity`），标签页「示例」改为「功能」，与真实模块形态一致；功能页小标题改为单语言，`HookSection.titleEn` 仅保留用于示例展示 API 英文组件名
 - 搜索文案由「搜索组件」改为「搜索功能」（`search_hint`），同步更新二次开发指南与接口文档
-- **移除热重载功能**：删除设置页「全局热重载」、作用域页与快捷操作中的热重载入口，以及 `XposedServiceManager.hotReload` / `runningTargets`、`NativeHookHelper.reset`、`PackageTarget.restored`、`XposedEntry` 的 `onHotReloading` / `onHotReloaded` 与 `module.prop` 的 `autoHotReload`；保留「重启」功能（含 SystemUI 重启优化）
+- **移除热重载功能**：删除设置页「全局热重载」、作用域页与重启应用入口中的热重载，以及 `XposedServiceManager.hotReload` / `runningTargets`、`NativeHookHelper.reset`、`PackageTarget.restored`、`XposedEntry` 的 `onHotReloading` / `onHotReloaded` 与 `module.prop` 的 `autoHotReload`；保留「重启」功能（含 SystemUI 重启优化）
 
 ### 致谢
 
