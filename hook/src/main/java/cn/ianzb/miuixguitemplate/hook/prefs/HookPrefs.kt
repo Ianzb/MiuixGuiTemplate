@@ -27,23 +27,32 @@ object HookPrefs {
     private fun key(key: String): String =
         if (key.startsWith(KEY_PREFIX)) key else KEY_PREFIX + key
 
+    private inline fun <T> safe(defaultValue: T, read: (SharedPreferences) -> T): T {
+        val target = prefs ?: return defaultValue
+        return try {
+            read(target)
+        } catch (_: ClassCastException) {
+            defaultValue
+        }
+    }
+
     fun getBoolean(key: String, defaultValue: Boolean = false): Boolean =
-        prefs?.getBoolean(key(key), defaultValue) ?: defaultValue
+        safe(defaultValue) { it.getBoolean(key(key), defaultValue) }
 
     fun getString(key: String, defaultValue: String? = null): String? =
-        prefs?.getString(key(key), defaultValue) ?: defaultValue
+        safe(defaultValue) { it.getString(key(key), defaultValue) }
 
     fun getInt(key: String, defaultValue: Int = 0): Int =
-        prefs?.getInt(key(key), defaultValue) ?: defaultValue
+        safe(defaultValue) { it.getInt(key(key), defaultValue) }
 
     fun getLong(key: String, defaultValue: Long = 0L): Long =
-        prefs?.getLong(key(key), defaultValue) ?: defaultValue
+        safe(defaultValue) { it.getLong(key(key), defaultValue) }
 
     fun getFloat(key: String, defaultValue: Float = 0f): Float =
-        prefs?.getFloat(key(key), defaultValue) ?: defaultValue
+        safe(defaultValue) { it.getFloat(key(key), defaultValue) }
 
     fun getStringSet(key: String, defaultValue: Set<String> = emptySet()): Set<String> =
-        prefs?.getStringSet(key(key), defaultValue) ?: defaultValue
+        safe(defaultValue) { it.getStringSet(key(key), defaultValue) ?: defaultValue }
 
     fun getAll(): Map<String, *> = prefs?.all ?: emptyMap<String, Any>()
 }

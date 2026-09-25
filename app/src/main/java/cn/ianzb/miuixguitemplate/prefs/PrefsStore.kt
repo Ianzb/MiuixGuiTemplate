@@ -97,6 +97,7 @@ object PrefsStore {
                 is Int -> putInt(storageKey, value)
                 is Long -> putLong(storageKey, value)
                 is Float -> putFloat(storageKey, value)
+                is Double -> putFloat(storageKey, value.toFloat())
                 is String -> putString(storageKey, value)
                 is Set<*> -> putStringSet(storageKey, value.filterIsInstance<String>().toSet())
                 else -> putString(storageKey, value.toString())

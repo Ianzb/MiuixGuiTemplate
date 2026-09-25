@@ -28,6 +28,11 @@
 - **Telegram 话题推送**：`release.yml` 支持可选 Secret `MESSAGE_THREAD_ID`，多话题群（Forum）可指定发布到哪个话题（不填则发默认 / General 话题）
 - **移除热重载功能**：删除设置页「全局热重载」、作用域页与重启应用入口中的热重载，以及 `XposedServiceManager.hotReload` / `runningTargets`、`NativeHookHelper.reset`、`PackageTarget.restored`、`XposedEntry` 的 `onHotReloading` / `onHotReloaded` 与 `module.prop` 的 `autoHotReload`；保留「重启」功能（含 SystemUI 重启优化）
 
+### 修复
+
+- **配置备份 `Float` 往返损坏**：字号等 `Float` 配置导出为 JSON 小数后，导入被解析为 `Double` 并被当作字符串写回，导致设置退回默认、且 hook 侧 `getFloat` 抛 `ClassCastException`；`PrefsStore` 增加 `Double → Float` 处理，`HookPrefs` 各 getter 增加类型不匹配兜底
+- **导入失败误报成功**：设置页导入时未检查 `ConfigBackup.importJson` 返回值，非法文件也提示「导入成功」；改为按结果显示成功 / 失败，且仅在成功时重载页面
+
 ### 致谢
 
 - 设备判定思路参考 HyperCeiler（AGPL-3.0，仅思路参考，未复用其代码）
