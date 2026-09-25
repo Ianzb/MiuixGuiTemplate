@@ -4,6 +4,7 @@ import android.content.pm.ApplicationInfo
 import android.os.Bundle
 import cn.ianzb.miuixguitemplate.hook.base.HookEntryRegistry
 import cn.ianzb.miuixguitemplate.hook.base.PackageTarget
+import cn.ianzb.miuixguitemplate.hook.nativehook.NativeHookHelper
 import cn.ianzb.miuixguitemplate.hook.prefs.HookPrefs
 import cn.ianzb.miuixguitemplate.hook.safemode.SafeModeManager
 import io.github.libxposed.api.XposedModule
@@ -71,6 +72,8 @@ class XposedEntry : XposedModule() {
     override fun onHotReloaded(param: HotReloadedParam) {
         // 新代码代次：先卸载旧 hook，再重新初始化并安装。
         HookRegistry.unhookAll()
+        // 原生库无法真正卸载，仅清空跟踪记录，让新代次重新走一遍加载流程（原生 hook 需自行保持幂等）。
+        NativeHookHelper.reset()
         HookHelper.init(this)
         HookPrefs.init(getRemotePreferences(HookPrefs.GROUP))
         SafeModeManager.init(this)

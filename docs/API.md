@@ -2,7 +2,7 @@
 
 本文档描述模板对外暴露的全部接口，按模块划分：Hook 封装、DexKit 缓存、配置系统、服务与状态、UI 组件、二级页面模板，以及接入步骤。
 
-- 模块结构：`:app`（UI + 服务绑定 + 配置）与 `:hook`（libxposed 入口 + Hook 封装 + DexKit）
+- 模块结构：`:app`（UI + 服务绑定 + 配置）与 `:hook`（libxposed 入口 + Hook 封装 + 原生 Hook 封装 + DexKit）
 - 底层：`io.github.libxposed:api:102.0.0`（compileOnly）、`io.github.libxposed:service:102.0.0`、`org.luckypray:dexkit:2.2.0`
 - UI：`top.yukonga.miuix.kmp`
 
@@ -24,6 +24,15 @@
 ## 1. Hook 封装（`:hook`）
 
 包名：`cn.ianzb.miuixguitemplate.hook`
+
+模板把 Hook 分为两类，命名与落点严格区分：
+
+| 类别 | 作用对象 | 入口 | 封装 | 声明文件 |
+|---|---|---|---|---|
+| **JavaHook** | ART 方法调用 | `XposedModule` | `HookHelper` + `BaseHook` | `META-INF/xposed/java_init.list` |
+| **NativeHook** | 机器码 / 符号 / 函数表 | `native_init` | `NativeHookHelper` + `BaseNativeHook` | `META-INF/xposed/native_init.list` |
+
+两者共用同一套「开关配置、状态上报、热重载、安全模式、版本筛选」链路；区别仅在于 Hook 代码写在 Java/Kotlin 还是原生库。选择依据见 [原生 Hook 指南 · 两种 Hook 的区别](NATIVE_HOOK.md#0-两种-hook-的区别)。
 
 ### 1.1 `HookHelper`
 
@@ -178,6 +187,91 @@ class PackageTarget(
 | `onSystemServerStarting` | 预留 system_server 支持 |
 | `onHotReloading` | 刷新状态、保存目标信息到 extras，返回 `true` 允许热重载 |
 | `onHotReloaded` | 卸载旧 hook、重新初始化并重装 |
+
+### 1.10 原生 Hook 封装
+
+包名：`cn.ianzb.miuixguitemplate.hook.nativehook`。与 [1.1 `HookHelper`](#11-hookhelper) 对称，负责把原生库「声明 / 加载 / 开关 / 状态」接进模板链路；真正的 hook 由原生库导出的 `native_init` 完成。完整原理与工作流见 [原生 Hook 指南](NATIVE_HOOK.md)。
+
+```kotlin
+data class NativeLibrarySpec(
+    val libraryName: String,                 // "native_hook" 或 "libnative_hook.so" 均可
+    val key: String = "native_$libraryName", // 状态 / 配置键
+    val required: Boolean = true,            // 加载失败是否判定规则失败
+    val description: String = "",
+)
+
+object NativeHookHelper {
+    fun load(spec: NativeLibrarySpec): Boolean
+    fun load(libraryName: String, key: String = ..., required: Boolean = true): Boolean
+    fun loaded(): List<NativeLibrarySpec>
+    fun isLoaded(libraryName: String): Boolean
+    fun size(): Int
+    fun reset()        // 热重载 / 新代码代次（so 无法真正卸载）
+}
+
+abstract class BaseNativeHook {
+    abstract val libraryName: String
+    open val key: String get() = "native_$libraryName"
+    open val required: Boolean get() = true
+    open val description: String get() = ""
+    fun install(): Boolean
+}
+```
+
+`BaseLoad` 新增声明入口（与 `initHook` 对称）：
+
+```kotlin
+initNativeHook(hook: BaseNativeHook, enabled: Boolean)
+```
+
+用法：
+
+```kotlin
+class MyLoad : BaseLoad() {
+    override val targetPackages = listOf("com.example.target")
+    override fun onPackageLoaded(target: PackageTarget) {
+        initNativeHook(MyNativeHook(), HookPrefs.getBoolean(MyNativeHook.KEY, false))
+    }
+}
+```
+
+原生侧入口契约（Rust，导出 C ABI）见 `hook/src/main/rust/nativehook/src/lib.rs`；`.so` 文件名需写入 `META-INF/xposed/native_init.list`；用 `cargo-ndk` 构建，Gradle 不参与 Rust 编译。完整流程见 [原生 Hook 指南](NATIVE_HOOK.md)。
+
+### 1.11 版本筛选（`HookVersionGate`）
+
+包名：`cn.ianzb.miuixguitemplate.hook.rule`。为所有 Hook 封装（JavaHook 与 NativeHook）提供统一的版本筛选，支持 `>` `<` 比较、多重规则（AND / OR），可按 **Android / HyperOS / MIUI / 指定应用版本** 应用不同 Hook 代码。
+
+```kotlin
+// 1) 整体门禁：不满足则整条规则跳过（不安装、不记录失败）
+override val versionGate = hookVersionGate {
+    android { ge("35") }
+    hyperOs { range("1.0", "2.0") }
+    app("com.miui.home") { gt("8.01.02.7709") }
+}
+
+// 2) 版本分支：不同版本区间执行不同 Hook 代码（按声明顺序命中第一个）
+override val variants = listOf(
+    hookVariant("new", { app("com.miui.home") { ge("8.01.02.7709") } }) {
+        // 新版本：按指令签名定位
+    },
+    hookVariant("legacy", { app("com.miui.home") { lt("8.01.02.7709") } }) {
+        // 旧版本：按类名定位
+    },
+)
+```
+
+| 元素 | 说明 |
+|---|---|
+| `hookVersionGate(mode) { ... }` | 构建门禁；`mode` 为 `MatchMode.ALL`（默认，AND）或 `ANY`（OR） |
+| `android {}` / `hyperOs {}` / `miui {}` / `app(pkg) {}` | 选择版本来源 |
+| `gt/ge/lt/le/eq/ne(value)` / `range(min, max)` | 比较运算（`range` 为闭区间） |
+| `VersionRule(source, op, value, value2, packageName)` | 单条约束，可 `builder.rule(...)` 直接加入 |
+| `hookVariant(name, mode) { gate } { body }` | 版本分支；`variants` 非空但全部不匹配时抛出 `HookSkippedException` |
+
+- **JavaHook**：`BaseHook.versionGate` / `BaseHook.variants`，由 `BaseLoad` 在安装前判定；跳过时状态留空（UI 视为未应用）。
+- **NativeHook**：`BaseNativeHook.versionGate`，不满足时不会把原生库载入目标进程。
+- 版本值采用宽松比较（数字段按数值、文本段按字典序），可正确处理 `8.01.02.7722-260904-...-R`、`OS4.0.0.33.XPMCNXM`、`35` 等形态。
+- 应用版本通过当前进程的 `PackageManager` 尽力解析；极早期取不到时按空值处理（此时 `app {}` 规则不命中）。
 
 ---
 
@@ -757,6 +851,21 @@ class MySubPageActivity : BaseSubPageActivity() {
     android:theme="@style/Theme.MiuixGuiTemplate" />
 ```
 
+### 6.3 `SafeModeActivity`（安全模式管理页）
+
+在设置页「安全模式」分区提供入口（`settings_safe_mode`），点击进入 `ui.screen.safemode.SafeModeActivity`：
+
+- 列出全部被 Hook 应用（即当前作用域），逐项用 `Switch` 控制其安全模式；
+- 打开：该应用下次启动跳过全部 Hook（JavaHook + NativeHook）；关闭：恢复并清空崩溃计数；
+- 顶部固定声明文案（`safe_mode_declaration`）；若已有应用被自动禁用，设置页会额外显示 `safe_mode_active_title` 声明。
+
+`SafeModeReader` 新增：
+
+```kotlin
+fun setSafeMode(packageName: String, enabled: Boolean)  // 手动开关
+fun reset(packageName: String)                          // = setSafeMode(pkg, false)
+```
+
 ---
 
 ## 7. 接入步骤
@@ -833,6 +942,8 @@ Card { HookSwitchCard(spec) }
 |---|---|
 | libxposed 入口 | `hook/src/main/java/.../hook/xposed/XposedEntry.kt` |
 | Hook 封装 | `hook/.../hook/xposed/HookApi.kt` |
+| 原生 Hook 封装 | `hook/.../hook/nativehook/NativeHookApi.kt`、`BaseNativeHook.kt` |
+| 原生入口契约 / 模板 | `hook/src/main/rust/nativehook/`（`src/lib.rs`、`Cargo.toml`） |
 | 反射工具 | `hook/.../hook/xposed/Reflect.kt` |
 | Hook 状态写入 | `hook/.../hook/xposed/HookStatusWriter.kt` |
 | 规则基类 | `hook/.../hook/base/BaseHook.kt`、`BaseLoad.kt`、`HookEntryRegistry.kt` |

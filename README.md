@@ -4,7 +4,7 @@
 
 ### 基于 Miuix 的 LSPosed 模块模板
 
-[接口文档](docs/API.md) | [二次开发指南](docs/CUSTOMIZE.md) | [模块开发工作流](docs/WORKFLOW.md) | [更新日志](changelog.md)
+[接口文档](docs/API.md) | [原生 Hook 指南](docs/NATIVE_HOOK.md) | [二次开发指南](docs/CUSTOMIZE.md) | [模块开发工作流](docs/WORKFLOW.md) | [更新日志](changelog.md)
 
 ![Platform](https://img.shields.io/badge/Platform-Android-green)
 ![LSPosed](https://img.shields.io/badge/LSPosed-libxposed%20102-blue)
@@ -18,6 +18,9 @@
 # 功能
 
 - **Hook 封装** — `hookBefore` / `hookAfter` / `hookReplace` / `intercept` / `findAndHook*` / `hookAll*` / `hookClassInitializer` / `invokeOriginal`，统一句柄管理
+- **原生 Hook 封装** — `NativeHookHelper` / `BaseNativeHook` / `BaseLoad.initNativeHook`，与 JavaHook 对称的一键接入（声明、加载、开关、状态、热重载、安全兜底）；面向 Rust 应用（`flutter_rust_bridge` / 纯 Rust 库），详见[原生 Hook 指南](docs/NATIVE_HOOK.md)
+- **版本筛选** — 统一的 `HookVersionGate`，支持 `>` `<` 比较、多重规则（AND/OR），可按 Android / HyperOS / MIUI / 指定应用版本应用不同 Hook 代码
+- **安全模式管理** — 设置页声明模块安全模式状态，二级页逐应用开关安全模式并查看崩溃计数
 - **热重载适配** — 基于 libxposed 102 的热重载机制，自动保存状态并在新代码代次重装 hook
 - **主动申请作用域** — 启用选项时自动为未授权目标申请作用域
 - **DexKit 缓存** — 带 JSON 持久化、版本失效校验与文件锁的 DexKit 缓存，支持 Root 清空

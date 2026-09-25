@@ -1,5 +1,16 @@
 # 更新日志
 
+## 0.4.0
+
+> 发布于 2026-09-25
+
+### 新增
+
+- **原生 Hook 二次封装**：新增 `NativeHookHelper` / `BaseNativeHook` 与 `BaseLoad.initNativeHook`，与 JavaHook 对称的一键接入（声明 / 加载 / 开关 / 状态 / 热重载 / 安全兜底），面向 Rust 应用（`flutter_rust_bridge` / 纯 Rust 库）；`rusthook` 统一更名为 `nativehook`
+- **版本筛选**：新增 `HookVersionGate`（`hook/rule`），所有 Hook 封装支持 `>` `<` 比较与多重规则（AND/OR），可按 Android / HyperOS / MIUI / 指定应用版本应用不同 Hook 代码（`versionGate` / `variants`）
+- **安全模式管理页**：设置页新增安全模式声明与入口，二级页可逐应用开关安全模式并查看崩溃计数（`SafeModeReader.setSafeMode`）
+- **文档**：新增/重写 [原生 Hook 开发指南](docs/NATIVE_HOOK.md)，明确 JavaHook 与 NativeHook 的区分，聚焦 Rust 应用 Hook 全流程；同步更新接口文档
+
 ## 0.3.1
 
 > 发布于 2026-09-25

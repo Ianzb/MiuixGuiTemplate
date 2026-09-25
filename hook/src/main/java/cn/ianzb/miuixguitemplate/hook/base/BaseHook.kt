@@ -3,6 +3,10 @@ package cn.ianzb.miuixguitemplate.hook.base
 import cn.ianzb.miuixguitemplate.hook.dexkit.DexKitCacheManager
 import cn.ianzb.miuixguitemplate.hook.dexkit.IDexKit
 import cn.ianzb.miuixguitemplate.hook.dexkit.IDexKitList
+import cn.ianzb.miuixguitemplate.hook.rule.HookSkippedException
+import cn.ianzb.miuixguitemplate.hook.rule.HookVariant
+import cn.ianzb.miuixguitemplate.hook.rule.HookVersionGate
+import cn.ianzb.miuixguitemplate.hook.rule.VersionContext
 import cn.ianzb.miuixguitemplate.hook.xposed.HookHelper
 
 /**
@@ -10,6 +14,10 @@ import cn.ianzb.miuixguitemplate.hook.xposed.HookHelper
  *
  * 子类实现 [init]，在其中使用 [HookHelper] 完成挂载。
  * 若需要 DexKit，覆写 [useDexKit] 并在 [initDexKit] 中解析成员。
+ *
+ * 版本筛选：
+ * - [versionGate]：不满足时整条规则跳过（不安装、不记录失败）；
+ * - [variants]：按顺序匹配第一个满足的版本分支，实现「按 HyperOS / Android / 应用版本应用不同 hook 代码」。
  */
 abstract class BaseHook {
 
@@ -28,10 +36,41 @@ abstract class BaseHook {
      */
     open fun initDexKit(): Boolean = true
 
-    /** 执行挂载。 */
-    abstract fun init()
+    /** 版本门禁；为空表示不限制。 */
+    open val versionGate: HookVersionGate? get() = null
+
+    /** 版本分支；为空表示直接执行 [init]。 */
+    open val variants: List<HookVariant> get() = emptyList()
+
+    /** 执行挂载（未声明 [variants] 时使用）。 */
+    open fun init() {}
 
     internal var dexKitInitInProgress = false
+
+    /**
+     * 执行版本筛选并安装，返回命中的分支名（默认分支返回 null）。
+     * 由 [BaseLoad] 调用，不应在子类中手动调用。
+     */
+    internal fun apply(target: PackageTarget): String? {
+        if (versionGate == null && variants.isEmpty()) {
+            init()
+            return null
+        }
+        val context = VersionContext.of(target.packageName, target.appVersionName, target.appVersionCode)
+        versionGate?.let {
+            if (!it.matches(context)) {
+                throw HookSkippedException("version gate not matched: $it | $context")
+            }
+        }
+        if (variants.isNotEmpty()) {
+            val variant = variants.firstOrNull { it.matches(context) }
+                ?: throw HookSkippedException("no version variant matched: $context")
+            variant.body()
+            return variant.name
+        }
+        init()
+        return null
+    }
 
     // ---------------- DexKit 辅助 ----------------
 

@@ -1,13 +1,17 @@
 package cn.ianzb.miuixguitemplate.hook.base
 
 import cn.ianzb.miuixguitemplate.hook.dexkit.DexKitCacheManager
+import cn.ianzb.miuixguitemplate.hook.nativehook.BaseNativeHook
+import cn.ianzb.miuixguitemplate.hook.rule.HookSkippedException
+import cn.ianzb.miuixguitemplate.hook.rule.VersionContext
 import cn.ianzb.miuixguitemplate.hook.xposed.HookHelper
 import cn.ianzb.miuixguitemplate.hook.xposed.HookStatusWriter
 
 /**
  * 按目标包组织的一组 hook。
  *
- * 子类在 [onPackageLoaded] 中通过 [initHook] 声明本包需要安装的 hook 及其开关。
+ * 子类在 [onPackageLoaded] 中通过 [initHook] 声明本包需要安装的 Java hook，
+ * 通过 [initNativeHook] 声明需要载入的原生 hook 库及其开关。
  */
 abstract class BaseLoad {
 
@@ -15,6 +19,8 @@ abstract class BaseLoad {
     abstract val targetPackages: List<String>
 
     private val pendingHooks = mutableListOf<Pair<BaseHook, Boolean>>()
+
+    private val pendingNativeHooks = mutableListOf<Pair<BaseNativeHook, Boolean>>()
 
     @Volatile
     private var currentTarget: PackageTarget? = null
@@ -27,10 +33,16 @@ abstract class BaseLoad {
         pendingHooks.add(hook to enabled)
     }
 
+    /** 注册一个原生 hook 库及其启用状态（通常来自配置键）。 */
+    protected fun initNativeHook(hook: BaseNativeHook, enabled: Boolean) {
+        pendingNativeHooks.add(hook to enabled)
+    }
+
     fun onPackageReady(target: PackageTarget) {
         currentTarget = target
         HookStatusWriter.startProcess(target.processName)
         pendingHooks.clear()
+        pendingNativeHooks.clear()
         runCatching { onPackageLoaded(target) }
             .onFailure { HookHelper.log("onPackageLoaded failed: ${target.packageName}", it) }
 
@@ -44,11 +56,16 @@ abstract class BaseLoad {
             if (enabled) install(hook)
         }
 
+        pendingNativeHooks.forEach { (hook, enabled) ->
+            if (enabled) installNative(hook)
+        }
+
         if (needsDexKit) runCatching { DexKitCacheManager.releaseBridge() }
         HookStatusWriter.flush()
     }
 
     private fun install(hook: BaseHook) {
+        val target = currentTarget ?: return
         try {
             if (hook.useDexKit()) {
                 hook.dexKitInitInProgress = true
@@ -63,12 +80,39 @@ abstract class BaseLoad {
                     return
                 }
             }
-            hook.init()
+            val variant = hook.apply(target)
             HookStatusWriter.record(hook.key, true)
-            HookHelper.log("${hook.tag} hook success @ ${currentTarget?.packageName}")
+            HookHelper.log("${hook.tag} hook success${variant?.let { " [$it]" } ?: ""} @ ${target.packageName}")
+        } catch (t: HookSkippedException) {
+            // 版本筛选未命中属于主动跳过：不写状态，UI 视为「未应用」。
+            HookHelper.log("${hook.tag} skipped @ ${target.packageName}: ${t.message}")
         } catch (t: Throwable) {
             HookStatusWriter.record(hook.key, false)
-            HookHelper.log("${hook.tag} hook failed @ ${currentTarget?.packageName}", t)
+            HookHelper.log("${hook.tag} hook failed @ ${target.packageName}", t)
+        }
+    }
+
+    private fun installNative(hook: BaseNativeHook) {
+        val target = currentTarget ?: return
+        val gate = hook.versionGate
+        if (gate != null) {
+            val context = VersionContext.of(target.packageName, target.appVersionName, target.appVersionCode)
+            if (!gate.matches(context)) {
+                HookHelper.log("${hook.key} skipped @ ${target.packageName}: version gate not matched | $context")
+                return
+            }
+        }
+        val ok = try {
+            hook.install()
+        } catch (t: Throwable) {
+            HookHelper.log("native hook load failed: ${hook.libraryName} @ ${target.packageName}", t)
+            false
+        }
+        HookStatusWriter.record(hook.key, ok)
+        if (ok) {
+            HookHelper.log("native hook loaded: ${hook.libraryName} @ ${target.packageName}")
+        } else if (hook.required) {
+            HookHelper.log("native hook required but not loaded: ${hook.libraryName}")
         }
     }
 }

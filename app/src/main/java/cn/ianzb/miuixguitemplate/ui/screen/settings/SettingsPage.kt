@@ -1,6 +1,7 @@
 package cn.ianzb.miuixguitemplate.ui.screen.settings
 
 import android.app.Activity
+import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,16 +41,19 @@ import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.hook.dexkit.DexKitCacheManager
 import cn.ianzb.miuixguitemplate.prefs.ConfigBackup
 import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
+import cn.ianzb.miuixguitemplate.ui.screen.safemode.SafeModeActivity
 import cn.ianzb.miuixguitemplate.ui.util.BlurredBar
 import cn.ianzb.miuixguitemplate.ui.util.blurSource
 import cn.ianzb.miuixguitemplate.ui.util.pageScrollModifiers
 import cn.ianzb.miuixguitemplate.ui.util.rememberBlurState
 import cn.ianzb.miuixguitemplate.xposed.HookStatusReader
 import cn.ianzb.miuixguitemplate.xposed.RootHelper
+import cn.ianzb.miuixguitemplate.xposed.SafeModeReader
 import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
@@ -84,6 +89,9 @@ fun SettingsPageView(
     val scope = rememberCoroutineScope()
     val scrollBehavior = MiuixScrollBehavior()
     val title = stringResource(R.string.tab_settings)
+    val safeModePackages = SafeModeReader.safeModePackages
+
+    LaunchedEffect(Unit) { SafeModeReader.refresh() }
 
     val hazeState = rememberBlurState()
     val blurActive = isBlurEnabled && hazeState != null
@@ -215,6 +223,37 @@ fun SettingsPageView(
                                     }
                                 },
                             )
+                        }
+
+                        SmallTitle(text = stringResource(R.string.settings_safe_mode))
+                        Card(
+                            modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp)
+                        ) {
+                            Column {
+                                if (safeModePackages.isNotEmpty()) {
+                                    BasicComponent(
+                                        title = stringResource(R.string.safe_mode_active_title),
+                                        summary = stringResource(
+                                            R.string.safe_mode_active_summary,
+                                            safeModePackages.size,
+                                        ),
+                                    )
+                                }
+                                ArrowPreference(
+                                    title = stringResource(R.string.safe_mode_manage),
+                                    summary = if (safeModePackages.isEmpty()) {
+                                        stringResource(R.string.safe_mode_manage_summary_none)
+                                    } else {
+                                        stringResource(
+                                            R.string.safe_mode_manage_summary_active,
+                                            safeModePackages.size,
+                                        )
+                                    },
+                                    onClick = {
+                                        context.startActivity(Intent(context, SafeModeActivity::class.java))
+                                    },
+                                )
+                            }
                         }
 
                         SmallTitle(text = stringResource(R.string.settings_interface))

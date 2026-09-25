@@ -71,6 +71,16 @@
     <string name="module_clear_dexkit_success">DexKit cache cleared</string>
     <string name="module_clear_dexkit_failed">Failed, check permission and scope</string>
 
+    <!-- Safe mode page -->
+    <string name="settings_safe_mode">Safe Mode</string>
+    <string name="safe_mode_active_title">Module safe mode is active</string>
+    <string name="safe_mode_active_summary">Hooks of %d app(s) were auto-disabled by crash fallback. Restore them one by one in Safe Mode Management.</string>
+    <string name="safe_mode_manage">Safe Mode Management</string>
+    <string name="safe_mode_manage_summary_none">Crash fallback ready · tap to manage safe mode per app</string>
+    <string name="safe_mode_manage_summary_active">%d app(s) disabled · tap to manage</string>
+    <string name="safe_mode_declaration">Safe mode is the module\'s fallback protection: if a target app crashes repeatedly shortly after loading hooks, its hooks are skipped automatically to avoid boot loops. You can also toggle safe mode per hooked app here — on skips all hooks for that app, off restores them and clears the crash counter.</string>
+    <string name="safe_mode_crash_count">crashed %d time(s)</string>
+
     <!-- Scope page -->
     <string name="scope_hot_reload">Hot Reload</string>
     <string name="scope_restart">Restart</string>
@@ -196,7 +206,7 @@
     <string name="about_telegram">Feedback</string>
     <string name="about_telegram_summary">https://t.me/your-channel</string>
     <string name="about_dependencies">Third Party Licenses &amp; Credits</string>
-    <string name="about_based_on">Based on MiuixGuiTemplate 0.3.1</string>
+    <string name="about_based_on">Based on MiuixGuiTemplate 0.4.0</string>
     <string name="license_lgpl">GNU LGPL v3.0</string>
     <string name="license_lgpl_summary">View full license text</string>
     <string name="third_party_licenses_title">Third Party Licenses &amp; Credits</string>

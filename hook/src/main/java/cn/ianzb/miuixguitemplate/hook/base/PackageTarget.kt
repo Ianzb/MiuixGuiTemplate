@@ -2,6 +2,7 @@ package cn.ianzb.miuixguitemplate.hook.base
 
 import android.app.Application
 import android.content.pm.ApplicationInfo
+import android.os.Build
 import io.github.libxposed.api.XposedModuleInterface.PackageReadyParam
 import io.github.libxposed.api.XposedModuleInterface.SystemServerStartingParam
 
@@ -15,6 +16,32 @@ class PackageTarget(
     val classLoader: ClassLoader?,
     val isSystemServer: Boolean = false,
 ) {
+    /** 目标应用版本名（尽力解析，取不到为空）。 */
+    val appVersionName: String get() = appVersion.first
+
+    /** 目标应用 versionCode（尽力解析，取不到为 0）。 */
+    val appVersionCode: Long get() = appVersion.second
+
+    private val appVersion: Pair<String, Long> by lazy { resolveAppVersion() }
+
+    private fun resolveAppVersion(): Pair<String, Long> {
+        val application = runCatching {
+            Class.forName("android.app.ActivityThread")
+                .getMethod("currentApplication")
+                .invoke(null) as? Application
+        }.getOrNull()
+        val pm = application?.packageManager ?: return "" to 0L
+        return runCatching {
+            val info = pm.getPackageInfo(packageName, 0)
+            val code = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                info.longVersionCode
+            } else {
+                @Suppress("DEPRECATION") info.versionCode.toLong()
+            }
+            (info.versionName ?: "") to code
+        }.getOrDefault("" to 0L)
+    }
+
     companion object {
 
         fun from(param: PackageReadyParam): PackageTarget = PackageTarget(

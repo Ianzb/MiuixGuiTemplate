@@ -58,12 +58,24 @@ object SafeModeReader {
         remotePrefs()?.getInt("$COUNT_PREFIX$packageName", 0) ?: 0
 
     /** 退出安全模式并清空该包的崩溃计数。 */
-    fun reset(packageName: String) {
-        remotePrefs()?.edit()
-            ?.remove("$SAFE_PREFIX$packageName")
-            ?.remove("$COUNT_PREFIX$packageName")
-            ?.remove("$LOADING_PREFIX$packageName")
-            ?.commit()
+    fun reset(packageName: String) = setSafeMode(packageName, false)
+
+    /**
+     * 手动启用 / 关闭某应用的安全模式。
+     *
+     * 启用后 hook 进程会在下次启动时跳过该包全部 hook；关闭时同时清空崩溃计数与加载时间戳。
+     */
+    fun setSafeMode(packageName: String, enabled: Boolean) {
+        val prefs = remotePrefs() ?: return
+        val edit = prefs.edit()
+        if (enabled) {
+            edit.putBoolean("$SAFE_PREFIX$packageName", true)
+        } else {
+            edit.remove("$SAFE_PREFIX$packageName")
+                .remove("$COUNT_PREFIX$packageName")
+                .remove("$LOADING_PREFIX$packageName")
+        }
+        edit.commit()
         refresh()
     }
 
