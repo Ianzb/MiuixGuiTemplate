@@ -10,6 +10,7 @@ import androidx.core.content.edit
  * - 物理存储：普通 SharedPreferences
  * - 跨进程：同步镜像到 LSPosed 远程偏好（hook 进程只读）
  */
+@Suppress("unused")
 object PrefsStore {
 
     const val PREFS_NAME = "miuix_template_prefs"

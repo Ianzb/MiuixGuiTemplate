@@ -8,8 +8,9 @@ import android.content.SharedPreferences
  * 数据由 App 侧写入 LSPosed 远程偏好，hook 进程通过
  * [io.github.libxposed.api.XposedInterface.getRemotePreferences] 读取。
  *
- * 键名需与 App 侧 [PrefsStore] 保持一致（统一加 `prefs_key_` 前缀）。
+ * 键名需与 App 侧 `PrefsStore` 保持一致（统一加 `prefs_key_` 前缀）。
  */
+@Suppress("unused")
 object HookPrefs {
 
     /** 远程偏好分组名，需与 App 侧保持一致。 */
