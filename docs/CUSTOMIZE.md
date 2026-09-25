@@ -19,7 +19,6 @@
 | 应用图标 | `res/drawable/ic_launcher_*.xml`、`res/mipmap-anydpi*/ic_launcher*.xml`、`colors.xml` → `ic_launcher_background` |                                                     |
 | 关于页链接 | `strings.xml` → `about_source_code_summary`、`about_telegram_summary` | 展示与跳转均使用该值；`about_telegram` 的文案**须明确写「Telegram 群组」**（不要只写「反馈渠道 / 反馈方式」，否则用户不知道这是 TG 群组） |
 | 检查更新仓库 | `app/.../UpdateChecker.kt` → `REPO` | 改为自己的 GitHub 仓库（`owner/repo`）以启用「检查更新」；未修改则保持占位仓库 |
-| 混淆规则 | `app/proguard-rules.pro` | 改包名后须同步修改 `-keep` 中的 `cn.ianzb.miuixguitemplate.hook...`，否则 Release 可能被 R8 裁掉模块入口 / Hook |
 | 版权 | `strings.xml` → `copyright` |                                                     |
 | **Based on 标注** | `strings.xml` → `about_based_on` | 应用内「关于」页保留 `Based on MiuixGuiTemplate <版本号>` 并更新为所依据的脚手架版本（README 无需标注） |
 | 参考与致谢 | 应用内 `LicensePage.kt` → `licenses_section_refs` | 保留对参考项目的致谢（可增不可删），文档不展开具体借鉴说明 |

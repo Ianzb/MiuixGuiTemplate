@@ -23,10 +23,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CheckCircleOutline
-import androidx.compose.material.icons.rounded.ErrorOutline
-import androidx.compose.material.icons.rounded.RemoveCircleOutline
+import cn.ianzb.miuixguitemplate.ui.icons.CheckCircleOutlineIcon
+import cn.ianzb.miuixguitemplate.ui.icons.ErrorOutlineIcon
+import cn.ianzb.miuixguitemplate.ui.icons.RemoveCircleOutlineIcon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -170,9 +169,9 @@ fun HomePageView(
                     }
                     // 未激活 = 叉号；已激活但无 Root = 圈中横线；正常 = 对号。
                     val statusIcon: ImageVector = when {
-                        !activated -> Icons.Rounded.ErrorOutline
-                        rootMissing -> Icons.Rounded.RemoveCircleOutline
-                        else -> Icons.Rounded.CheckCircleOutline
+                        !activated -> ErrorOutlineIcon
+                        rootMissing -> RemoveCircleOutlineIcon
+                        else -> CheckCircleOutlineIcon
                     }
 
                     val openScopeList = {
