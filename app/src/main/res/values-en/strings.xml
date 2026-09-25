@@ -62,8 +62,8 @@
     <string name="module_scope_request_summary">Request scope for target apps of all options</string>
     <string name="module_scope_request_success">Scope request submitted</string>
     <string name="module_scope_request_failed">Scope request failed: %s</string>
-    <string name="module_hot_reload">Hot Reload</string>
-    <string name="module_hot_reload_summary">Reload module code in running targets</string>
+<string name="module_hot_reload">Global Hot Reload</string>
+<string name="module_hot_reload_summary">Hot reload module code in all running targets</string>
     <string name="module_hot_reload_no_target">No running target process</string>
     <string name="module_hot_reload_result">Hot reload result: %s</string>
     <string name="module_clear_dexkit">Clear DexKit Cache</string>
@@ -71,15 +71,21 @@
     <string name="module_clear_dexkit_success">DexKit cache cleared</string>
     <string name="module_clear_dexkit_failed">Failed, check permission and scope</string>
 
-    <!-- Safe mode page -->
-    <string name="settings_safe_mode">Safe Mode</string>
+    <!-- Module: safe mode -->
     <string name="safe_mode_active_title">Module safe mode is active</string>
-    <string name="safe_mode_active_summary">Hooks of %d app(s) were auto-disabled by crash fallback. Restore them one by one in Safe Mode Management.</string>
-    <string name="safe_mode_manage">Safe Mode Management</string>
-    <string name="safe_mode_manage_summary_none">Crash fallback ready · tap to manage safe mode per app</string>
-    <string name="safe_mode_manage_summary_active">%d app(s) disabled · tap to manage</string>
-    <string name="safe_mode_declaration">Safe mode is the module\'s fallback protection: if a target app crashes repeatedly shortly after loading hooks, its hooks are skipped automatically to avoid boot loops. You can also toggle safe mode per hooked app here — on skips all hooks for that app, off restores them and clears the crash counter.</string>
+    <string name="safe_mode_active_summary">Hooks of %d app(s) were auto-disabled. Restore them one by one.</string>
+    <string name="safe_mode_manage">Safe Mode</string>
+    <string name="safe_mode_manage_summary_none">Tap to set safe mode per app</string>
+    <string name="safe_mode_manage_summary_active">%d app(s) disabled · tap to set</string>
+    <string name="safe_mode_declaration">Safe mode is the module\'s protection mechanism: if a target app crashes repeatedly shortly after loading hooks, its hooks are skipped automatically to avoid boot loops. You can also toggle safe mode per hooked app here — on skips all hooks for that app, off restores them and clears the crash counter.</string>
     <string name="safe_mode_crash_count">crashed %d time(s)</string>
+
+    <!-- Module: device -->
+    <string name="settings_device_type">Device type</string>
+    <string name="device_type_default">Default (%s)</string>
+    <string name="device_type_phone">Phone</string>
+    <string name="device_type_pad">Tablet</string>
+    <string name="device_type_fold">Foldable</string>
 
     <!-- Scope page -->
     <string name="scope_hot_reload">Hot Reload</string>

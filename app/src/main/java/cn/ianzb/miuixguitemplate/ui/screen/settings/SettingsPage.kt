@@ -24,14 +24,12 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -39,7 +37,10 @@ import androidx.compose.ui.unit.dp
 import cn.ianzb.miuixguitemplate.LocaleHelper
 import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.hook.dexkit.DexKitCacheManager
+import cn.ianzb.miuixguitemplate.hook.device.DeviceContext
+import cn.ianzb.miuixguitemplate.hook.device.DeviceType
 import cn.ianzb.miuixguitemplate.prefs.ConfigBackup
+import cn.ianzb.miuixguitemplate.prefs.ConfigState
 import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
 import cn.ianzb.miuixguitemplate.ui.screen.safemode.SafeModeActivity
 import cn.ianzb.miuixguitemplate.ui.util.BlurredBar
@@ -85,6 +86,7 @@ fun SettingsPageView(
     extraBottomPadding: Dp = 0.dp,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val activity = context as? Activity
     val scope = rememberCoroutineScope()
     val scrollBehavior = MiuixScrollBehavior()
@@ -112,9 +114,9 @@ fun SettingsPageView(
                 context.contentResolver.openOutputStream(it)?.use { output ->
                     output.write(json.toByteArray())
                 }
-                Toast.makeText(context, context.getString(R.string.export_success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, resources.getString(R.string.export_success), Toast.LENGTH_SHORT).show()
             } catch (_: Exception) {
-                Toast.makeText(context, context.getString(R.string.export_failed), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, resources.getString(R.string.export_failed), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -130,10 +132,10 @@ fun SettingsPageView(
                 reader.close()
                 inputStream?.close()
                 ConfigBackup.importJson(json)
-                Toast.makeText(context, context.getString(R.string.import_success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, resources.getString(R.string.import_success), Toast.LENGTH_SHORT).show()
                 activity?.recreate()
             } catch (_: Exception) {
-                Toast.makeText(context, context.getString(R.string.import_failed), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, resources.getString(R.string.import_failed), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -170,6 +172,62 @@ fun SettingsPageView(
                         Card(
                             modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp)
                         ) {
+                            val autoDevice = remember { DeviceContext.detected.type }
+                            val deviceOptions = listOf(
+                                stringResource(
+                                    R.string.device_type_default,
+                                    stringResource(deviceTypeLabelRes(autoDevice)),
+                                ),
+                                stringResource(R.string.device_type_phone),
+                                stringResource(R.string.device_type_pad),
+                                stringResource(R.string.device_type_fold),
+                            )
+                            val deviceValues = listOf(
+                                DeviceType.OVERRIDE_AUTO,
+                                DeviceType.PHONE.key,
+                                DeviceType.PAD.key,
+                                DeviceType.FOLD.key,
+                            )
+                            val savedDevice = ConfigState.string(
+                                DeviceContext.KEY_DEVICE_TYPE,
+                                DeviceType.OVERRIDE_AUTO,
+                            )
+                            val deviceIndex = deviceValues.indexOf(savedDevice).takeIf { it >= 0 } ?: 0
+                            WindowDropdownPreference(
+                                title = stringResource(R.string.settings_device_type),
+                                summary = deviceOptions[deviceIndex],
+                                items = deviceOptions,
+                                selectedIndex = deviceIndex,
+                                onSelectedIndexChange = {
+                                    ConfigState.set(DeviceContext.KEY_DEVICE_TYPE, deviceValues[it])
+                                },
+                                onExpandedChange = { },
+                            )
+
+                            if (safeModePackages.isNotEmpty()) {
+                                BasicComponent(
+                                    title = stringResource(R.string.safe_mode_active_title),
+                                    summary = stringResource(
+                                        R.string.safe_mode_active_summary,
+                                        safeModePackages.size,
+                                    ),
+                                )
+                            }
+                            ArrowPreference(
+                                title = stringResource(R.string.safe_mode_manage),
+                                summary = if (safeModePackages.isEmpty()) {
+                                    stringResource(R.string.safe_mode_manage_summary_none)
+                                } else {
+                                    stringResource(
+                                        R.string.safe_mode_manage_summary_active,
+                                        safeModePackages.size,
+                                    )
+                                },
+                                onClick = {
+                                    context.startActivity(Intent(context, SafeModeActivity::class.java))
+                                },
+                            )
+
                             ArrowPreference(
                                 title = stringResource(R.string.module_scope_request),
                                 summary = stringResource(R.string.module_scope_request_summary),
@@ -179,9 +237,9 @@ fun SettingsPageView(
                                         .distinct()
                                     XposedServiceManager.ensureScope(packages) { ok, message ->
                                         val text = if (ok) {
-                                            context.getString(R.string.module_scope_request_success)
+                                            resources.getString(R.string.module_scope_request_success)
                                         } else {
-                                            context.getString(R.string.module_scope_request_failed, message ?: "")
+                                            resources.getString(R.string.module_scope_request_failed, message ?: "")
                                         }
                                         Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
                                     }
@@ -197,9 +255,9 @@ fun SettingsPageView(
                                     XposedServiceManager.hotReload(packages) { result ->
                                         HookStatusReader.refresh()
                                         val text = if (result == "no running target") {
-                                            context.getString(R.string.module_hot_reload_no_target)
+                                            resources.getString(R.string.module_hot_reload_no_target)
                                         } else {
-                                            context.getString(R.string.module_hot_reload_result, result)
+                                            resources.getString(R.string.module_hot_reload_result, result)
                                         }
                                         Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
                                     }
@@ -215,45 +273,14 @@ fun SettingsPageView(
                                             RootHelper.deleteDexKitCache(targets, DexKitCacheManager.CACHE_DIR)
                                         }
                                         val text = if (success) {
-                                            context.getString(R.string.module_clear_dexkit_success)
+                                            resources.getString(R.string.module_clear_dexkit_success)
                                         } else {
-                                            context.getString(R.string.module_clear_dexkit_failed)
+                                            resources.getString(R.string.module_clear_dexkit_failed)
                                         }
                                         Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
                                     }
                                 },
                             )
-                        }
-
-                        SmallTitle(text = stringResource(R.string.settings_safe_mode))
-                        Card(
-                            modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp)
-                        ) {
-                            Column {
-                                if (safeModePackages.isNotEmpty()) {
-                                    BasicComponent(
-                                        title = stringResource(R.string.safe_mode_active_title),
-                                        summary = stringResource(
-                                            R.string.safe_mode_active_summary,
-                                            safeModePackages.size,
-                                        ),
-                                    )
-                                }
-                                ArrowPreference(
-                                    title = stringResource(R.string.safe_mode_manage),
-                                    summary = if (safeModePackages.isEmpty()) {
-                                        stringResource(R.string.safe_mode_manage_summary_none)
-                                    } else {
-                                        stringResource(
-                                            R.string.safe_mode_manage_summary_active,
-                                            safeModePackages.size,
-                                        )
-                                    },
-                                    onClick = {
-                                        context.startActivity(Intent(context, SafeModeActivity::class.java))
-                                    },
-                                )
-                            }
                         }
 
                         SmallTitle(text = stringResource(R.string.settings_interface))
@@ -407,4 +434,11 @@ fun SettingsPageView(
             }
         }
     }
+}
+
+/** 设备类型对应的显示文案资源。 */
+private fun deviceTypeLabelRes(type: DeviceType): Int = when (type) {
+    DeviceType.PHONE -> R.string.device_type_phone
+    DeviceType.PAD -> R.string.device_type_pad
+    DeviceType.FOLD -> R.string.device_type_fold
 }

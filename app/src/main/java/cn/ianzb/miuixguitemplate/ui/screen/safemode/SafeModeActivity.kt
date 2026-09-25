@@ -8,15 +8,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
@@ -27,6 +25,7 @@ import cn.ianzb.miuixguitemplate.ui.util.pageScrollModifiers
 import cn.ianzb.miuixguitemplate.xposed.SafeModeReader
 import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
@@ -35,13 +34,13 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 
 /**
- * 安全模式管理二级页面。
+ * 安全模式二级页面。
  *
  * 列出全部被 hook 的应用，逐项控制其安全模式开关：
  * - 打开：该应用下次启动时跳过全部 hook（原生与 Java）；
  * - 关闭：恢复 hook，并清空崩溃计数与加载时间戳。
  *
- * 进入方式：设置 → 模块 → 安全模式管理。
+ * 进入方式：设置 → 模块 → 安全模式。
  */
 class SafeModeActivity : BaseSubPageActivity() {
 
@@ -53,17 +52,18 @@ class SafeModeActivity : BaseSubPageActivity() {
         contentPadding: PaddingValues,
     ) {
         LaunchedEffect(Unit) {
-            delay(400)
+            delay(400.milliseconds)
             XposedServiceManager.refreshScope()
             SafeModeReader.refresh()
             while (true) {
-                delay(1500)
+                delay(1500.milliseconds)
                 XposedServiceManager.refreshScope()
                 SafeModeReader.refresh()
             }
         }
 
         val context = LocalContext.current
+        val resources = LocalResources.current
         val density = LocalDensity.current
         val scope = XposedServiceManager.scope
         val safeModePackages = SafeModeReader.safeModePackages
@@ -141,7 +141,7 @@ class SafeModeActivity : BaseSubPageActivity() {
                         if (version.isNotBlank()) append(" · v").append(version)
                         if (crashes > 0) {
                             append(" · ")
-                            append(context.getString(R.string.safe_mode_crash_count, crashes))
+                            append(resources.getString(R.string.safe_mode_crash_count, crashes))
                         }
                     }
 

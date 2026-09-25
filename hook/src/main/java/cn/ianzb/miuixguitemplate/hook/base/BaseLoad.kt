@@ -94,11 +94,10 @@ abstract class BaseLoad {
 
     private fun installNative(hook: BaseNativeHook) {
         val target = currentTarget ?: return
-        val gate = hook.versionGate
-        if (gate != null) {
+        if (hook.versionGate != null || !hook.deviceScope.isNullOrEmpty()) {
             val context = VersionContext.of(target.packageName, target.appVersionName, target.appVersionCode)
-            if (!gate.matches(context)) {
-                HookHelper.log("${hook.key} skipped @ ${target.packageName}: version gate not matched | $context")
+            if (!hook.appliesTo(context)) {
+                HookHelper.log("${hook.key} skipped @ ${target.packageName}: gate not matched | $context")
                 return
             }
         }

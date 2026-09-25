@@ -1,5 +1,7 @@
 package cn.ianzb.miuixguitemplate.hook.nativehook
 
+import cn.ianzb.miuixguitemplate.hook.device.DeviceContext
+import cn.ianzb.miuixguitemplate.hook.device.DeviceType
 import cn.ianzb.miuixguitemplate.hook.rule.HookVersionGate
 import cn.ianzb.miuixguitemplate.hook.rule.VersionContext
 
@@ -34,8 +36,18 @@ abstract class BaseNativeHook {
     /** 版本门禁；为空表示不限制（不满足时不会把库载入目标进程）。 */
     open val versionGate: HookVersionGate? get() = null
 
-    /** 当前环境是否满足版本门禁。 */
-    fun appliesTo(context: VersionContext): Boolean = versionGate?.matches(context) ?: true
+    /** 设备形态白名单（手机 / 平板 / 折叠屏）；为空表示各设备通用。 */
+    open val deviceScope: Set<DeviceType>? get() = null
+
+    /** 当前环境是否满足版本与设备筛选。 */
+    fun appliesTo(
+        context: VersionContext,
+        device: DeviceType = DeviceContext.current.type,
+    ): Boolean {
+        val scope = deviceScope
+        if (!scope.isNullOrEmpty() && device !in scope) return false
+        return versionGate?.matches(context) ?: true
+    }
 
     fun spec(): NativeLibrarySpec = NativeLibrarySpec(libraryName, key, required, description)
 

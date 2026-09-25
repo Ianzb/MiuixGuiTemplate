@@ -273,6 +273,41 @@ override val variants = listOf(
 - 版本值采用宽松比较（数字段按数值、文本段按字典序），可正确处理 `8.01.02.7722-260904-...-R`、`OS4.0.0.33.XPMCNXM`、`35` 等形态。
 - 应用版本通过当前进程的 `PackageManager` 尽力解析；极早期取不到时按空值处理（此时 `app {}` 规则不命中）。
 
+### 1.12 设备筛选（`DeviceScope`）
+
+包名：`cn.ianzb.miuixguitemplate.hook.device`。所有 Hook 封装默认**各设备通用**；需要按设备区分时声明 `deviceScope`（白名单），不匹配即跳过该规则（不安装、不记录失败）。
+
+```kotlin
+// JavaHook
+override val deviceScope = setOf(DeviceType.PAD, DeviceType.FOLD)
+
+// NativeHook
+override val deviceScope = setOf(DeviceType.PAD)
+
+// 版本分支里也可按设备区分
+override val variants = listOf(
+    hookVariant("pad", setOf(DeviceType.PAD), gate = { app("com.miui.home") { ge("8.01.02.7709") } }) { /* 平板 */ },
+    hookVariant("others", { app("com.miui.home") { ge("8.01.02.7709") } }) { /* 其余设备 */ },
+)
+```
+
+| 元素 | 说明 |
+|---|---|
+| `DeviceType.PHONE` / `PAD` / `FOLD` | 手机 / 平板 / 折叠屏 |
+| `BaseHook.deviceScope` / `BaseNativeHook.deviceScope` | 设备白名单；null / 空 = 各设备通用 |
+| `hookVariant(name, devices) { gate } { body }` | 按设备（可叠加版本）选择分支 |
+| `DeviceContext.current` | 运行期设备上下文（`type`、`isFoldable`、`isFlip`、`isTablet`、`smallestWidthDp` 等） |
+
+**判定方式**（思路参考 HyperCeiler，未复用其代码）：
+
+- 平板：`miui.os.Build.IS_TABLET`，回退 `Resources.getSystem().configuration.smallestScreenWidthDp >= 600`；
+- 折叠屏：`persist.sys.multi_display_type` 低 4 位（2 后屏 / 3 内折 / 4 翻盖 / 5 外折），回退 `persist.sys.muiltdisplay_type`（1 后屏 / 2 内折）；
+- 归类优先级：MIUI 平板标记 → 折叠屏 → 宽度 ≥ 600dp → 手机（避免展开态折叠屏被误判为平板）。
+
+hook 代码内需要按设备分支时，直接读 `DeviceContext.current.type`。
+
+**手动覆盖**：设置页「模块 → 当前设备类型」提供 `默认（<模块判定>）` / `手机` / `平板` / `折叠屏` 四项。覆盖值存于配置键 `device_type`（`auto` / `phone` / `pad` / `fold`），经 `PrefsStore` 同步到远程偏好，hook 进程由 `DeviceContext.current` 读取生效；`默认` 即使用 `DeviceContext.detected`。修改后需重启 / 热重载目标进程。
+
 ---
 
 ## 2. DexKit 缓存（`:hook`）
@@ -851,9 +886,9 @@ class MySubPageActivity : BaseSubPageActivity() {
     android:theme="@style/Theme.MiuixGuiTemplate" />
 ```
 
-### 6.3 `SafeModeActivity`（安全模式管理页）
+### 6.3 `SafeModeActivity`（安全模式页）
 
-在设置页「安全模式」分区提供入口（`settings_safe_mode`），点击进入 `ui.screen.safemode.SafeModeActivity`：
+在设置页「模块」分区提供入口，点击进入 `ui.screen.safemode.SafeModeActivity`：
 
 - 列出全部被 Hook 应用（即当前作用域），逐项用 `Switch` 控制其安全模式；
 - 打开：该应用下次启动跳过全部 Hook（JavaHook + NativeHook）；关闭：恢复并清空崩溃计数；
