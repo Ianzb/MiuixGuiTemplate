@@ -6,14 +6,14 @@
 
 ### 新增
 
-- **原生 Hook 二次封装**：新增 `NativeHookHelper` / `BaseNativeHook` 与 `BaseLoad.initNativeHook`，与 JavaHook 对称的一键接入（声明 / 加载 / 开关 / 状态 / 热重载 / 安全模式），面向 Rust 应用（`flutter_rust_bridge` / 纯 Rust 库）；`rusthook` 统一更名为 `nativehook`
+- **原生 Hook 二次封装**：新增 `NativeHookHelper` / `BaseNativeHook` 与 `BaseLoad.initNativeHook`，与 JavaHook 对称的一键接入（声明 / 加载 / 开关 / 状态 / 安全模式），面向 Rust 应用（`flutter_rust_bridge` / 纯 Rust 库）；`rusthook` 统一更名为 `nativehook`
 - **版本 / 设备筛选**：新增 `HookVersionGate`（`hook/rule`）与 `hook/device`（`DeviceType`、`DeviceContext`）。版本支持 `>` `<` 比较与多重规则（AND/OR），可按 Android / HyperOS / MIUI / 应用版本；设备支持手机 / 平板 / 折叠屏区分，默认各设备通用；`versionGate` / `deviceScope` / `variants` 可组合使用
 - **安全模式页**：设置页「模块」分区新增安全模式声明与入口，二级页可逐应用开关安全模式并查看崩溃计数（`SafeModeReader.setSafeMode`）
-- **设置页「模块」整合**：设备类型（默认 / 手机 / 平板 / 折叠屏，支持手动覆盖）与安全模式置于模块区域；「热重载」更名为「全局热重载」
+- **设置页「模块」整合**：设备类型（默认 / 手机 / 平板 / 折叠屏，支持手动覆盖）与安全模式置于模块区域
 - **文档**：新增/重写 [原生 Hook 开发指南](docs/NATIVE_HOOK.md)，明确 JavaHook 与 NativeHook 的区分，聚焦 Rust 应用 Hook 全流程；同步更新接口文档
 - **子页面搜索**：`HookOptionsPage` 新增 `subPages` / `HookSubPage`，可把子页面内的功能并入功能页搜索，命中后直达子页面（子页面无需再放搜索栏）
 - **Miuix 标准显隐动画**：新增 `ui/util/MiuixAnimations.kt`（`MiuixExpandSpec`），组件显示 / 隐藏统一使用 Miuix 弹簧动画（`folmeSpring(damping = 1.0f, response = 0.4f)`）
-- **顶栏扩展槽与快捷操作**：`HookOptionsPage` / `SubPageScaffold` / `BaseSubPageActivity` 新增 `topBarActions` 扩展槽；新增通用 `QuickActionsAction`（`MiuixIcons.Refresh` 重启图标 → `QuickActionDialog`），统一右上角「热重载 / 重启」入口样式
+- **顶栏扩展槽与快捷操作**：`HookOptionsPage` / `SubPageScaffold` / `BaseSubPageActivity` 新增 `topBarActions` 扩展槽；新增通用 `QuickActionsAction`（`MiuixIcons.Refresh` 重启图标 → `QuickActionDialog`），统一右上角「重启」入口样式
 - **SystemUI 重启优化**：新增 `AppRestarter.restartSystemUi()`（`pkill -f` → `killall` → `force-stop` 兜底），`restart()` 对 `com.android.systemui` 特判，结束进程由系统自动拉起而不再触发系统重启
 - **`BaseHook.target`**：新增 `protected lateinit var target: PackageTarget`，由 `BaseLoad` 在安装前注入，`init()` 内可直接使用 `target.classLoader`
 
@@ -21,6 +21,7 @@
 
 - **示例页 → 功能页**：`ui/screen/examples/ExamplesPage.kt` 更名为 `ui/screen/features/FeaturesPage.kt`（`ExamplesPageView` → `FeaturesPageView`、`exampleSpecs` → `featureSpecs`、子页 `ExampleSubPageActivity` → `FeatureSubPageActivity`），标签页「示例」改为「功能」，与真实模块形态一致；功能页小标题改为单语言，`HookSection.titleEn` 仅保留用于示例展示 API 英文组件名
 - 搜索文案由「搜索组件」改为「搜索功能」（`search_hint`），同步更新二次开发指南与接口文档
+- **移除热重载功能**：删除设置页「全局热重载」、作用域页与快捷操作中的热重载入口，以及 `XposedServiceManager.hotReload` / `runningTargets`、`NativeHookHelper.reset`、`PackageTarget.restored`、`XposedEntry` 的 `onHotReloading` / `onHotReloaded` 与 `module.prop` 的 `autoHotReload`；保留「重启」功能（含 SystemUI 重启优化）
 
 ### 致谢
 

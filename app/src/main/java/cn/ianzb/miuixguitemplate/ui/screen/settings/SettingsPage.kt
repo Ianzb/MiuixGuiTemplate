@@ -48,7 +48,6 @@ import cn.ianzb.miuixguitemplate.ui.util.MiuixExpandSpec
 import cn.ianzb.miuixguitemplate.ui.util.blurSource
 import cn.ianzb.miuixguitemplate.ui.util.pageScrollModifiers
 import cn.ianzb.miuixguitemplate.ui.util.rememberBlurState
-import cn.ianzb.miuixguitemplate.xposed.HookStatusReader
 import cn.ianzb.miuixguitemplate.xposed.RootHelper
 import cn.ianzb.miuixguitemplate.xposed.SafeModeReader
 import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
@@ -241,24 +240,6 @@ fun SettingsPageView(
                                             resources.getString(R.string.module_scope_request_success)
                                         } else {
                                             resources.getString(R.string.module_scope_request_failed, message ?: "")
-                                        }
-                                        Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
-                                    }
-                                },
-                            )
-                            ArrowPreference(
-                                title = stringResource(R.string.module_hot_reload),
-                                summary = stringResource(R.string.module_hot_reload_summary),
-                                onClick = {
-                                    val packages = OptionRegistry.all()
-                                        .flatMap { it.targetPackages }
-                                        .distinct()
-                                    XposedServiceManager.hotReload(packages) { result ->
-                                        HookStatusReader.refresh()
-                                        val text = if (result == "no running target") {
-                                            resources.getString(R.string.module_hot_reload_no_target)
-                                        } else {
-                                            resources.getString(R.string.module_hot_reload_result, result)
                                         }
                                         Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
                                     }

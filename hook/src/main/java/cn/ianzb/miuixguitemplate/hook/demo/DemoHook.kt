@@ -15,7 +15,6 @@ import cn.ianzb.miuixguitemplate.hook.xposed.Reflect
  * 行为：仅记录 Activity.onCreate，不改变任何业务逻辑，用于验证整套封装：
  *   - 挂载 / 卸载
  *   - 配置读取
- *   - 热重载后重新安装
  *   - 状态上报
  */
 class DemoLoad : BaseLoad() {

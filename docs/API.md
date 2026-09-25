@@ -32,7 +32,7 @@
 | **JavaHook** | ART 方法调用 | `XposedModule` | `HookHelper` + `BaseHook` | `META-INF/xposed/java_init.list` |
 | **NativeHook** | 机器码 / 符号 / 函数表 | `native_init` | `NativeHookHelper` + `BaseNativeHook` | `META-INF/xposed/native_init.list` |
 
-两者共用同一套「开关配置、状态上报、热重载、安全模式、版本筛选」链路；区别仅在于 Hook 代码写在 Java/Kotlin 还是原生库。选择依据见 [原生 Hook 指南 · 两种 Hook 的区别](NATIVE_HOOK.md#0-两种-hook-的区别)。
+两者共用同一套「开关配置、状态上报、安全模式、版本筛选」链路；区别仅在于 Hook 代码写在 Java/Kotlin 还是原生库。选择依据见 [原生 Hook 指南 · 两种 Hook 的区别](NATIVE_HOOK.md#0-两种-hook-的区别)。
 
 ### 1.1 `HookHelper`
 
@@ -92,7 +92,7 @@ class HookParam(
 ```kotlin
 object HookRegistry {
     fun register(handle: HookHandle)
-    fun unhookAll()     // 热重载 / 卸载时统一调用
+    fun unhookAll()     // 卸载时统一调用
     fun size(): Int
 }
 ```
@@ -188,8 +188,6 @@ class PackageTarget(
 | `onModuleLoaded` | 初始化 `HookHelper` / `HookPrefs` / `HookStatusWriter` |
 | `onPackageReady` | 按包分发 `BaseLoad.onPackageReady`（开机 / 冷启动即应用） |
 | `onSystemServerStarting` | 预留 system_server 支持 |
-| `onHotReloading` | 刷新状态、保存目标信息到 extras，返回 `true` 允许热重载 |
-| `onHotReloaded` | 卸载旧 hook、重新初始化并重装 |
 
 ### 1.10 原生 Hook 封装
 
@@ -209,7 +207,6 @@ object NativeHookHelper {
     fun loaded(): List<NativeLibrarySpec>
     fun isLoaded(libraryName: String): Boolean
     fun size(): Int
-    fun reset()        // 热重载 / 新代码代次（so 无法真正卸载）
 }
 
 abstract class BaseNativeHook {
@@ -309,7 +306,7 @@ override val variants = listOf(
 
 hook 代码内需要按设备分支时，直接读 `DeviceContext.current.type`。
 
-**手动覆盖**：设置页「模块 → 当前设备类型」提供 `默认（<模块判定>）` / `手机` / `平板` / `折叠屏` 四项。覆盖值存于配置键 `device_type`（`auto` / `phone` / `pad` / `fold`），经 `PrefsStore` 同步到远程偏好，hook 进程由 `DeviceContext.current` 读取生效；`默认` 即使用 `DeviceContext.detected`。修改后需重启 / 热重载目标进程。
+**手动覆盖**：设置页「模块 → 当前设备类型」提供 `默认（<模块判定>）` / `手机` / `平板` / `折叠屏` 四项。覆盖值存于配置键 `device_type`（`auto` / `phone` / `pad` / `fold`），经 `PrefsStore` 同步到远程偏好，hook 进程由 `DeviceContext.current` 读取生效；`默认` 即使用 `DeviceContext.detected`。修改后需重启目标进程。
 
 ---
 
@@ -543,8 +540,6 @@ object XposedServiceManager {
     fun isInScope(packageName: String): Boolean
     fun ensureScope(packages: List<String>, onResult: ((Boolean, String?) -> Unit)? = null)
     fun removeScope(packages: List<String>)
-    fun hotReload(packages: List<String>, onResult: ((String) -> Unit)? = null)
-    fun runningTargets(): List<HookedTarget>
 }
 ```
 
@@ -737,7 +732,7 @@ fun HookSectionCard(
 - 搜索结果为可点击列表项（标题 = 配置项标题，摘要 = 所属分区 / 子页面标题）；点击后收起搜索、清空输入：本页分区则滚动定位，子页面功能则调用 `HookSubPage.onOpen()` 打开子页面，**不内联渲染组件**。
 - 结果按目标去重（同一分区 / 子页面只显示一条），并包含通过 `masterKey` 引用的配置项（如滑块主开关）。
 - 箭头卡片点击回调 `onArrowClick(spec)`。
-- **快捷操作**：当分区内存在 `PACKAGE_LIST` 选项，或传入 `customActionPackages` 时，顶栏右上角出现「重启」图标按钮。点击弹出 `QuickActionDialog`，对汇总后的包名批量执行「热重载」「重启」（重启需 Root），并提供「全部热重载」「全部重启」。
+- **快捷操作**：当分区内存在 `PACKAGE_LIST` 选项，或传入 `customActionPackages` 时，顶栏右上角出现「重启」图标按钮。点击弹出 `QuickActionDialog`，对汇总后的包名批量执行「重启」（需 Root），并提供「全部重启」。
   - 包名来源 = 全部 `PACKAGE_LIST` 选项解析结果 + `customActionPackages`，去重。
   - 二次开发可通过 `customActionPackages` 直接暴露任意自定义应用，无需用户手动输入。
 - **顶栏扩展**：`topBarActions` 渲染在自动生成的「快捷操作」按钮之前；子页面可用 `QuickActionsAction(packages)` 注入同样式的右上角入口（见 5.6）。
@@ -852,11 +847,11 @@ AnimatedVisibility(
 
 禁止使用默认 `expandVertically()` / `shrinkVertically()` 或自定义时长，以保证全局动效一致。
 
-**右上角重启样式（强制）：** 需要对目标批量「热重载 / 重启」时，顶栏右上角统一使用 `MiuixIcons.Refresh`（重启）图标按钮（`IconButton` + `tint = onSurface`）→ `QuickActionDialog`：
+**右上角重启样式（强制）：** 需要对目标批量「重启」时，顶栏右上角统一使用 `MiuixIcons.Refresh`（重启）图标按钮（`IconButton` + `tint = onSurface`）→ `QuickActionDialog`：
 
 - `HookOptionsPage` 在检测到 `PACKAGE_LIST` 选项或传入 `customActionPackages` 时自动生成该按钮；
 - 二级页面通过 `topBarActions = { QuickActionsAction(packages) }` 注入，不要自行实现；
-- `QuickActionDialog` 内：每项「热重载」为次要 `TextButton`、「重启」为主要 `Button(buttonColorsPrimary)`；底部「全部热重载」次要 +「全部重启」主要；
+- `QuickActionDialog` 内：每项右侧为「重启」主按钮（`Button(buttonColorsPrimary)`）；底部「全部重启」主按钮；
 - `system_server`（`system` / `android` / `system_server`）重启前弹出 `SystemRestartConfirmDialog` 二次确认；
 - `com.android.systemui` 由 `AppRestarter.restartSystemUi()` 结束进程（系统自动拉起），**不触发系统重启**。
 

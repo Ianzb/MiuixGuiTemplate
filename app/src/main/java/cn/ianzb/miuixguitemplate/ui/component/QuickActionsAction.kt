@@ -18,10 +18,11 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 /**
  * 顶栏右上角「快捷操作」入口。
  *
- * 统一样式：`Refresh`（重启）图标按钮（`tint = onSurface`）→ [QuickActionDialog]，对指定包批量执行
- * 「热重载」「重启」，与 [cn.ianzb.miuixguitemplate.ui.component.pref.HookOptionsPage]
+ * 统一样式：`Refresh`（重启）图标按钮（`tint = onSurface`）→ [QuickActionDialog]，对指定包批量
+ * 「重启」，与 [cn.ianzb.miuixguitemplate.ui.component.pref.HookOptionsPage]
  * 自动生成的右上角按钮保持一致。供二级页面通过 `topBarActions` 注入；[packages] 为空时不渲染。
  */
+@Suppress("unused")
 @Composable
 fun QuickActionsAction(
     packages: List<String>,

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -26,23 +25,20 @@ import androidx.compose.ui.unit.dp
 import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.ui.component.SystemRestartConfirmDialog
 import cn.ianzb.miuixguitemplate.xposed.AppRestarter
-import cn.ianzb.miuixguitemplate.xposed.HookStatusReader
-import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
-import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.window.WindowDialog
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 
 /**
- * 包名列表快捷操作对话框：对指定包批量执行「热重载」「重启」。
+ * 包名列表快捷操作对话框：对指定包批量「重启」。
  *
- * - 每项右侧为文本按钮：热重载（次要）、重启（主要）。
- * - 底部提供「全部热重载」「全部重启」。
+ * - 每项右侧为「重启」按钮（主按钮）。
+ * - 底部提供「全部重启」。
  *
  * 由 [HookOptionsPage] 在检测到 `PACKAGE_LIST` 选项或传入自定义包名时，通过右上角按钮弹出。
  */
@@ -80,38 +76,16 @@ fun QuickActionDialog(
                 QuickActionRow(
                     context = context,
                     packageName = packageName,
-                    onHotReload = {
-                        XposedServiceManager.hotReload(listOf(packageName)) { result ->
-                            HookStatusReader.refresh()
-                            showResult(context, result)
-                        }
-                    },
-                    onRestart = {
-                        requestRestart(listOf(packageName))
-                    },
+                    onRestart = { requestRestart(listOf(packageName)) },
                 )
             }
             Spacer(Modifier.height(12.dp))
-            Row(modifier = Modifier.fillMaxWidth()) {
-                TextButton(
-                    text = stringResource(R.string.quick_action_hot_reload_all),
-                    onClick = {
-                        XposedServiceManager.hotReload(packages) { result ->
-                            HookStatusReader.refresh()
-                            showResult(context, result)
-                        }
-                    },
-                    colors = ButtonDefaults.textButtonColors(),
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(Modifier.width(8.dp))
-                Button(
-                    onClick = { requestRestart(packages) },
-                    colors = ButtonDefaults.buttonColorsPrimary(),
-                    modifier = Modifier.weight(1f),
-                ) {
-                    MiuixText(text = stringResource(R.string.quick_action_restart_all))
-                }
+            Button(
+                onClick = { requestRestart(packages) },
+                colors = ButtonDefaults.buttonColorsPrimary(),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                MiuixText(text = stringResource(R.string.quick_action_restart_all))
             }
         }
     }
@@ -131,7 +105,6 @@ fun QuickActionDialog(
 private fun QuickActionRow(
     context: Context,
     packageName: String,
-    onHotReload: () -> Unit,
     onRestart: () -> Unit,
 ) {
     val label = remember(packageName) {
@@ -159,13 +132,6 @@ private fun QuickActionRow(
                 )
             }
         }
-        TextButton(
-            text = stringResource(R.string.scope_hot_reload),
-            onClick = onHotReload,
-            colors = ButtonDefaults.textButtonColors(),
-            minWidth = 0.dp,
-        )
-        Spacer(Modifier.width(8.dp))
         Button(
             onClick = onRestart,
             colors = ButtonDefaults.buttonColorsPrimary(),
@@ -187,13 +153,4 @@ private suspend fun restartPackage(context: Context, packageName: String) {
             Toast.LENGTH_SHORT,
         ).show()
     }
-}
-
-private fun showResult(context: Context, result: String) {
-    val text = if (result == "no running target") {
-        context.getString(R.string.module_hot_reload_no_target)
-    } else {
-        context.getString(R.string.module_hot_reload_result, result)
-    }
-    Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
 }

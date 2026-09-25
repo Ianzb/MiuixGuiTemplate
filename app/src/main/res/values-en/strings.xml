@@ -62,10 +62,6 @@
     <string name="module_scope_request_summary">Request scope for target apps of all options</string>
     <string name="module_scope_request_success">Scope request submitted</string>
     <string name="module_scope_request_failed">Scope request failed: %s</string>
-<string name="module_hot_reload">Global Hot Reload</string>
-<string name="module_hot_reload_summary">Hot reload module code in all running targets</string>
-    <string name="module_hot_reload_no_target">No running target process</string>
-    <string name="module_hot_reload_result">Hot reload result: %s</string>
     <string name="module_clear_dexkit">Clear DexKit Cache</string>
     <string name="module_clear_dexkit_summary">Delete DexKit cache files of all scoped apps</string>
     <string name="module_clear_dexkit_success">DexKit cache cleared</string>
@@ -88,7 +84,6 @@
     <string name="device_type_fold">Foldable</string>
 
     <!-- Scope page -->
-    <string name="scope_hot_reload">Hot Reload</string>
     <string name="scope_restart">Restart</string>
     <string name="scope_restart_need_root">Restarting an app requires root</string>
     <string name="scope_safe_mode">Safe mode</string>
@@ -129,8 +124,7 @@
 
     <!-- Quick actions -->
     <string name="quick_action_title">Quick Actions</string>
-    <string name="quick_action_summary">Hot reload or restart these apps</string>
-    <string name="quick_action_hot_reload_all">Hot Reload All</string>
+    <string name="quick_action_summary">Restart these apps</string>
     <string name="quick_action_restart_all">Restart All</string>
 
     <!-- Features -->
@@ -181,7 +175,7 @@
     <string name="example_text_title">Custom Suffix</string>
     <string name="example_text_summary">Add a custom suffix to exported files</string>
     <string name="example_package_list_title">Custom App List</string>
-    <string name="example_package_list_summary">Enter package names; batch hot reload / restart from the top-right button</string>
+    <string name="example_package_list_summary">Enter package names; batch restart from the top-right button</string>
     <string name="example_status_success_title">Applied example</string>
     <string name="example_status_success_summary">Title text turns green</string>
     <string name="example_status_failed_title">Failed example</string>

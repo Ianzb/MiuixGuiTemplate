@@ -158,7 +158,6 @@ com.yourname.yourmodule.hook.xposed.XposedEntry
 ```
 minApiVersion=102
 targetApiVersion=102
-autoHotReload=true
 staticScope=false
 ```
 
@@ -309,9 +308,9 @@ HookOptionsPage(
 exportLauncher.launch("YourModuleName_settings.json")
 ```
 
-### 7.5 包名列表与快捷操作（热重载 / 重启）
+### 7.5 包名列表与快捷操作（重启）
 
-声明 `OptionType.PACKAGE_LIST` 选项后，用户在二级页面输入包名，页面右上角即出现「快捷操作」按钮，可批量热重载 / 重启：
+声明 `OptionType.PACKAGE_LIST` 选项后，用户在二级页面输入包名，页面右上角即出现「快捷操作」按钮，可批量重启：
 
 ```kotlin
 OptionSpec(
@@ -333,13 +332,13 @@ HookOptionsPage(
 )
 ```
 
-> 重启需要 Root（主页「模块状态」已标注）；热重载通过 LSPosed 服务完成，无需 Root。
+> 重启需要 Root（主页「模块状态」已标注）。
 > `com.android.systemui` 走 `AppRestarter.restartSystemUi()`（结束进程后由系统自动拉起），**不触发系统重启**；仅 `system` / `android` / `system_server` 才执行 `reboot`。
 
 ### 7.6 显隐动画与顶栏快捷操作
 
 - **显隐动画**：所有组件出现 / 隐藏统一使用 Miuix 标准弹簧 `MiuixExpandSpec`（`ui/util/MiuixAnimations.kt`），即 `expandVertically(animationSpec = MiuixExpandSpec)` / `shrinkVertically(animationSpec = MiuixExpandSpec)`，禁止使用默认或自定义时长。详见 [接口文档](API.md) 5.6。
-- **顶栏快捷操作**：批量「热重载 / 重启」的入口统一为 `Refresh`（重启）图标 → `QuickActionDialog`。`HookOptionsPage` 会自动生成；二级页面通过 `BaseSubPageActivity.topBarActions` 注入 `QuickActionsAction(packages)`，不要自行实现按钮样式。
+- **顶栏快捷操作**：批量「重启」的入口统一为 `Refresh`（重启）图标 → `QuickActionDialog`。`HookOptionsPage` 会自动生成；二级页面通过 `BaseSubPageActivity.topBarActions` 注入 `QuickActionsAction(packages)`，不要自行实现按钮样式。
 
 ---
 
