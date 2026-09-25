@@ -1,5 +1,18 @@
 # 更新日志
 
+## 0.3.1
+
+> 发布于 2026-09-25
+
+### 新增
+
+- **模块开发工作流**：新增 `docs/WORKFLOW.md`，规范「指定应用 Hook 实现」与「参考其他模块复刻功能」两类流程，明确真机 `adb` 扫描须经用户逐次授权、只读命令白名单与隐私边界，以及第三方许可证合规与致谢落点
+
+### 变更
+
+- 「第三方许可证」页面更名为「第三方许可证与致谢」，`licenses_header` 文案覆盖非开源参考项
+- 修正文档中 `licenses_section_credits` → `licenses_section_refs` 的笔误
+
 ## 0.3.0
 
 > 发布于 2026-09-22
@@ -15,7 +28,7 @@
 
 ### 新增
 
-- **参考与致谢**：README 与应用内说明本模板的脚手架定位，并致谢参考项目 [HyperCeiler](https://github.com/ReChronoRain/HyperCeiler)、[HyperLight](https://github.com/KiminonawaResa/HyperLight)、[miuix](https://github.com/compose-miuix-ui/miuix)
+- **参考与致谢**：README 与应用内说明本模板的脚手架定位，并致谢参考项目（具体清单见应用内「第三方许可证与致谢」页）
 - **Based on 约定**：衍生项目须在 `README.md` 与「关于」页标注 `Based on MiuixGuiTemplate <版本号>`；示例程序已内建该标注（当前为 `Based on MiuixGuiTemplate 0.3.0`）
 - `docs/CUSTOMIZE.md` 新增「开源协议与致谢（必读）」核对清单，二次开发可一次性对照完成
 

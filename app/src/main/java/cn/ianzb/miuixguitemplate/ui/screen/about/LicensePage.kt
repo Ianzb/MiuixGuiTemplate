@@ -162,7 +162,7 @@ private val licenseSections: List<LicenseSection> = listOf(
             LibraryInfo(
                 "HyperLight",
                 "-",
-                "",
+                "非开源，仅思路参考",
                 "https://github.com/KiminonawaResa/HyperLight",
             ),
         ),

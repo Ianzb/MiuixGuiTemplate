@@ -8,27 +8,27 @@
 
 ## 0. 必改清单（Checklist）
 
-| 类别 | 位置 | 说明 |
-|---|---|---|
-| 项目名 | `settings.gradle.kts` → `rootProject.name` | 工程名 |
-| 包名 / 应用 ID | `app/build.gradle.kts` → `namespace`、`applicationId` | 应用标识 |
-| 包名（hook） | `hook/build.gradle.kts` → `namespace` | 与主包保持一致的前缀 |
-| 源码包路径 | `app/src/main/java/...`、`hook/src/main/java/...` | 目录与 `package` 声明同步修改 |
-| 版本号 | `app/build.gradle.kts` → `versionCode`、`versionName` | |
-| 应用名 | `res/values/strings.xml`、`res/values-en/strings.xml` → `app_name` | |
-| 应用图标 | `res/drawable/ic_launcher_*.xml`、`res/mipmap-anydpi*/ic_launcher*.xml`、`colors.xml` → `ic_launcher_background` | |
-| 关于页链接 | `strings.xml` → `about_source_code_summary`、`about_telegram_summary` | 显示与跳转均使用该值 |
-| 版权 | `strings.xml` → `copyright` | |
-| **Based on 标注** | `strings.xml` → `about_based_on`、`README.md` 「Based on 约定」 | 保留 `Based on MiuixGuiTemplate <版本号>` 并更新为所依据的脚手架版本 |
-| 参考与致谢 | `README.md`「参考与致谢」、`LicensePage.kt` → `licenses_section_credits` | 保留对 HyperCeiler / HyperLight / miuix 的致谢，可增不可删 |
-| 开源协议 | 根目录 `LICENSE`、`README.md`「许可证」、`strings.xml` → `license_lgpl*` | **须保持 LGPL-3.0（或更弱兼容的 GPL-3.0）**，见第 11 节 |
-| 许可证列表 | `ui/screen/about/LicensePage.kt` → `licenseSections` | 增删依赖库 |
-| 模块元数据 | `hook/src/main/resources/META-INF/xposed/{module.prop,scope.list,java_init.list}` | |
-| Hook 目标 | `hook/.../base/HookEntryRegistry.kt`、`BaseLoad` 子类 | |
-| 配置项 / 页面 | `ui/screen/examples/ExamplesPage.kt`（示例）、`OptionRegistry` | |
-| 导出文件名 | `ui/screen/settings/SettingsPage.kt` → `exportLauncher.launch(...)` | |
-| 主题 / 颜色 | `res/values/themes.xml`、`res/values/colors.xml` | |
-| README / 更新日志 | `README.md`、`changelog.md` | |
+| 类别 | 位置 | 说明                                                  |
+|---|---|-----------------------------------------------------|
+| 项目名 | `settings.gradle.kts` → `rootProject.name` | 工程名                                                 |
+| 包名 / 应用 ID | `app/build.gradle.kts` → `namespace`、`applicationId` | 应用标识                                                |
+| 包名（hook） | `hook/build.gradle.kts` → `namespace` | 与主包保持一致的前缀                                          |
+| 源码包路径 | `app/src/main/java/...`、`hook/src/main/java/...` | 目录与 `package` 声明同步修改                                |
+| 版本号 | `app/build.gradle.kts` → `versionCode`、`versionName` |                                                     |
+| 应用名 | `res/values/strings.xml`、`res/values-en/strings.xml` → `app_name` |                                                     |
+| 应用图标 | `res/drawable/ic_launcher_*.xml`、`res/mipmap-anydpi*/ic_launcher*.xml`、`colors.xml` → `ic_launcher_background` |                                                     |
+| 关于页链接 | `strings.xml` → `about_source_code_summary`、`about_telegram_summary` | 显示与跳转均使用该值                                          |
+| 版权 | `strings.xml` → `copyright` |                                                     |
+| **Based on 标注** | `strings.xml` → `about_based_on`、`README.md` 「Based on 约定」 | 保留 `Based on MiuixGuiTemplate <版本号>` 并更新为所依据的脚手架版本  |
+| 参考与致谢 | 应用内 `LicensePage.kt` → `licenses_section_refs` | 保留对参考项目的致谢（可增不可删），文档不展开具体借鉴说明 |
+| 开源协议 | 根目录 `LICENSE`、`README.md`「许可证」、`strings.xml` → `license_lgpl*` | **须保持 LGPL-3.0（或更弱兼容的 GPL-3.0）**，见第 11 节            |
+| 许可证列表 | `ui/screen/about/LicensePage.kt` → `licenseSections` | 增删依赖库                                               |
+| 模块元数据 | `hook/src/main/resources/META-INF/xposed/{module.prop,scope.list,java_init.list}` |                                                     |
+| Hook 目标 | `hook/.../base/HookEntryRegistry.kt`、`BaseLoad` 子类 |                                                     |
+| 配置项 / 页面 | `ui/screen/examples/ExamplesPage.kt`（示例）、`OptionRegistry` |                                                     |
+| 导出文件名 | `ui/screen/settings/SettingsPage.kt` → `exportLauncher.launch(...)` |                                                     |
+| 主题 / 颜色 | `res/values/themes.xml`、`res/values/colors.xml` |                                                     |
+| README / 更新日志 | `README.md`、`changelog.md` |                                                     |
 
 ---
 
@@ -115,7 +115,7 @@ android {
 
 `res/values-en/strings.xml` 同步修改英文文案。
 
-关于页的「GNU LGPL v3.0」跳转链接为协议官方文本地址；「参考项目」条目跳转第三方许可证页，其中 `licenses_section_credits` 分组列出 HyperCeiler / HyperLight / miuix 等参考项目，可增不可删。关于页 Logo 下方的 `about_based_on` 即 **Based on 标注**，须保留并随脚手架版本更新（见第 11 节）。
+关于页的「GNU LGPL v3.0」跳转链接为协议官方文本地址；「参考项目」条目跳转第三方许可证页，具体参考与致谢清单在该页维护。关于页 Logo 下方的 `about_based_on` 即 **Based on 标注**，须保留并随脚手架版本更新（见第 11 节）。
 
 ---
 
@@ -346,6 +346,7 @@ HookOptionsPage(
 | README | `README.md` | 项目简介、链接、构建说明 |
 | 更新日志 | `changelog.md` | 按版本记录变更 |
 | 接口文档 | `docs/API.md` | 全部对外接口与布局规范 |
+| 模块开发工作流 | `docs/WORKFLOW.md` | Hook 需求实现、真机 `adb` 扫描授权与第三方复用合规 |
 
 ---
 
@@ -367,19 +368,15 @@ HookOptionsPage(
 
 ### 11.1 参考与致谢
 
-本模板的定位是**个人 Android 模块项目的脚手架模板**，部分代码实现与界面效果参考了以下项目，衍生项目**可增不可删**该致谢：
+本模板的定位是**个人 Android 模块项目的脚手架模板**。具体参考与致谢清单统一维护在应用内「第三方许可证与致谢」页面（`LicensePage.kt` → `licenses_section_refs` 分组），衍生项目**可增不可删**。
 
-| 项目 | 链接 | 参考内容 |
-|---|---|---|
-| HyperCeiler | <https://github.com/ReChronoRain/HyperCeiler> | 模块架构 / 实现思路 |
-| HyperLight | <https://github.com/KiminonawaResa/HyperLight> | 界面显示效果 |
-| miuix | <https://github.com/compose-miuix-ui/miuix> | UI 组件库与视觉规范 |
+> 文档不展开对具体模块的借鉴说明；复用任何第三方代码前须先核对许可证，无许可证 / 非开源项目只能借鉴思路并致谢，完整流程见 [模块开发工作流](WORKFLOW.md)。
 
-落点：`README.md`「参考与致谢」、`LicensePage.kt` → `licenses_section_refs` 分组（关于页不再单列「参考项目」入口，统一由此页承载）。
+落点：应用内「第三方许可证与致谢」页面（`LicensePage.kt` → `licenses_section_refs` 分组，关于页不再单列「参考项目」入口，统一由此页承载）。
 
 ### 11.2 Based on 约定
 
-衍生项目**必须**在以下两处保留形如 `Based on MiuixGuiTemplate <版本号>` 的文本（示例：`Based on MiuixGuiTemplate 0.3.0`），并把版本号更新为**所依据的脚手架版本**：
+衍生项目**必须**在以下两处保留形如 `Based on MiuixGuiTemplate <版本号>` 的文本（示例：`Based on MiuixGuiTemplate 0.3.1`），并把版本号更新为**所依据的脚手架版本**：
 
 | 落点 | 文件 |
 |---|---|
@@ -395,7 +392,7 @@ HookOptionsPage(
 | 1 | `LICENSE` 为 LGPL-3.0 全文 | 根目录存在且未删改条款 |
 | 2 | README「许可证」章节声明 LGPL-3.0 并保留第三方许可说明 | 不得改回 Apache-2.0 |
 | 3 | 关于页协议条目指向 LGPL-3.0 | `license_lgpl*` + `openUri` 指向 LGPL-3.0 文本 |
-| 4 | 保留参考与致谢 | `README.md` 11.1 表中三项 + `LicensePage.kt` 分组 |
+| 4 | 保留参考与致谢 | 应用内 `LicensePage.kt` `licenses_section_refs` 分组保留致谢；文档仅保留指向该页的说明 |
 | 5 | 保留并更新 Based on 标注 | `README.md` 与关于页两处，版本号 = 所依据脚手架版本 |
 | 6 | 第三方许可证页完整 | `licenseSections` 覆盖实际依赖 |
 | 7 | 引入的第三方源文件保留原始版权 / SPDX 声明 | 如自 miuix 复制的 `Apache-2.0` 文件头 |

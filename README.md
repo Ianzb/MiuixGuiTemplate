@@ -4,7 +4,7 @@
 
 ### 基于 Miuix 的 LSPosed 模块模板
 
-[接口文档](docs/API.md) | [二次开发指南](docs/CUSTOMIZE.md) | [更新日志](changelog.md)
+[接口文档](docs/API.md) | [二次开发指南](docs/CUSTOMIZE.md) | [模块开发工作流](docs/WORKFLOW.md) | [更新日志](changelog.md)
 
 ![Platform](https://img.shields.io/badge/Platform-Android-green)
 ![LSPosed](https://img.shields.io/badge/LSPosed-libxposed%20102-blue)
@@ -68,6 +68,8 @@ cd MiuixGuiTemplate
 
 > **需要修改的完整清单（图标、链接、模块元数据、Hook、配置项等）见 [二次开发指南](docs/CUSTOMIZE.md)。**
 
+> **实现指定应用的 Hook、或参考其他模块复刻功能时的完整流程（含真机 `adb` 扫描授权、隐私边界与开源合规）见 [模块开发工作流](docs/WORKFLOW.md)。**
+
 详细接口说明见 [接口文档](docs/API.md)。
 
 <br>
@@ -83,12 +85,7 @@ cd MiuixGuiTemplate
 
 # 参考与致谢
 
-MiuixGuiTemplate 是个人 Android 模块开发所使用的脚手架模板。部分代码实现与界面效果参考了以下优秀开源项目，在此向其作者致谢：
-
-- [HyperCeiler](https://github.com/ReChronoRain/HyperCeiler)
-- [HyperLight](https://github.com/KiminonawaResa/HyperLight)
-
-完整的第三方许可与致谢清单见应用内「关于 → 第三方许可证与致谢」页面。
+MiuixGuiTemplate 是个人 Android 模块开发所使用的脚手架模板，开发过程中参考了若干开源项目与其他模块项目，谨向相关作者与贡献者致谢。具体致谢清单统一维护在应用内「关于 → 第三方许可证与致谢」页面，文档不再逐一展开；参考或复刻第三方项目时的合规流程见 [模块开发工作流](docs/WORKFLOW.md)。
 
 <br>
 
