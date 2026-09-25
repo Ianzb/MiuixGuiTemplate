@@ -292,6 +292,8 @@ HookOptionsPage(
 )
 ```
 
+**入口卡片文案**：作为二级菜单入口的卡片（跳转二级页 / 弹出对话框）尽量不加小标题（`summaryRes`），大标题（`titleRes`）用总结性名词短语而非描述性句子，描述性说明放到二级页面内。详见 [接口文档](API.md) 5.6。
+
 ### 7.3 从功能页开始开发
 
 模板的「功能」页 `ui/screen/features/FeaturesPage.kt`（子页 `FeatureSubPageActivity.kt`、配置项 `featureSpecs()`）已按真实模块的形态组织：**页面名以功能命名、小标题用单语言**。二次开发时：

@@ -89,6 +89,7 @@
 
 - **页面名用功能**：模板的示例页已按真实形态命名为「功能」页（`ui/screen/features/FeaturesPage.kt`，子页 `FeatureSubPageActivity.kt`）。新增页面沿用功能命名，不要以组件类型命名。
 - **小标题单语言**：功能页分区小标题只传 `HookSection.titleRes`，**不要传 `titleEn`**。`titleEn`（拼成 `中文（English）`）仅用于模板示例展示 API 英文组件名，英文名以[接口文档](API.md) 5.1 为准。
+- **入口卡片少用小标题、大标题要总结性**：作为二级菜单入口的卡片（跳转二级页 / 弹出对话框）应尽量**不加小标题**（`summaryRes`，即副标题）；卡片**大标题**（`titleRes`）用总结性名词短语（如「高级选项」「重启应用列表」），**不要**写成描述性句子；描述性说明放到二级页面内。详见[接口文档](API.md) 5.6。
 - **搜索入口覆盖子页面**：功能若位于子页面，子页面自身不放搜索栏；在父页 `HookOptionsPage(subPages = listOf(HookSubPage(titleRes, specs, onOpen)))` 中登记，即可在功能页搜索中直达该子页面。
 
 ---

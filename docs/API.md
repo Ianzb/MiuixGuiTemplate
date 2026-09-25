@@ -833,6 +833,14 @@ HookSectionCard(
 
 **标题规范（强制）：** 实际功能页的分区标题使用**单一语言**（仅 `HookSection.titleRes`）。`titleEn` 仅为模板示例保留：非空时由 `HookSection(titleRes, specs, titleEn)` + `hookSectionTitle()` 拼成单行 `中文（English）`（例如 `开关卡片（SwitchPreference）`），用于展示 API 英文组件名；无论哪种情形都不得拆成「英文标题 + 中文副标题」两行。
 
+**入口卡片文案（强制）：** 作为**二级菜单入口**的卡片（`HookArrowCard` 跳转二级页、`HookTextCard` / `HookPackageListCard` 弹出对话框，以及二级页面里指向更深一层的入口等）按以下要求书写：
+
+- **尽量不加小标题（`summaryRes`，即副标题）**：入口本身已通过箭头 / 点击语义表达「可进入」，不要再叠加一行解释；确需提示时才写极短补充（如「需 Root」）。
+- **大标题（`titleRes`）用总结性名词短语**：如「高级选项」「重启应用列表」；**不要**写成描述性句子（如「输入包名后可在右上角批量重启」）。
+- 描述性、说明性内容放到**二级页面内部**，不放在入口卡片上。
+
+> 与 5.6「重启应用」对话框一致：标题固定为总结性短语（「重启应用」），且不显示小标题。
+
 **显示 / 隐藏动画（强制）：** 组件出现 / 隐藏统一使用 Miuix 标准弹簧 `MiuixExpandSpec`（`folmeSpring(damping = 1.0f, response = 0.4f)`，见 `ui/util/MiuixAnimations.kt`）：
 
 ```kotlin
