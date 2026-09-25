@@ -108,8 +108,8 @@ fun hookSectionTitle(section: HookSection): String = buildString {
  * @param isBlurEnabled 是否启用背景模糊。
  * @param extraBottomPadding 额外底部内边距（用于底部导航栏遮挡）。
  * @param onArrowClick 箭头卡片点击回调，参数为被点击的 [OptionSpec]。
- * @param customActionPackages 额外注入快捷操作的包名（供二次开发直接暴露自定义应用）。
- * @param topBarActions 顶栏右侧扩展槽（显示在自动生成的「快捷操作」按钮之前），为空则不显示。
+ * @param customActionPackages 额外注入重启应用的包名（供二次开发直接暴露自定义应用）。
+ * @param topBarActions 顶栏右侧扩展槽（显示在自动生成的「重启应用」按钮之前），为空则不显示。
  */
 @Composable
 fun HookOptionsPage(

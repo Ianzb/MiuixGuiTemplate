@@ -28,7 +28,7 @@ abstract class BaseSubPageActivity : ComponentActivity() {
     protected abstract val titleRes: Int
 
     /**
-     * 顶栏右侧扩展槽（如「快捷操作」入口）。
+     * 顶栏右侧扩展槽（如「重启应用」入口）。
      *
      * 默认不显示；子类可覆写返回 `{ QuickActionsAction(packages) }` 等组件。
      */

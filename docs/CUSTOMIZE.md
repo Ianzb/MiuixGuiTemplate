@@ -308,9 +308,9 @@ HookOptionsPage(
 exportLauncher.launch("YourModuleName_settings.json")
 ```
 
-### 7.5 包名列表与快捷操作（重启）
+### 7.5 包名列表与重启应用
 
-声明 `OptionType.PACKAGE_LIST` 选项后，用户在二级页面输入包名，页面右上角即出现「快捷操作」按钮，可批量重启：
+声明 `OptionType.PACKAGE_LIST` 选项后，用户在二级页面输入包名，页面右上角即出现「重启应用」按钮，点击后勾选应用并批量重启：
 
 ```kotlin
 OptionSpec(
@@ -335,10 +335,10 @@ HookOptionsPage(
 > 重启需要 Root（主页「模块状态」已标注）。
 > `com.android.systemui` 走 `AppRestarter.restartSystemUi()`（结束进程后由系统自动拉起），**不触发系统重启**；仅 `system` / `android` / `system_server` 才执行 `reboot`。
 
-### 7.6 显隐动画与顶栏快捷操作
+### 7.6 显隐动画与顶栏重启应用
 
 - **显隐动画**：所有组件出现 / 隐藏统一使用 Miuix 标准弹簧 `MiuixExpandSpec`（`ui/util/MiuixAnimations.kt`），即 `expandVertically(animationSpec = MiuixExpandSpec)` / `shrinkVertically(animationSpec = MiuixExpandSpec)`，禁止使用默认或自定义时长。详见 [接口文档](API.md) 5.6。
-- **顶栏快捷操作**：批量「重启」的入口统一为 `Refresh`（重启）图标 → `QuickActionDialog`。`HookOptionsPage` 会自动生成；二级页面通过 `BaseSubPageActivity.topBarActions` 注入 `QuickActionsAction(packages)`，不要自行实现按钮样式。
+- **顶栏重启应用**：批量「重启」入口统一为 `Refresh`（重启）图标 → `QuickActionDialog`。`HookOptionsPage` 自动生成；二级页面通过 `BaseSubPageActivity.topBarActions` 注入 `QuickActionsAction(packages)`，不要自行实现按钮样式。对话框固定标题「重启应用」且**无小标题**，应用列表用 `Card` 圆角容器，每行 `CheckboxPreference`（`checkboxLocation = End`，默认全选），底部左「全选 / 全不选」（全选时显示「全不选」）+ 右「重启」（无勾选禁用）。完整规范见 [接口文档](API.md) 5.6。
 
 ---
 

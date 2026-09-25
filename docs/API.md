@@ -636,7 +636,7 @@ object SafeModeReader {
 | `HookRadioCard` | `CheckboxPreference`(End) | 右侧复选框表示选中项（单选语义） |
 | `HookSliderCard` | `SliderPreference` | 主开关控制显隐与生效，支持整数/小数/范围，数值类型说明居左、当前值紧邻箭头，点击弹出输入对话框 |
 | `HookTextCard` | `ArrowPreference` + `WindowDialog` | 点击弹出文本输入对话框 |
-| `HookPackageListCard` | `ArrowPreference` + `WindowDialog` | 包名列表输入（多行），驱动页面右上角「快捷操作」按钮 |
+| `HookPackageListCard` | `ArrowPreference` + `WindowDialog` | 包名列表输入（多行），驱动页面右上角「重启应用」按钮 |
 | `HookOptionView` | 分发器 | 按 `OptionSpec.type` 渲染对应组件 |
 | `HookOptionsPage` | `Scaffold` + `SearchBar` | 通用功能页面（顶栏 + 搜索 + 分区列表 + 子页面搜索） |
 | `HookSubPage` | — | 子页面搜索入口：把子页面内的功能并入父页搜索 |
@@ -712,7 +712,7 @@ fun HookOptionsPage(
     isBlurEnabled: Boolean = true,
     extraBottomPadding: Dp = 0.dp,
     onArrowClick: (OptionSpec) -> Unit = {},
-    customActionPackages: List<String> = emptyList(),   // 额外注入快捷操作包名
+    customActionPackages: List<String> = emptyList(),   // 额外注入重启应用包名
     topBarActions: (@Composable () -> Unit)? = null,     // 顶栏右侧扩展槽
 )
 
@@ -732,10 +732,10 @@ fun HookSectionCard(
 - 搜索结果为可点击列表项（标题 = 配置项标题，摘要 = 所属分区 / 子页面标题）；点击后收起搜索、清空输入：本页分区则滚动定位，子页面功能则调用 `HookSubPage.onOpen()` 打开子页面，**不内联渲染组件**。
 - 结果按目标去重（同一分区 / 子页面只显示一条），并包含通过 `masterKey` 引用的配置项（如滑块主开关）。
 - 箭头卡片点击回调 `onArrowClick(spec)`。
-- **快捷操作**：当分区内存在 `PACKAGE_LIST` 选项，或传入 `customActionPackages` 时，顶栏右上角出现「重启」图标按钮。点击弹出 `QuickActionDialog`，对汇总后的包名批量执行「重启」（需 Root），并提供「全部重启」。
+- **重启应用**：当分区内存在 `PACKAGE_LIST` 选项，或传入 `customActionPackages` 时，顶栏右上角出现「重启」图标按钮。点击弹出 `QuickActionDialog`：每行右侧勾选应用（默认全选），底部左侧「全选 / 全不选」、右侧「重启」（无勾选时禁用），对选中包批量重启（需 Root）。
   - 包名来源 = 全部 `PACKAGE_LIST` 选项解析结果 + `customActionPackages`，去重。
   - 二次开发可通过 `customActionPackages` 直接暴露任意自定义应用，无需用户手动输入。
-- **顶栏扩展**：`topBarActions` 渲染在自动生成的「快捷操作」按钮之前；子页面可用 `QuickActionsAction(packages)` 注入同样式的右上角入口（见 5.6）。
+- **顶栏扩展**：`topBarActions` 渲染在自动生成的「重启应用」按钮之前；子页面可用 `QuickActionsAction(packages)` 注入同样式的右上角入口（见 5.6）。
 
 ### 5.5 完整使用示例
 
@@ -849,9 +849,12 @@ AnimatedVisibility(
 
 **右上角重启样式（强制）：** 需要对目标批量「重启」时，顶栏右上角统一使用 `MiuixIcons.Refresh`（重启）图标按钮（`IconButton` + `tint = onSurface`）→ `QuickActionDialog`：
 
-- `HookOptionsPage` 在检测到 `PACKAGE_LIST` 选项或传入 `customActionPackages` 时自动生成该按钮；
-- 二级页面通过 `topBarActions = { QuickActionsAction(packages) }` 注入，不要自行实现；
-- `QuickActionDialog` 内：每项右侧为「重启」主按钮（`Button(buttonColorsPrimary)`）；底部「全部重启」主按钮；
+- 入口：`HookOptionsPage` 在检测到 `PACKAGE_LIST` 选项或传入 `customActionPackages` 时自动生成；二级页面通过 `topBarActions = { QuickActionsAction(packages) }` 注入，不要自行实现；
+- 对话框标题固定为「重启应用」（`quick_action_title`），**不显示小标题 / `summary`**；
+- 应用列表必须用 Miuix `Card` 圆角容器包裹（可滚动，`heightIn(max = 420.dp)`），**不得**用裸 `Column` 直接平铺；
+- 列表每行用 `CheckboxPreference`：`checkboxLocation = CheckboxLocation.End`（对勾必须在应用右侧），且默认**全选**；行标题为应用名、摘要为包名（两者不同时）；
+- 底部一行：左侧「全选 / 全不选」`TextButton`（`ButtonDefaults.textButtonColors()`）——**全部勾选时显示「全不选」，否则显示「全选」**；右侧「重启」主按钮（`Button(buttonColorsPrimary)`，`enabled = 已勾选项非空`）；
+- 重启只作用于**已勾选**的包；
 - `system_server`（`system` / `android` / `system_server`）重启前弹出 `SystemRestartConfirmDialog` 二次确认；
 - `com.android.systemui` 由 `AppRestarter.restartSystemUi()` 结束进程（系统自动拉起），**不触发系统重启**。
 
@@ -901,7 +904,7 @@ fun SubPageScaffold(
 )
 ```
 
-提供顶栏返回、背景模糊与主题统一的脚手架；`topBarActions` 用于注入「快捷操作」等右上角入口。
+提供顶栏返回、背景模糊与主题统一的脚手架；`topBarActions` 用于注入「重启应用」等右上角入口。
 
 ### 6.2 `BaseSubPageActivity`
 
@@ -1041,7 +1044,7 @@ Card { HookSwitchCard(spec) }
 | 配置系统 | `app/.../prefs/` |
 | 服务与状态 | `app/.../xposed/XposedServiceManager.kt`、`HookStatusReader.kt`、`RootHelper.kt` |
 | 组件 | `app/.../ui/component/pref/`（`HookCards.kt`、`HookDropdownCards.kt`、`HookSliderCard.kt`、`HookTextCard.kt`、`HookOptionView.kt`、`HookOptionSupport.kt`、`HookOptionsPage.kt`） |
-| 顶栏快捷操作 | `app/.../ui/component/QuickActionsAction.kt` |
+| 顶栏重启应用 | `app/.../ui/component/QuickActionsAction.kt` |
 | 显隐动画 | `app/.../ui/util/MiuixAnimations.kt`（`MiuixExpandSpec`） |
 | 二级页面模板 | `app/.../ui/component/SubPageScaffold.kt`、`app/.../ui/screen/subpage/BaseSubPageActivity.kt` |
 | 功能页 | `app/.../ui/screen/features/FeaturesPage.kt`（子页面示例 `FeatureSubPageActivity.kt`） |

@@ -123,9 +123,10 @@
     <string name="hook_package_list_hint">支持换行、逗号、分号或空格分隔</string>
 
     <!-- Quick actions -->
-    <string name="quick_action_title">快捷操作</string>
-    <string name="quick_action_summary">对这些应用执行重启</string>
-    <string name="quick_action_restart_all">全部重启</string>
+    <string name="quick_action_title">重启应用</string>
+    <string name="quick_action_select_all">全选</string>
+    <string name="quick_action_deselect_all">全不选</string>
+    <string name="quick_action_restart">重启</string>
 
     <!-- Features -->
     <string name="example_section_switch">开关卡片</string>
@@ -136,7 +137,7 @@
     <string name="example_section_radio">单选卡片</string>
     <string name="example_section_slider">滑块卡片</string>
     <string name="example_section_text">文本输入卡片</string>
-    <string name="example_section_package_list">包名列表卡片（右上角快捷操作）</string>
+    <string name="example_section_package_list">包名列表卡片（右上角重启应用）</string>
     <string name="example_section_status">状态提示</string>
 
     <string name="example_switch_title">启用实验性功能</string>
