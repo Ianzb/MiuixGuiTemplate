@@ -21,6 +21,7 @@
 
 ### 变更
 
+- **Release 启用 R8 精简包体**：`isMinifyEnabled` + `isShrinkResources`，新增 `app/proguard-rules.pro` 保留 libxposed 入口、`hook.**` 与 DexKit 反射类；R8 自动裁剪未使用的依赖（如 `material-icons-extended` 的上千图标），Release 包体显著减小
 - **示例页 → 功能页**：`ui/screen/examples/ExamplesPage.kt` 更名为 `ui/screen/features/FeaturesPage.kt`（`ExamplesPageView` → `FeaturesPageView`、`exampleSpecs` → `featureSpecs`、子页 `ExampleSubPageActivity` → `FeatureSubPageActivity`），标签页「示例」改为「功能」，与真实模块形态一致；功能页小标题改为单语言，`HookSection.titleEn` 仅保留用于示例展示 API 英文组件名
 - 搜索文案由「搜索组件」改为「搜索功能」（`search_hint`），同步更新二次开发指南与接口文档
 - **许可要求调整**：衍生项目只需在应用内「关于」页保留 `Based on MiuixGuiTemplate <版本号>` 标注，**不再要求**在各自的 `README.md` 中强调；同步更新 README、二次开发指南与示例注释
