@@ -276,7 +276,7 @@ HookOptionsPage(
 )
 ```
 
-子页面内的功能通过 `HookSubPage` 并入父页搜索（子页面自身无需再放搜索栏）：
+子页面内的功能通过 `HookSubPage` 并入父页搜索（子页面自身无需再放搜索栏）；多级页面可继续嵌套 `subPages`，搜索可达并直接打开对应层级：
 
 ```kotlin
 HookOptionsPage(
@@ -287,6 +287,14 @@ HookOptionsPage(
             titleRes = R.string.my_subpage,
             specs = listOf(subSpec),
             onOpen = { context.startActivity(Intent(context, MySubPageActivity::class.java)) },
+            // 更深一层子页面，递归并入搜索，命中直接打开该页面
+            subPages = listOf(
+                HookSubPage(
+                    titleRes = R.string.my_deep_subpage,
+                    specs = listOf(deepSpec),
+                    onOpen = { context.startActivity(Intent(context, MyDeepSubPageActivity::class.java)) },
+                ),
+            ),
         ),
     ),
 )
@@ -299,7 +307,7 @@ HookOptionsPage(
 模板的「功能」页 `ui/screen/features/FeaturesPage.kt`（子页 `FeatureSubPageActivity.kt`、配置项 `featureSpecs()`）已按真实模块的形态组织：**页面名以功能命名、小标题用单语言**。二次开发时：
 
 - 把 `FeaturesPage.kt` 的示例分区替换为你的真实功能，示例配置项 `featureSpecs()` 一并替换；
-- 新增子页面时继承 `BaseSubPageActivity` 并在 `AndroidManifest.xml` 注册；把子页配置项通过 `HookSubPage` 传入父页 `subPages`，即可被搜索直达（见 7.2）；
+- 新增子页面时继承 `BaseSubPageActivity` 并在 `AndroidManifest.xml` 注册；把子页配置项通过 `HookSubPage` 传入父页 `subPages`，即可被搜索直达；多级页面继续在 `HookSubPage.subPages` 中嵌套登记（见 7.2）；
 - Tab 标签已为「功能」，无需再改；若删除该页，请同步更新 `MainActivity.kt` 的标签页列表与 `TemplateApp.onCreate()` 的注册。
 
 ### 7.4 导出文件名

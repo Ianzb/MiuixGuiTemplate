@@ -66,23 +66,35 @@ data class HookSection(
 )
 
 /**
- * 子页面搜索入口：把子页面内的配置项并入当前页搜索。
+ * 子页面搜索入口：把子页面内的配置项并入父页面搜索（支持多级嵌套）。
  *
- * 子页面自身不必再放搜索栏，其功能统一由父页面搜索栏检索；命中后调用 [onOpen] 打开子页面。
+ * 子页面自身不必再放搜索栏，其功能统一由最上层页面的搜索栏检索；命中后调用对应层级的
+ * [onOpen] 直接打开目标页面。嵌套时搜索结果摘要以「父 / 子」路径展示。
  *
- * @param titleRes 子页面标题，作为搜索结果的摘要。
- * @param specs 子页面内的配置项（通常已在 App 启动时注册到 [OptionRegistry]，此处用于建立搜索映射）。
- * @param onOpen 点击搜索结果时打开子页面。
+ * @param titleRes 子页面标题，作为搜索结果摘要（多级路径）的一部分。
+ * @param specs 该层子页面直接包含的配置项（通常已在 App 启动时注册到 [OptionRegistry]，此处用于建立搜索映射）。
+ * @param onOpen 点击搜索结果时打开该子页面。
+ * @param subPages 更深一层的子页面，递归并入搜索。
  */
 data class HookSubPage(
     val titleRes: Int,
     val specs: List<OptionSpec>,
     val onOpen: () -> Unit,
+    val subPages: List<HookSubPage> = emptyList(),
 )
 
 private sealed interface SearchTarget {
     data class Section(val section: HookSection) : SearchTarget
-    data class SubPage(val subPage: HookSubPage) : SearchTarget
+    data class SubPage(val subPage: HookSubPage, val path: List<Int>) : SearchTarget
+}
+
+/** 递归展开子页面，并记录每层的标题路径（用于搜索结果摘要）。 */
+private fun flattenSubPages(
+    subPages: List<HookSubPage>,
+    prefix: List<Int> = emptyList(),
+): List<Pair<HookSubPage, List<Int>>> = subPages.flatMap { subPage ->
+    val path = prefix + subPage.titleRes
+    listOf(subPage to path) + flattenSubPages(subPage.subPages, path)
 }
 
 /** 分区标题：默认仅渲染 `titleRes`；`titleEn` 非空时拼接为 `中文（English）`（仅示例 / API 展示用）。 */
@@ -99,12 +111,12 @@ fun hookSectionTitle(section: HookSection): String = buildString {
  *
  * - 自动注册分区内全部 [OptionSpec] 到 [OptionRegistry]，标题接入全局搜索。
  * - 搜索结果为可点击列表项，点击后收起搜索并滚动定位到对应分区（不内联渲染组件）。
- * - 通过 [subPages] 可把子页面内的功能并入搜索，命中后打开对应子页面。
+ * - 通过 [subPages] 可把子页面内的功能并入搜索（支持多级 [HookSubPage.subPages] 递归），命中后直接打开目标子页面。
  * - 背景模糊等模块配置由 [isBlurEnabled] 控制。
  *
  * @param title 页面标题。
  * @param sections 组件分区列表。
- * @param subPages 子页面入口：把子页面内的配置项并入搜索（不渲染在本页）。
+ * @param subPages 子页面入口：把子页面（及其嵌套子页面）内的配置项并入搜索（不渲染在本页）。
  * @param isBlurEnabled 是否启用背景模糊。
  * @param extraBottomPadding 额外底部内边距（用于底部导航栏遮挡）。
  * @param onArrowClick 箭头卡片点击回调，参数为被点击的 [OptionSpec]。
@@ -134,8 +146,11 @@ fun HookOptionsPage(
     var pendingScrollIndex by remember { mutableStateOf<Int?>(null) }
     var showQuickActions by remember { mutableStateOf(false) }
 
+    // 递归展开子页面（记录标题路径），供搜索 / 包名汇总 / 注册使用。
+    val flatSubPages = remember(subPages) { flattenSubPages(subPages) }
+
     // 汇总「包名列表」选项中的包名，并叠加二次开发注入的自定义包名。
-    val allSpecs = sections.flatMap { it.specs } + subPages.flatMap { it.specs }
+    val allSpecs = sections.flatMap { it.specs } + flatSubPages.flatMap { it.first.specs }
     val configActionPackages = allSpecs
         .filter { it.type == OptionType.PACKAGE_LIST }
         .flatMap { parsePackageList(ConfigState.string(it.key, it.defaultString)) }
@@ -143,8 +158,8 @@ fun HookOptionsPage(
         (configActionPackages + customActionPackages).distinct()
     }
 
-    // 配置键 → 搜索目标（本页分区 / 子页面），含滑块主开关等被引用的键。
-    val searchTargets = remember(sections, subPages) {
+    // 配置键 → 搜索目标（本页分区 / 子页面路径），含滑块主开关等被引用的键。
+    val searchTargets = remember(sections, flatSubPages) {
         buildMap<String, SearchTarget> {
             sections.forEach { section ->
                 section.specs.forEach { spec ->
@@ -152,17 +167,17 @@ fun HookOptionsPage(
                     spec.masterKey?.let { put(it, SearchTarget.Section(section)) }
                 }
             }
-            subPages.forEach { subPage ->
+            flatSubPages.forEach { (subPage, path) ->
                 subPage.specs.forEach { spec ->
-                    put(spec.key, SearchTarget.SubPage(subPage))
-                    spec.masterKey?.let { put(it, SearchTarget.SubPage(subPage)) }
+                    put(spec.key, SearchTarget.SubPage(subPage, path))
+                    spec.masterKey?.let { put(it, SearchTarget.SubPage(subPage, path)) }
                 }
             }
         }
     }
 
-    LaunchedEffect(sections, subPages) {
-        OptionRegistry.registerAll(sections.flatMap { it.specs } + subPages.flatMap { it.specs })
+    LaunchedEffect(sections, flatSubPages) {
+        OptionRegistry.registerAll(allSpecs)
     }
 
     // 点击搜索结果后，收起搜索并滚动到对应分区。
@@ -248,8 +263,8 @@ fun HookOptionsPage(
                             .filter { searchTargets.containsKey(it.key) }
                             .distinctBy { spec ->
                                 when (val target = searchTargets[spec.key]) {
-                                    is SearchTarget.Section -> target.section.titleRes
-                                    is SearchTarget.SubPage -> target.subPage.titleRes
+                                    is SearchTarget.Section -> "s:${target.section.titleRes}"
+                                    is SearchTarget.SubPage -> "p:${target.path.joinToString("/")}"
                                     null -> spec.key
                                 }
                             }
@@ -268,7 +283,7 @@ fun HookOptionsPage(
                                         title = stringResource(spec.titleRes),
                                         summary = when (target) {
                                             is SearchTarget.Section -> hookSectionTitle(target.section)
-                                            is SearchTarget.SubPage -> stringResource(target.subPage.titleRes)
+                                            is SearchTarget.SubPage -> target.path.map { stringResource(it) }.joinToString(" / ")
                                             null -> null
                                         },
                                         modifier = Modifier.fillMaxWidth(),

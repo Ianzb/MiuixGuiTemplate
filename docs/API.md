@@ -639,7 +639,7 @@ object SafeModeReader {
 | `HookPackageListCard` | `ArrowPreference` + `WindowDialog` | 包名列表输入（多行），驱动页面右上角「重启应用」按钮 |
 | `HookOptionView` | 分发器 | 按 `OptionSpec.type` 渲染对应组件 |
 | `HookOptionsPage` | `Scaffold` + `SearchBar` | 通用功能页面（顶栏 + 搜索 + 分区列表 + 子页面搜索） |
-| `HookSubPage` | — | 子页面搜索入口：把子页面内的功能并入父页搜索 |
+| `HookSubPage` | — | 子页面搜索入口：把子页面（支持多级嵌套）内的功能并入父页搜索 |
 | `HookSectionCard` | `SmallTitle` + `Card` | 组件分区卡片容器 |
 
 ### 5.2 组件签名
@@ -689,7 +689,7 @@ fun ensureScopeFor(spec: OptionSpec)
 
 ### 5.4 通用页面 `HookOptionsPage`
 
-一次性获得「顶栏 + 可折叠搜索栏 + 分区列表」的完整布局，搜索结果为可点击列表项，点击后收起搜索并滚动定位到对应分区（不内联渲染组件）；子页面功能可通过 `subPages` 并入同一搜索。
+一次性获得「顶栏 + 可折叠搜索栏 + 分区列表」的完整布局，搜索结果为可点击列表项，点击后收起搜索并滚动定位到对应分区（不内联渲染组件）；子页面（含多级嵌套）功能可通过 `subPages` 并入同一搜索。
 
 ```kotlin
 data class HookSection(
@@ -699,9 +699,10 @@ data class HookSection(
 )
 
 data class HookSubPage(
-    val titleRes: Int,               // 子页面标题，作为搜索结果摘要
-    val specs: List<OptionSpec>,     // 子页面内配置项（并入搜索）
-    val onOpen: () -> Unit,          // 点击搜索结果时打开子页面
+    val titleRes: Int,               // 子页面标题，作为搜索结果摘要（多级路径）的一部分
+    val specs: List<OptionSpec>,     // 该层子页面直接包含的配置项（并入搜索）
+    val onOpen: () -> Unit,          // 点击搜索结果时打开该子页面
+    val subPages: List<HookSubPage> = emptyList(), // 更深一层子页面，递归并入搜索
 )
 
 @Composable
@@ -727,9 +728,9 @@ fun HookSectionCard(
 分区标题默认**单语言**（仅 `titleRes`）。`titleEn` 仅为模板示例保留，用 `hookSectionTitle(section)` 可拼出 `中文（English）`（例如 `开关卡片（SwitchPreference）`）；**实际功能页不要传 `titleEn`**，英文组件名以本文档 5.1 为准。
 
 行为：
-- 自动把分区内全部 `OptionSpec`（含 `subPages`）注册到 `OptionRegistry`，标题接入全局搜索。
+- 自动把本页分区与 `subPages`（**含多级嵌套 `HookSubPage.subPages`**）内的全部 `OptionSpec` 注册到 `OptionRegistry`，标题接入全局搜索。
 - 搜索栏基于 Miuix `SearchBar` + `InputField`（胶囊输入框、清除按钮、取消按钮）。
-- 搜索结果为可点击列表项（标题 = 配置项标题，摘要 = 所属分区 / 子页面标题）；点击后收起搜索、清空输入：本页分区则滚动定位，子页面功能则调用 `HookSubPage.onOpen()` 打开子页面，**不内联渲染组件**。
+- 搜索结果为可点击列表项（标题 = 配置项标题，摘要 = 所属分区 / 子页面多级路径「父 / 子」）；点击后收起搜索、清空输入：本页分区则滚动定位，子页面功能则调用对应层级 `HookSubPage.onOpen()` **直接打开目标页面**，**不内联渲染组件**。
 - 结果按目标去重（同一分区 / 子页面只显示一条），并包含通过 `masterKey` 引用的配置项（如滑块主开关）。
 - 箭头卡片点击回调 `onArrowClick(spec)`。
 - **重启应用**：当分区内存在 `PACKAGE_LIST` 选项，或传入 `customActionPackages` 时，顶栏右上角出现「重启」图标按钮。点击弹出 `QuickActionDialog`：每行右侧勾选应用（默认全选），底部左侧「全选 / 全不选」、右侧「重启」（无勾选时禁用），对选中包批量重启（需 Root）。
@@ -778,12 +779,19 @@ fun MyFeaturePage(isBlurEnabled: Boolean, extraBottomPadding: Dp) {
             specs = listOf(featureLevel),
         ),
     )
-    // 子页面功能并入本页搜索；命中即打开子页面。
+    // 子页面功能并入本页搜索（支持多级嵌套）；命中即打开对应层级页面。
     val subPages = listOf(
         HookSubPage(
             titleRes = R.string.my_subpage,
             specs = listOf(featureSub),
             onOpen = { context.startActivity(Intent(context, MySubPageActivity::class.java)) },
+            subPages = listOf(
+                HookSubPage(
+                    titleRes = R.string.my_deep_subpage,
+                    specs = listOf(featureDeep),
+                    onOpen = { context.startActivity(Intent(context, MyDeepSubPageActivity::class.java)) },
+                ),
+            ),
         ),
     )
     HookOptionsPage(
@@ -948,7 +956,7 @@ class MySubPageActivity : BaseSubPageActivity() {
     android:theme="@style/Theme.MiuixGuiTemplate" />
 ```
 
-> 若希望子页面内的功能也能被父页面搜索到，在父页 `HookOptionsPage(subPages = ...)` 中传入 `HookSubPage(titleRes, specs, onOpen)`，子页面自身无需再放搜索栏（见 5.4）。
+> 若希望子页面（及其嵌套子页面）内的功能也能被父页面搜索到，在父页 `HookOptionsPage(subPages = ...)` 中传入 `HookSubPage(titleRes, specs, onOpen, subPages = ...)`，子页面自身无需再放搜索栏（见 5.4）。
 
 ### 6.3 `SafeModeActivity`（安全模式页）
 
