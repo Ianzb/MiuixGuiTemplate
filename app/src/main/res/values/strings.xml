@@ -1,15 +1,15 @@
 <resources>
     <string name="app_name">MiuixGuiTemplate</string>
     <string name="tab_home">主页</string>
-    <string name="tab_examples">示例</string>
+    <string name="tab_features">功能</string>
     <string name="tab_settings">设置</string>
     <string name="tab_about">关于</string>
     <string name="placeholder_value">占位符</string>
     <string name="action_back">返回</string>
     <string name="action_cancel">取消</string>
     <string name="action_confirm">确定</string>
-    <string name="search_hint">搜索组件</string>
-    <string name="search_empty">未找到匹配的组件</string>
+    <string name="search_hint">搜索功能</string>
+    <string name="search_empty">未找到匹配的功能</string>
 
     <!-- Home -->
     <string name="home_status_title">状态卡片</string>
@@ -133,7 +133,7 @@
     <string name="quick_action_hot_reload_all">全部热重载</string>
     <string name="quick_action_restart_all">全部重启</string>
 
-    <!-- Examples -->
+    <!-- Features -->
     <string name="example_section_switch">开关卡片</string>
     <string name="example_section_checkbox">复选框卡片</string>
     <string name="example_section_arrow">箭头卡片（进入下级页面）</string>
@@ -156,6 +156,8 @@
     <string name="example_arrow_sub_item">下级页示例选项</string>
     <string name="example_arrow_sub_summary">这里展示下级页面内容</string>
     <string name="example_arrow_sub_body">下级页面可以继续放置各种组件，并通过返回按钮回到上一级。</string>
+    <string name="example_sub_text_title">下级页文本选项</string>
+    <string name="example_sub_text_summary">该选项位于子页面，可通过功能页搜索直接进入</string>
     <string name="example_dropdown_title">动画速度</string>
     <string name="example_dropdown_summary">选择界面动画播放速度</string>
     <string name="example_dropdown_default">默认（中速）</string>

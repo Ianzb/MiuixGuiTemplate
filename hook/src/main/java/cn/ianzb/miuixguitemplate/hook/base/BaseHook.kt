@@ -47,6 +47,9 @@ abstract class BaseHook {
     /** 版本分支；为空表示直接执行 [init]。 */
     open val variants: List<HookVariant> get() = emptyList()
 
+    /** 当前目标包信息，由 [BaseLoad] 在安装前注入，可在 [init] 中读取（如 `target.classLoader`）。 */
+    protected lateinit var target: PackageTarget
+
     /** 执行挂载（未声明 [variants] 时使用）。 */
     open fun init() {}
 
@@ -57,6 +60,7 @@ abstract class BaseHook {
      * 由 [BaseLoad] 调用，不应在子类中手动调用。
      */
     internal fun apply(target: PackageTarget): String? {
+        this.target = target
         val device = DeviceContext.current
         deviceScope?.takeIf { it.isNotEmpty() }?.let {
             if (device.type !in it) {

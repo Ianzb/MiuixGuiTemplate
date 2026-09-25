@@ -44,6 +44,7 @@ import cn.ianzb.miuixguitemplate.prefs.ConfigState
 import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
 import cn.ianzb.miuixguitemplate.ui.screen.safemode.SafeModeActivity
 import cn.ianzb.miuixguitemplate.ui.util.BlurredBar
+import cn.ianzb.miuixguitemplate.ui.util.MiuixExpandSpec
 import cn.ianzb.miuixguitemplate.ui.util.blurSource
 import cn.ianzb.miuixguitemplate.ui.util.pageScrollModifiers
 import cn.ianzb.miuixguitemplate.ui.util.rememberBlurState
@@ -324,8 +325,8 @@ fun SettingsPageView(
 
                                 AnimatedVisibility(
                                     visible = isFloatingNavbar,
-                                    enter = expandVertically(),
-                                    exit = shrinkVertically(),
+                                    enter = expandVertically(animationSpec = MiuixExpandSpec),
+                                    exit = shrinkVertically(animationSpec = MiuixExpandSpec),
                                 ) {
                                     SwitchPreference(
                                         title = stringResource(R.string.liquid_glass),

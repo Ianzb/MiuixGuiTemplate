@@ -25,7 +25,7 @@
 | 许可证列表 | `ui/screen/about/LicensePage.kt` → `licenseSections` | 增删依赖库                                               |
 | 模块元数据 | `hook/src/main/resources/META-INF/xposed/{module.prop,scope.list,java_init.list}` |                                                     |
 | Hook 目标 | `hook/.../base/HookEntryRegistry.kt`、`BaseLoad` 子类 |                                                     |
-| 配置项 / 页面 | `ui/screen/examples/ExamplesPage.kt`（示例）、`OptionRegistry` |                                                     |
+| 配置项 / 页面 | `ui/screen/features/FeaturesPage.kt`（功能页）、`OptionRegistry` |                                                     |
 | 导出文件名 | `ui/screen/settings/SettingsPage.kt` → `exportLauncher.launch(...)` |                                                     |
 | 主题 / 颜色 | `res/values/themes.xml`、`res/values/colors.xml` |                                                     |
 | README / 更新日志 | `README.md`、`changelog.md` |                                                     |
@@ -249,7 +249,7 @@ class MyHook : BaseHook() {
 
 ### 7.1 声明配置项
 
-在 `OptionRegistry` 注册（示例见 `ui/screen/examples/ExamplesPage.kt` 的 `exampleSpecs()`）：
+在 `OptionRegistry` 注册（示例见 `ui/screen/features/FeaturesPage.kt` 的 `featureSpecs()`）：
 
 ```kotlin
 OptionSpec(
@@ -264,24 +264,42 @@ OptionSpec(
 
 ### 7.2 构建页面
 
-使用通用页面组件（详见 [API 文档](API.md) 第 5 节）：
+使用通用页面组件（详见 [API 文档](API.md) 第 5 节）。**小标题用单语言**（只传 `titleRes`，不要传 `titleEn`）：
 
 ```kotlin
 HookOptionsPage(
     title = stringResource(R.string.tab_features),
     sections = listOf(
-        HookSection(R.string.section_switch, listOf(spec), "SwitchPreference"),
+        HookSection(R.string.section_switch, listOf(spec)),
     ),
     isBlurEnabled = isBlurEnabled,
     extraBottomPadding = extraBottomPadding,
 )
 ```
 
-### 7.3 替换 / 删除示例页
+子页面内的功能通过 `HookSubPage` 并入父页搜索（子页面自身无需再放搜索栏）：
 
-- 示例页 `ui/screen/examples/ExamplesPage.kt` 可整体替换为你的功能页；
-- 若删除示例页，请同步更新 `MainActivity.kt` 的标签页列表（当前为 主页 / 示例 / 设置 / 关于）；
-- `TemplateApp.onCreate()` 中注册示例配置项的 `OptionRegistry.registerAll(exampleSpecs())` 一并调整。
+```kotlin
+HookOptionsPage(
+    title = stringResource(R.string.tab_features),
+    sections = sections,
+    subPages = listOf(
+        HookSubPage(
+            titleRes = R.string.my_subpage,
+            specs = listOf(subSpec),
+            onOpen = { context.startActivity(Intent(context, MySubPageActivity::class.java)) },
+        ),
+    ),
+)
+```
+
+### 7.3 从功能页开始开发
+
+模板的「功能」页 `ui/screen/features/FeaturesPage.kt`（子页 `FeatureSubPageActivity.kt`、配置项 `featureSpecs()`）已按真实模块的形态组织：**页面名以功能命名、小标题用单语言**。二次开发时：
+
+- 把 `FeaturesPage.kt` 的示例分区替换为你的真实功能，示例配置项 `featureSpecs()` 一并替换；
+- 新增子页面时继承 `BaseSubPageActivity` 并在 `AndroidManifest.xml` 注册；把子页配置项通过 `HookSubPage` 传入父页 `subPages`，即可被搜索直达（见 7.2）；
+- Tab 标签已为「功能」，无需再改；若删除该页，请同步更新 `MainActivity.kt` 的标签页列表与 `TemplateApp.onCreate()` 的注册。
 
 ### 7.4 导出文件名
 
@@ -309,13 +327,19 @@ OptionSpec(
 
 ```kotlin
 HookOptionsPage(
-    title = ...,
-    sections = ...,
+    title = stringResource(R.string.tab_features),
+    sections = sections,
     customActionPackages = listOf("com.a", "com.b"),
 )
 ```
 
 > 重启需要 Root（主页「模块状态」已标注）；热重载通过 LSPosed 服务完成，无需 Root。
+> `com.android.systemui` 走 `AppRestarter.restartSystemUi()`（结束进程后由系统自动拉起），**不触发系统重启**；仅 `system` / `android` / `system_server` 才执行 `reboot`。
+
+### 7.6 显隐动画与顶栏快捷操作
+
+- **显隐动画**：所有组件出现 / 隐藏统一使用 Miuix 标准弹簧 `MiuixExpandSpec`（`ui/util/MiuixAnimations.kt`），即 `expandVertically(animationSpec = MiuixExpandSpec)` / `shrinkVertically(animationSpec = MiuixExpandSpec)`，禁止使用默认或自定义时长。详见 [接口文档](API.md) 5.6。
+- **顶栏快捷操作**：批量「热重载 / 重启」的入口统一为 `Refresh`（重启）图标 → `QuickActionDialog`。`HookOptionsPage` 会自动生成；二级页面通过 `BaseSubPageActivity.topBarActions` 注入 `QuickActionsAction(packages)`，不要自行实现按钮样式。
 
 ---
 

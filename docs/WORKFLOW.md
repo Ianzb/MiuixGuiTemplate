@@ -80,9 +80,16 @@
 
 1. 在 `HookEntryRegistry` 登记 `BaseLoad`；
 2. 新建 `BaseHook` 实现 `init()`，必要时用 DexKit 定位成员；
-3. 声明 `OptionSpec` 并接入页面，注意配置键两端一致；
-4. 更新 `META-INF/xposed/scope.list`；
-5. 构建并在 LSPosed 中验证，页面标题变绿即生效。
+3. 声明 `OptionSpec` 并接入**功能页**（`ui/screen/features/FeaturesPage.kt`），配置键两端一致；
+4. 功能位于子页面时，继承 `BaseSubPageActivity` 并在 `AndroidManifest.xml` 注册，再把子页配置项通过 `HookSubPage` 传入父页 `HookOptionsPage(subPages = ...)`，使其可被功能页搜索直达；
+5. 更新 `META-INF/xposed/scope.list`；
+6. 构建并在 LSPosed 中验证，页面标题变绿即生效。
+
+### 1.6 页面组织规范
+
+- **页面名用功能**：模板的示例页已按真实形态命名为「功能」页（`ui/screen/features/FeaturesPage.kt`，子页 `FeatureSubPageActivity.kt`）。新增页面沿用功能命名，不要以组件类型命名。
+- **小标题单语言**：功能页分区小标题只传 `HookSection.titleRes`，**不要传 `titleEn`**。`titleEn`（拼成 `中文（English）`）仅用于模板示例展示 API 英文组件名，英文名以[接口文档](API.md) 5.1 为准。
+- **搜索入口覆盖子页面**：功能若位于子页面，子页面自身不放搜索栏；在父页 `HookOptionsPage(subPages = listOf(HookSubPage(titleRes, specs, onOpen)))` 中登记，即可在功能页搜索中直达该子页面。
 
 ---
 

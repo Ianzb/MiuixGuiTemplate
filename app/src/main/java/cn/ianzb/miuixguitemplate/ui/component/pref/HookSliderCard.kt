@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.prefs.ConfigState
 import cn.ianzb.miuixguitemplate.prefs.OptionSpec
+import cn.ianzb.miuixguitemplate.ui.util.MiuixExpandSpec
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
@@ -71,11 +72,11 @@ fun HookSliderCard(
 
         AnimatedVisibility(
             visible = masterEnabled && enabled,
-            enter = expandVertically(),
-            exit = shrinkVertically(),
+            enter = expandVertically(animationSpec = MiuixExpandSpec),
+            exit = shrinkVertically(animationSpec = MiuixExpandSpec),
         ) {
             Column {
-                if (masterKey == null) {
+                if (masterKey == null && spec.sliderValueLabelRes == 0) {
                     MiuixText(
                         text = stringResource(spec.titleRes),
                         style = MiuixTheme.textStyles.main,

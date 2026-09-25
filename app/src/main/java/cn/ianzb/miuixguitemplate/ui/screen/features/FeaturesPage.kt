@@ -1,4 +1,4 @@
-package cn.ianzb.miuixguitemplate.ui.screen.examples
+package cn.ianzb.miuixguitemplate.ui.screen.features
 
 import android.content.Intent
 import androidx.compose.runtime.Composable
@@ -13,34 +13,49 @@ import cn.ianzb.miuixguitemplate.prefs.OptionSpec
 import cn.ianzb.miuixguitemplate.prefs.OptionType
 import cn.ianzb.miuixguitemplate.ui.component.pref.HookOptionsPage
 import cn.ianzb.miuixguitemplate.ui.component.pref.HookSection
+import cn.ianzb.miuixguitemplate.ui.component.pref.HookSubPage
 import cn.ianzb.miuixguitemplate.xposed.HookStatus
 import cn.ianzb.miuixguitemplate.xposed.HookStatusReader
 
 /**
- * 示例页：展示每个组件类型的实例（不含 hook 具体应用代码）。
+ * 功能页：模块全部功能入口（模板以各组件类型作为示例功能）。
  *
- * 页面布局由通用组件 [HookOptionsPage] 提供。
+ * 页面布局由通用组件 [HookOptionsPage] 提供；子页面内的功能通过 [HookSubPage]
+ * 并入本页搜索，命中后打开对应子页面。
+ *
+ * > 实际开发时应把本页替换为真实功能，小标题使用单语言（默认中文），不要再传
+ * > `HookSection.titleEn`——该参数仅用于模板示例展示 API 英文组件名。
  */
 @Composable
-fun ExamplesPageView(
+fun FeaturesPageView(
     isBlurEnabled: Boolean = true,
     extraBottomPadding: Dp = 0.dp,
 ) {
     val context = LocalContext.current
-    val specs = remember { exampleSpecs() }
-    val sections = remember(specs) { exampleSections(specs) }
+    val specs = remember { featureSpecs() }
+    val sections = remember(specs) { featureSections(specs) }
+    val subPages = remember(specs) {
+        listOf(
+            HookSubPage(
+                titleRes = R.string.example_arrow_sub_title,
+                specs = listOf(specByKey(specs, "example_sub_text")),
+                onOpen = { context.startActivity(Intent(context, FeatureSubPageActivity::class.java)) },
+            ),
+        )
+    }
 
     LaunchedEffect(Unit) {
         HookStatusReader.refresh()
     }
 
     HookOptionsPage(
-        title = stringResource(R.string.tab_examples),
+        title = stringResource(R.string.tab_features),
         sections = sections,
+        subPages = subPages,
         isBlurEnabled = isBlurEnabled,
         extraBottomPadding = extraBottomPadding,
         onArrowClick = {
-            context.startActivity(Intent(context, ExampleSubPageActivity::class.java))
+            context.startActivity(Intent(context, FeatureSubPageActivity::class.java))
         },
     )
 }
@@ -48,50 +63,41 @@ fun ExamplesPageView(
 private fun specByKey(specs: List<OptionSpec>, key: String): OptionSpec =
     specs.first { it.key == key }
 
-private fun exampleSections(specs: List<OptionSpec>): List<HookSection> = listOf(
+private fun featureSections(specs: List<OptionSpec>): List<HookSection> = listOf(
     HookSection(
         titleRes = R.string.example_section_switch,
-        titleEn = "SwitchPreference",
         specs = listOf(specByKey(specs, "example_switch")),
     ),
     HookSection(
         titleRes = R.string.example_section_checkbox,
-        titleEn = "CheckboxPreference",
         specs = listOf(specByKey(specs, "example_checkbox")),
     ),
     HookSection(
         titleRes = R.string.example_section_arrow,
-        titleEn = "ArrowPreference",
         specs = listOf(specByKey(specs, "example_arrow")),
     ),
     HookSection(
         titleRes = R.string.example_section_dropdown,
-        titleEn = "WindowDropdownPreference",
         specs = listOf(specByKey(specs, "example_dropdown")),
     ),
     HookSection(
         titleRes = R.string.example_section_radio,
-        titleEn = "RadioButtonPreference",
         specs = listOf(specByKey(specs, "example_radio")),
     ),
     HookSection(
         titleRes = R.string.example_section_slider,
-        titleEn = "SliderPreference",
         specs = listOf(specByKey(specs, "example_slider")),
     ),
     HookSection(
         titleRes = R.string.example_section_text,
-        titleEn = "TextField",
         specs = listOf(specByKey(specs, "example_text")),
     ),
     HookSection(
         titleRes = R.string.example_section_package_list,
-        titleEn = "PackageListPreference",
         specs = listOf(specByKey(specs, "example_package_list")),
     ),
     HookSection(
         titleRes = R.string.example_section_status,
-        titleEn = "HookStatus",
         specs = listOf(
             specByKey(specs, "example_status_success"),
             specByKey(specs, "example_status_failed"),
@@ -100,8 +106,8 @@ private fun exampleSections(specs: List<OptionSpec>): List<HookSection> = listOf
     ),
 )
 
-/** 示例页的全部配置项（App 启动时注册，供全局搜索与作用域申请使用）。 */
-internal fun exampleSpecs(): List<OptionSpec> = listOf(
+/** 功能页的全部配置项（App 启动时注册，供全局搜索与作用域申请使用）。 */
+internal fun featureSpecs(): List<OptionSpec> = listOf(
     OptionSpec(
         key = "example_switch",
         type = OptionType.SWITCH,
@@ -124,6 +130,14 @@ internal fun exampleSpecs(): List<OptionSpec> = listOf(
         type = OptionType.ARROW,
         titleRes = R.string.example_arrow_title,
         summaryRes = R.string.example_arrow_summary,
+    ),
+    OptionSpec(
+        key = "example_sub_text",
+        type = OptionType.TEXT,
+        titleRes = R.string.example_sub_text_title,
+        summaryRes = R.string.example_sub_text_summary,
+        defaultString = "",
+        targetPackages = listOf("com.example.target"),
     ),
     OptionSpec(
         key = "example_dropdown",

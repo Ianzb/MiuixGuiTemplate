@@ -2,7 +2,6 @@ package cn.ianzb.miuixguitemplate
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -48,7 +47,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cn.ianzb.miuixguitemplate.ui.component.liquid.IosLiquidGlassNavigationBar
 import cn.ianzb.miuixguitemplate.ui.screen.about.AboutPageContent
-import cn.ianzb.miuixguitemplate.ui.screen.examples.ExamplesPageView
+import cn.ianzb.miuixguitemplate.ui.screen.features.FeaturesPageView
 import cn.ianzb.miuixguitemplate.ui.screen.home.HomePageView
 import cn.ianzb.miuixguitemplate.ui.screen.settings.SettingsPageView
 import cn.ianzb.miuixguitemplate.ui.theme.AppTheme
@@ -104,9 +103,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            window.isNavigationBarContrastEnforced = false
-        }
+        window.isNavigationBarContrastEnforced = false
 
         val savedSettings = AppSettings.load(this)
 
@@ -186,7 +183,7 @@ private fun MainScreen(
     val scope = rememberCoroutineScope()
     val items = listOf(
         stringResource(R.string.tab_home),
-        stringResource(R.string.tab_examples),
+        stringResource(R.string.tab_features),
         stringResource(R.string.tab_settings),
         stringResource(R.string.tab_about)
     )
@@ -270,7 +267,7 @@ private fun MainScreen(
                         extraBottomPadding = navBarHeight,
                         onOpenExamples = { onItemSelected(1) },
                     )
-                    1 -> ExamplesPageView(
+                    1 -> FeaturesPageView(
                         isBlurEnabled = isBlurEnabled,
                         extraBottomPadding = navBarHeight,
                     )

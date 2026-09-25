@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import cn.ianzb.miuixguitemplate.AppSettings
 import cn.ianzb.miuixguitemplate.LocaleHelper
-import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.ui.component.SubPageScaffold
 import cn.ianzb.miuixguitemplate.ui.theme.AppTheme
 import cn.ianzb.miuixguitemplate.ui.util.applyWindowBackground
@@ -27,6 +26,13 @@ abstract class BaseSubPageActivity : ComponentActivity() {
 
     @get:StringRes
     protected abstract val titleRes: Int
+
+    /**
+     * 顶栏右侧扩展槽（如「快捷操作」入口）。
+     *
+     * 默认不显示；子类可覆写返回 `{ QuickActionsAction(packages) }` 等组件。
+     */
+    protected open val topBarActions: (@Composable () -> Unit)? = null
 
     @Composable
     protected abstract fun SubPageContent(
@@ -59,6 +65,7 @@ abstract class BaseSubPageActivity : ComponentActivity() {
                     title = stringResource(titleRes),
                     isBlurEnabled = settings.isBlurEnabled,
                     onBack = { finish() },
+                    topBarActions = topBarActions,
                 ) { padding ->
                     SubPageContent(settings.isBlurEnabled, padding)
                 }

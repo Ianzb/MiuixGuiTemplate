@@ -28,7 +28,7 @@
 - **组件与 Hook 绑定** — 开关 / 箭头 / 下拉 / 滑块 / 复选框 / 单选 / 文本卡片，标题接入全局搜索
 - **Hook 状态展示** — 规则生效时标题显示为绿色、失败为红色，未应用时保持默认色（零额外占位）
 - **二级页面模板** — 独立 Activity，自动套用主题与背景模糊配置
-- **示例标签页** — 内置每种组件类型的实例，便于快速上手
+- **功能标签页** — 以「功能页 + 子页面搜索」的形态内置每种组件类型的示例，便于快速上手
 
 <br>
 
@@ -67,7 +67,7 @@ cd MiuixGuiTemplate
 4. 在 `:hook` 模块 `META-INF/xposed/scope.list` 中声明作用域包名。
 5. 新建 `BaseLoad` 并在 `HookEntryRegistry` 中登记目标包。
 6. 新建 `BaseHook` 实现具体 Hook 逻辑。
-7. 在 `exampleSpecs()`（或自定义注册处）声明 `OptionSpec`，UI 会自动渲染对应组件。
+7. 在 `featureSpecs()`（或自定义注册处）声明 `OptionSpec`，UI 会自动渲染对应组件；子页面功能可用 `HookSubPage` 并入功能页搜索。
 
 > **需要修改的完整清单（图标、链接、模块元数据、Hook、配置项等）见 [二次开发指南](docs/CUSTOMIZE.md)。**
 
