@@ -51,6 +51,7 @@ import cn.ianzb.miuixguitemplate.ui.util.shouldShowSplitPane
 import cn.ianzb.miuixguitemplate.util.SystemVersionDetector
 import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
@@ -87,10 +88,15 @@ fun HomePageView(
     LaunchedEffect(rootPollActivated, rootPollChecked, rootPollAvailable) {
         if (rootPollActivated && rootPollChecked && !rootPollAvailable) {
             while (true) {
-                delay(3000)
+                delay(3.seconds)
                 XposedServiceManager.checkRoot()
             }
         }
+    }
+
+    // 每次切回主页时刷新作用域，保证授权变化能及时反映。
+    LaunchedEffect(refreshKey) {
+        XposedServiceManager.refreshScope()
     }
 
     Scaffold(
@@ -326,8 +332,8 @@ private fun StatusCard(
     iconTint: Color,
     statusColor: Color,
     onClick: () -> Unit,
-    compact: Boolean = false,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
 ) {
     val iconSize = if (compact) 100.dp else 170.dp
     val iconOffsetX = if (compact) 22.dp else 38.dp
