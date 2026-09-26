@@ -127,6 +127,7 @@
     <string name="quick_action_select_all">Select All</string>
     <string name="quick_action_deselect_all">Deselect All</string>
     <string name="quick_action_restart">Restart</string>
+    <string name="quick_action_restart_success">Restarted</string>
 
     <!-- Features -->
     <string name="example_section_switch">Switch card</string>

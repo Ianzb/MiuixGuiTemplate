@@ -1,5 +1,13 @@
 # 更新日志
 
+## 0.4.1
+
+> 发布于 2026-09-26
+
+### 新增
+
+- **重启成功提示**：`QuickActionDialog` 批量重启完成后弹出 `quick_action_restart_success`（「重启成功」），缺少 Root 时仍提示 `scope_restart_need_root`；同步更新 `docs/API.md` 5.6 与 `docs/CUSTOMIZE.md` 7.6（来自 HyperRefine 的回流）
+
 ## 0.4.0
 
 > 发布于 2026-09-25

@@ -127,6 +127,7 @@
     <string name="quick_action_select_all">全选</string>
     <string name="quick_action_deselect_all">全不选</string>
     <string name="quick_action_restart">重启</string>
+    <string name="quick_action_restart_success">重启成功</string>
 
     <!-- Features -->
     <string name="example_section_switch">开关卡片</string>
