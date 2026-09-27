@@ -1,5 +1,6 @@
 package cn.ianzb.miuixguitemplate.ui.screen.safemode
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -8,7 +9,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -29,6 +33,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.Switch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
@@ -68,6 +73,22 @@ class SafeModeActivity : BaseSubPageActivity() {
         val scope = XposedServiceManager.scope
         val safeModePackages = SafeModeReader.safeModePackages
         val scrollBehavior = LocalSubPageScrollBehavior.current
+        var query by remember { mutableStateOf("") }
+
+        val packageManager = context.packageManager
+        val filteredScope = remember(scope, query) {
+            val keyword = query.trim().lowercase()
+            if (keyword.isEmpty()) {
+                scope
+            } else {
+                scope.filter { pkg ->
+                    val label = runCatching { packageManager.getApplicationInfo(pkg, 0) }.getOrNull()
+                        ?.let { runCatching { packageManager.getApplicationLabel(it).toString() }.getOrNull() }
+                        .orEmpty()
+                    pkg.lowercase().contains(keyword) || label.lowercase().contains(keyword)
+                }
+            }
+        }
 
         LazyColumn(
             modifier = Modifier
@@ -85,9 +106,26 @@ class SafeModeActivity : BaseSubPageActivity() {
             contentPadding = contentPadding,
         ) {
             item {
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 12.dp)
+                        .padding(top = 12.dp)
+                ) {
+                    InputField(
+                        query = query,
+                        onQueryChange = { query = it },
+                        onSearch = {},
+                        expanded = false,
+                        onExpandedChange = {},
+                        label = stringResource(R.string.search_hint),
+                    )
+                }
+            }
+            item {
                 Card(
                     modifier = Modifier
                         .padding(horizontal = 12.dp)
+                        .padding(top = 12.dp)
                         .padding(bottom = 12.dp)
                 ) {
                     MiuixText(
@@ -99,17 +137,17 @@ class SafeModeActivity : BaseSubPageActivity() {
                 }
             }
 
-            if (scope.isEmpty()) {
+            if (filteredScope.isEmpty()) {
                 item {
                     MiuixText(
-                        text = stringResource(R.string.scope_empty),
+                        text = stringResource(if (scope.isEmpty()) R.string.scope_empty else R.string.search_empty),
                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                         style = MiuixTheme.textStyles.footnote2,
                         modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp),
                     )
                 }
             } else {
-                items(scope, key = { it }) { packageName ->
+                items(filteredScope, key = { it }) { packageName ->
                     val packageManager = context.packageManager
                     val appInfo = remember(packageName) {
                         runCatching { packageManager.getApplicationInfo(packageName, 0) }.getOrNull()

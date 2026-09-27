@@ -1,6 +1,8 @@
 package cn.ianzb.miuixguitemplate.ui.screen.scope
 
+import android.content.pm.PackageManager
 import android.widget.Toast
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -41,6 +43,7 @@ import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
@@ -81,6 +84,9 @@ class ScopeListActivity : BaseSubPageActivity() {
         val safeModePackages = SafeModeReader.safeModePackages
         val coroutineScope = rememberCoroutineScope()
         val scrollBehavior = LocalSubPageScrollBehavior.current
+        var query by remember { mutableStateOf("") }
+        val packageManager = context.packageManager
+        val filteredScope = remember(scope, query) { filterPackages(scope, query, packageManager) }
 
         LazyColumn(
             modifier = Modifier
@@ -97,17 +103,34 @@ class ScopeListActivity : BaseSubPageActivity() {
                 ),
             contentPadding = contentPadding,
         ) {
-            if (scope.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 12.dp)
+                        .padding(top = 12.dp)
+                ) {
+                    InputField(
+                        query = query,
+                        onQueryChange = { query = it },
+                        onSearch = {},
+                        expanded = false,
+                        onExpandedChange = {},
+                        label = stringResource(R.string.search_hint),
+                    )
+                }
+            }
+
+            if (filteredScope.isEmpty()) {
                 item {
                     MiuixText(
-                        text = stringResource(R.string.scope_empty),
+                        text = stringResource(if (scope.isEmpty()) R.string.scope_empty else R.string.search_empty),
                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                         style = MiuixTheme.textStyles.footnote2,
                         modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp),
                     )
                 }
             } else {
-                items(scope, key = { it }) { packageName ->
+                items(filteredScope, key = { it }) { packageName ->
                     val packageManager = context.packageManager
                     val appInfo = remember(packageName) {
                         runCatching { packageManager.getApplicationInfo(packageName, 0) }.getOrNull()
@@ -221,5 +244,16 @@ class ScopeListActivity : BaseSubPageActivity() {
                 }
             }
         }
+    }
+}
+
+private fun filterPackages(packages: List<String>, query: String, pm: PackageManager): List<String> {
+    val keyword = query.trim().lowercase()
+    if (keyword.isEmpty()) return packages
+    return packages.filter { pkg ->
+        val label = runCatching { pm.getApplicationInfo(pkg, 0) }.getOrNull()
+            ?.let { runCatching { pm.getApplicationLabel(it).toString() }.getOrNull() }
+            .orEmpty()
+        pkg.lowercase().contains(keyword) || label.lowercase().contains(keyword)
     }
 }
