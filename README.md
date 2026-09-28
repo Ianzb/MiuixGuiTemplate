@@ -155,7 +155,8 @@ Based on MiuixGuiTemplate <版本号>
 
 | 项目 | 标注 |
 |---|---|
-| [HyperNavBar](https://github.com/HyperNavBar/HyperNavBar) | `Based on MiuixGuiTemplate 0.3.0` |
+| [HyperNavBar](https://github.com/HyperNavBar/HyperNavBar) | `Based on MiuixGuiTemplate 0.4.3` |
+| [HyperRefine](https://github.com/Ianzb/HyperRefine) | `Based on MiuixGuiTemplate 0.4.3` |
 
 该约定连同开源协议义务已汇总为一张核对清单，见[二次开发指南 · 开源协议与致谢](docs/CUSTOMIZE.md#11-开源协议与致谢必读)。
 
