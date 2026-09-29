@@ -83,6 +83,6 @@ dependencies {
     implementation(libs.miuix.icons)
     implementation(libs.miuix.squircle)
     implementation(libs.miuix.navigation)
-    implementation("androidx.compose.material:material-icons-core:${libs.versions.materialIcons.get()}")
+    implementation(libs.material.icons)
     implementation(libs.haze)
 }

@@ -1,6 +1,7 @@
 package cn.ianzb.miuixguitemplate.hook.status
 
 import android.annotation.SuppressLint
+import android.app.Application
 import android.app.BroadcastOptions
 import android.content.ComponentName
 import android.content.Context
@@ -14,15 +15,22 @@ import cn.ianzb.miuixguitemplate.hook.xposed.HookHelper
  * 目标进程在完成一组 hook 注册后调用 [markInstalled] 记录已安装的配置键，并在
  * `onPackageReady` 结束时调用 [flush] 合并上报一次。
  *
- * 设计要点（相对「hook 侧写远程偏好」的优化）：
- * - 通过 `ActivityThread.currentApplication()` 反射取目标进程 Application 作为发送上下文，
- *   不额外 hook `Application.attach` 等私有生命周期边界，失败面更小；
- * - 同进程内合并为**一次**广播，附带本进程已安装键集合；
- * - Android 16+ 开启 `BroadcastOptions.setShareIdentityEnabled(true)`，使 App 侧可校验发送者 UID。
+ * 由于 libxposed 的 `onPackageReady` 早于 `Application` 创建（API 文档：「is ready to create
+ * Application」），此时通常拿不到进程上下文。因此 [flush] 会挂载一次
+ * `Application.attach(Context)` 生命周期钩子，在上下文就绪后补发；若已就绪则直接上报。
  */
 object HookStatusReporter {
 
     private val installedKeys = LinkedHashSet<String>()
+
+    @Volatile
+    private var pendingSource: Pair<String, String>? = null
+
+    @Volatile
+    private var reported = false
+
+    @Volatile
+    private var attachHookInstalled = false
 
     /** 记录一个已成功安装的配置键。 */
     @Synchronized
@@ -31,24 +39,52 @@ object HookStatusReporter {
     }
 
     /**
-     * 合并上报当前进程已安装的配置键。
-     *
-     * 无已安装键、或取不到进程上下文时静默跳过（不影响业务 hook）。
+     * 合并上报当前进程已安装的配置键；无已安装键时静默跳过。
      */
     @Synchronized
     fun flush(sourcePackage: String, sourceProcess: String) {
+        pendingSource = sourcePackage to sourceProcess
         if (installedKeys.isEmpty()) return
-        val context = currentApplication() ?: run {
-            HookHelper.log("hook status: application context unavailable, skip report")
-            return
+        val context = currentApplication()
+        if (context != null) {
+            reportIfPending(context)
+        } else {
+            ensureAttachHook()
         }
-        val keys = ArrayList(installedKeys)
-        report(context, sourcePackage, sourceProcess, keys)
     }
 
     @Synchronized
     fun reset() {
         installedKeys.clear()
+        reported = false
+    }
+
+    /** 挂载 `Application.attach(Context)`，在进程上下文就绪后补发一次状态。 */
+    private fun ensureAttachHook() {
+        if (attachHookInstalled) return
+        attachHookInstalled = true
+        try {
+            val attach = Application::class.java
+                .getDeclaredMethod("attach", Context::class.java)
+                .apply { isAccessible = true }
+            HookHelper.intercept(attach) { chain ->
+                val result = chain.proceed()
+                val context = (chain.getArg(0) as? Context)?.let { it.applicationContext ?: it }
+                if (context != null) reportIfPending(context)
+                result
+            }
+        } catch (t: Throwable) {
+            attachHookInstalled = false
+            HookHelper.log("hook status: attach hook unavailable", t)
+        }
+    }
+
+    @Synchronized
+    private fun reportIfPending(context: Context) {
+        val source = pendingSource ?: return
+        if (reported || installedKeys.isEmpty()) return
+        report(context, source.first, source.second, ArrayList(installedKeys))
+        reported = true
     }
 
     private fun report(
