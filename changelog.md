@@ -13,6 +13,10 @@
 
 - **移除旧「Hook 状态提示（标题染色）」实现，改为下述广播回报机制**：libxposed 远程文件为「App 写、Hook 读」，Hook 侧 `XposedInterface.openRemoteFile` 在 Vector 等新框架上明确为**只读**，原 `HookStatusWriter` 从 Hook 侧写入必然失败、状态始终为空，故整体移除：删除 `HookStatusWriter` / `HookStatusReader` / `HookStatus` 枚举与示例「状态提示」分区，移除 `OptionSpec.hookId` / `statusId` / `demoStatus`、`rememberHookStatus` / `HookStatusTitleColor`、各卡片 `titleColor` 染色、`hook_status_*` 字符串及 `BaseLoad` / `NativeHookHelper` / `XposedEntry` 中的状态写入调用和相应文档
 
+### 修复
+
+- **安全模式（崩溃循环保护）在 libxposed 上失效**：远程偏好对 hooked app 为**只读**，原 `SafeModeManager` 从 hook 侧写入必然抛 `UnsupportedOperationException`（被吞后静默失效）。改为：hook 侧仅**只读** `safe_mode_<pkg>`；App 侧根据「目标进程成功装载 hook」的回报记录启动、窗口内重复启动累计为疑似崩溃，达到阈值（普通 3 / 关键 2）后把 `safe_mode_<pkg>` 回写远程偏好；hook 下次启动读到即跳过全部 hook
+
 ## 0.4.3
 
 > 发布于 2026-09-28
