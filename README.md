@@ -1,3 +1,4 @@
+<!--suppress HtmlDeprecatedAttribute, HtmlDeprecatedTag -->
 <div align="center">
 
 # MiuixGuiTemplate
