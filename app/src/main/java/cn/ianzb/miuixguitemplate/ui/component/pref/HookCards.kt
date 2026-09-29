@@ -15,7 +15,7 @@ fun HookSwitchCard(
     spec: OptionSpec,
     modifier: Modifier = Modifier,
 ) {
-    val enabled = rememberDependencyEnabled(spec)
+    val enabled = rememberOptionEnabled(spec)
     val checked = ConfigState.bool(spec.key, spec.defaultBoolean)
     SwitchPreference(
         title = stringResource(spec.titleRes),
@@ -27,7 +27,6 @@ fun HookSwitchCard(
         },
         enabled = enabled,
         modifier = modifier,
-        titleColor = HookStatusTitleColor(spec),
     )
 }
 
@@ -37,7 +36,7 @@ fun HookCheckboxCard(
     spec: OptionSpec,
     modifier: Modifier = Modifier,
 ) {
-    val enabled = rememberDependencyEnabled(spec)
+    val enabled = rememberOptionEnabled(spec)
     val checked = ConfigState.bool(spec.key, spec.defaultBoolean)
     CheckboxPreference(
         title = stringResource(spec.titleRes),
@@ -49,7 +48,6 @@ fun HookCheckboxCard(
         },
         enabled = enabled,
         modifier = modifier,
-        titleColor = HookStatusTitleColor(spec),
     )
 }
 
@@ -60,7 +58,7 @@ fun HookArrowCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    val enabled = rememberDependencyEnabled(spec)
+    val enabled = rememberOptionEnabled(spec)
     ArrowPreference(
         title = stringResource(spec.titleRes),
         summary = spec.summaryRes.takeIf { it != 0 }?.let { stringResource(it) },

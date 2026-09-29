@@ -2,7 +2,6 @@ package cn.ianzb.miuixguitemplate.ui.screen.features
 
 import android.content.Intent
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -14,8 +13,6 @@ import cn.ianzb.miuixguitemplate.prefs.OptionType
 import cn.ianzb.miuixguitemplate.ui.component.pref.HookOptionsPage
 import cn.ianzb.miuixguitemplate.ui.component.pref.HookSection
 import cn.ianzb.miuixguitemplate.ui.component.pref.HookSubPage
-import cn.ianzb.miuixguitemplate.xposed.HookStatus
-import cn.ianzb.miuixguitemplate.xposed.HookStatusReader
 
 /**
  * 功能页：模块全部功能入口（模板以各组件类型作为示例功能）。
@@ -42,10 +39,6 @@ fun FeaturesPageView(
                 onOpen = { context.startActivity(Intent(context, FeatureSubPageActivity::class.java)) },
             ),
         )
-    }
-
-    LaunchedEffect(Unit) {
-        HookStatusReader.refresh()
     }
 
     HookOptionsPage(
@@ -95,14 +88,6 @@ private fun featureSections(specs: List<OptionSpec>): List<HookSection> = listOf
     HookSection(
         titleRes = R.string.example_section_package_list,
         specs = listOf(specByKey(specs, "example_package_list")),
-    ),
-    HookSection(
-        titleRes = R.string.example_section_status,
-        specs = listOf(
-            specByKey(specs, "example_status_success"),
-            specByKey(specs, "example_status_failed"),
-            specByKey(specs, "example_status_none"),
-        ),
     ),
 )
 
@@ -204,29 +189,5 @@ internal fun featureSpecs(): List<OptionSpec> = listOf(
         titleRes = R.string.example_package_list_title,
         summaryRes = R.string.example_package_list_summary,
         defaultString = "",
-    ),
-    OptionSpec(
-        key = "example_status_success",
-        type = OptionType.SWITCH,
-        titleRes = R.string.example_status_success_title,
-        summaryRes = R.string.example_status_success_summary,
-        defaultBoolean = true,
-        demoStatus = HookStatus.SUCCESS,
-    ),
-    OptionSpec(
-        key = "example_status_failed",
-        type = OptionType.SWITCH,
-        titleRes = R.string.example_status_failed_title,
-        summaryRes = R.string.example_status_failed_summary,
-        defaultBoolean = false,
-        demoStatus = HookStatus.FAILED,
-    ),
-    OptionSpec(
-        key = "example_status_none",
-        type = OptionType.SWITCH,
-        titleRes = R.string.example_status_none_title,
-        summaryRes = R.string.example_status_none_summary,
-        defaultBoolean = false,
-        demoStatus = HookStatus.NOT_APPLIED,
     ),
 )

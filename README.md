@@ -18,14 +18,14 @@
 # 功能
 
 - **Hook 封装** — `hookBefore` / `hookAfter` / `hookReplace` / `intercept` / `findAndHook*` / `hookAll*` / `hookClassInitializer` / `invokeOriginal`，统一句柄管理
-- **原生 Hook 封装** — `NativeHookHelper` / `BaseNativeHook` / `BaseLoad.initNativeHook`，与 JavaHook 对称的一键接入（声明、加载、开关、状态、安全兜底）；面向 Rust 应用（`flutter_rust_bridge` / 纯 Rust 库），详见[原生 Hook 指南](docs/NATIVE_HOOK.md)
+- **原生 Hook 封装** — `NativeHookHelper` / `BaseNativeHook` / `BaseLoad.initNativeHook`，与 JavaHook 对称的一键接入（声明、加载、开关、安全兜底）；面向 Rust 应用（`flutter_rust_bridge` / 纯 Rust 库），详见[原生 Hook 指南](docs/NATIVE_HOOK.md)
 - **版本 / 设备筛选** — 统一的 `HookVersionGate` 与 `deviceScope`：版本支持 `>` `<`、多重规则（AND/OR），可按 Android / HyperOS / MIUI / 应用版本；设备支持手机 / 平板 / 折叠屏区分，默认各设备通用，并可在设置中手动覆盖当前设备类型
 - **安全模式** — 设置页「模块」分区声明安全模式状态并提供入口，二级页逐应用开关安全模式并查看崩溃计数
 - **主动申请作用域** — 启用选项时自动为未授权目标申请作用域
 - **DexKit 缓存** — 带 JSON 持久化、版本失效校验与文件锁的 DexKit 缓存，支持 Root 清空
 - **统一配置系统** — 自定义键名、默认值、持久化、跨进程镜像、JSON 导出导入
 - **组件与 Hook 绑定** — 开关 / 箭头 / 下拉 / 滑块 / 复选框 / 单选 / 文本卡片，标题接入全局搜索
-- **Hook 状态展示** — 规则生效时标题显示为绿色、失败为红色，未应用时保持默认色（零额外占位）
+- **设备独占控制** — 配置项声明 `deviceScope`（手机 / 平板 / 折叠屏）后，非白名单设备上**禁用灰显不隐藏**，切换「当前设备类型」实时生效；hook 侧同步跳过
 - **二级页面模板** — 独立 Activity，自动套用主题与背景模糊配置
 - **应用内检查更新** — 设置页「更新」分区支持启动自动检查与手动检查；发现新版本弹窗展示 Release 更新说明并跳转下载页（仓库地址见 `UpdateChecker.REPO`，需改为自己的仓库）
 - **功能标签页** — 以「功能页 + 子页面搜索」的形态内置每种组件类型的示例，便于快速上手
@@ -156,7 +156,7 @@ Based on MiuixGuiTemplate <版本号>
 | 项目 | 标注 |
 |---|---|
 | [HyperNavBar](https://github.com/HyperNavBar/HyperNavBar) | `Based on MiuixGuiTemplate 0.4.3` |
-| [HyperRefine](https://github.com/Ianzb/HyperRefine) | `Based on MiuixGuiTemplate 0.4.3` |
+| [HyperRefine](https://github.com/Ianzb/HyperRefine) | `Based on MiuixGuiTemplate 0.5.0` |
 
 该约定连同开源协议义务已汇总为一张核对清单，见[二次开发指南 · 开源协议与致谢](docs/CUSTOMIZE.md#11-开源协议与致谢必读)。
 

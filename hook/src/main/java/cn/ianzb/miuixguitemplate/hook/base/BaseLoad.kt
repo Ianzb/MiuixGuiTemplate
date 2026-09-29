@@ -5,7 +5,6 @@ import cn.ianzb.miuixguitemplate.hook.nativehook.BaseNativeHook
 import cn.ianzb.miuixguitemplate.hook.rule.HookSkippedException
 import cn.ianzb.miuixguitemplate.hook.rule.VersionContext
 import cn.ianzb.miuixguitemplate.hook.xposed.HookHelper
-import cn.ianzb.miuixguitemplate.hook.xposed.HookStatusWriter
 
 /**
  * 按目标包组织的一组 hook。
@@ -40,7 +39,6 @@ abstract class BaseLoad {
 
     fun onPackageReady(target: PackageTarget) {
         currentTarget = target
-        HookStatusWriter.startProcess(target.processName)
         pendingHooks.clear()
         pendingNativeHooks.clear()
         runCatching { onPackageLoaded(target) }
@@ -61,7 +59,6 @@ abstract class BaseLoad {
         }
 
         if (needsDexKit) runCatching { DexKitCacheManager.releaseBridge() }
-        HookStatusWriter.flush()
     }
 
     private fun install(hook: BaseHook) {
@@ -75,19 +72,16 @@ abstract class BaseLoad {
                     hook.dexKitInitInProgress = false
                 }
                 if (!ok) {
-                    HookStatusWriter.record(hook.key, false)
                     HookHelper.log("${hook.tag} skipped: initDexKit returned false")
                     return
                 }
             }
             val variant = hook.apply(target)
-            HookStatusWriter.record(hook.key, true)
             HookHelper.log("${hook.tag} hook success${variant?.let { " [$it]" } ?: ""} @ ${target.packageName}")
         } catch (t: HookSkippedException) {
-            // 版本筛选未命中属于主动跳过：不写状态，UI 视为「未应用」。
+            // 版本 / 设备筛选未命中属于主动跳过。
             HookHelper.log("${hook.tag} skipped @ ${target.packageName}: ${t.message}")
         } catch (t: Throwable) {
-            HookStatusWriter.record(hook.key, false)
             HookHelper.log("${hook.tag} hook failed @ ${target.packageName}", t)
         }
     }
@@ -107,7 +101,6 @@ abstract class BaseLoad {
             HookHelper.log("native hook load failed: ${hook.libraryName} @ ${target.packageName}", t)
             false
         }
-        HookStatusWriter.record(hook.key, ok)
         if (ok) {
             HookHelper.log("native hook loaded: ${hook.libraryName} @ ${target.packageName}")
         } else if (hook.required) {

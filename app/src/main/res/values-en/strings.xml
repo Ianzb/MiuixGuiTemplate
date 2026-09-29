@@ -95,11 +95,6 @@
     <string name="restart_system_confirm_message">The target includes system processes. Restarting will reboot the device. Continue?</string>
     <string name="restart_system_confirm_action">Restart</string>
 
-    <!-- Hook status -->
-    <string name="hook_status_success">Applied</string>
-    <string name="hook_status_failed">Failed</string>
-    <string name="hook_status_not_applied">Not applied</string>
-
     <!-- Slider -->
     <string name="hook_slider_current">Current: %1$s</string>
     <string name="hook_slider_current_default">Current %1$s · Default %2$s</string>
@@ -141,7 +136,6 @@
     <string name="example_section_slider">Slider card</string>
     <string name="example_section_text">Text input card</string>
     <string name="example_section_package_list">Package list card (restart apps top-right)</string>
-    <string name="example_section_status">Status</string>
 
     <string name="example_switch_title">Enable Experimental Features</string>
     <string name="example_switch_summary">Try new features that are not yet stable</string>
@@ -180,12 +174,6 @@
     <string name="example_text_summary">Add a custom suffix to exported files</string>
     <string name="example_package_list_title">Custom App List</string>
     <string name="example_package_list_summary">Enter package names; batch restart from the top-right button</string>
-    <string name="example_status_success_title">Applied example</string>
-    <string name="example_status_success_summary">Title text turns green</string>
-    <string name="example_status_failed_title">Failed example</string>
-    <string name="example_status_failed_summary">Title text turns red</string>
-    <string name="example_status_none_title">Not applied example</string>
-    <string name="example_status_none_summary">Title keeps the default color</string>
 
     <!-- Update -->
     <string name="check_update_on_launch">Check for Updates on Launch</string>
@@ -217,7 +205,7 @@
     <string name="about_telegram">Telegram Group</string>
     <string name="about_telegram_summary">https://t.me/your-channel</string>
     <string name="about_dependencies">Third Party Licenses &amp; Credits</string>
-    <string name="about_based_on">Based on MiuixGuiTemplate 0.4.3</string>
+    <string name="about_based_on">Based on MiuixGuiTemplate 0.5.0</string>
     <string name="license_lgpl">GNU LGPL v3.0</string>
     <string name="license_lgpl_summary">View full license text</string>
     <string name="third_party_licenses_title">Third Party Licenses &amp; Credits</string>

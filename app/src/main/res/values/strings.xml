@@ -95,11 +95,6 @@
     <string name="restart_system_confirm_message">目标包含系统进程，重启将导致设备重启。确定继续吗？</string>
     <string name="restart_system_confirm_action">重启</string>
 
-    <!-- Hook status -->
-    <string name="hook_status_success">已应用</string>
-    <string name="hook_status_failed">应用失败</string>
-    <string name="hook_status_not_applied">未应用</string>
-
     <!-- Slider -->
     <string name="hook_slider_current">当前值：%1$s</string>
     <string name="hook_slider_current_default">当前值 %1$s · 默认值 %2$s</string>
@@ -141,7 +136,6 @@
     <string name="example_section_slider">滑块卡片</string>
     <string name="example_section_text">文本输入卡片</string>
     <string name="example_section_package_list">包名列表卡片（右上角重启应用）</string>
-    <string name="example_section_status">状态提示</string>
 
     <string name="example_switch_title">启用实验性功能</string>
     <string name="example_switch_summary">开启后体验尚未稳定的新功能</string>
@@ -180,12 +174,6 @@
     <string name="example_text_summary">为导出文件添加自定义后缀</string>
     <string name="example_package_list_title">自定义应用列表</string>
     <string name="example_package_list_summary">输入包名后，页面右上角可批量重启</string>
-    <string name="example_status_success_title">应用成功示例</string>
-    <string name="example_status_success_summary">标题显示为绿色</string>
-    <string name="example_status_failed_title">应用失败示例</string>
-    <string name="example_status_failed_summary">标题显示为红色</string>
-    <string name="example_status_none_title">未应用示例</string>
-    <string name="example_status_none_summary">标题保持默认颜色</string>
 
     <!-- Update -->
     <string name="check_update_on_launch">自动检查更新</string>
@@ -217,7 +205,7 @@
     <string name="about_telegram">Telegram 群组</string>
     <string name="about_telegram_summary">https://t.me/your-channel</string>
     <string name="about_dependencies">第三方许可证与致谢</string>
-    <string name="about_based_on">Based on MiuixGuiTemplate 0.4.3</string>
+    <string name="about_based_on">Based on MiuixGuiTemplate 0.5.0</string>
     <string name="license_lgpl">GNU LGPL v3.0</string>
     <string name="license_lgpl_summary">查看完整协议文本</string>
     <string name="third_party_licenses_title">第三方许可证与致谢</string>

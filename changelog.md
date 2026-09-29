@@ -1,5 +1,17 @@
 # 更新日志
 
+## 0.5.0
+
+> 发布于 2026-09-29
+
+### 新增
+
+- **统一的「设备独占」API**：`OptionSpec.deviceScope: Set<DeviceType>?` + `rememberOptionEnabled(spec)`（依赖项 ∧ 设备白名单）。仅某类设备可用的功能在其它设备形态上**禁用灰显、不隐藏**；读取 `ConfigState`，切换「设置 → 当前设备类型」后实时刷新；所有 Hook 卡片统一改用 `rememberOptionEnabled` 作为 `enabled`
+
+### 变更
+
+- **移除 Hook 状态提示（标题染色）功能**：libxposed 远程文件为「App 写、Hook 读」，Hook 侧 `XposedInterface.openRemoteFile` 在 Vector 等新框架上明确为**只读**，原 `HookStatusWriter` 从 Hook 侧写入必然失败、状态始终为空，故整体移除：删除 `HookStatusWriter` / `HookStatusReader` / `HookStatus` 枚举与示例「状态提示」分区，移除 `OptionSpec.hookId` / `statusId` / `demoStatus`、`rememberHookStatus` / `HookStatusTitleColor`、各卡片 `titleColor` 染色、`hook_status_*` 字符串及 `BaseLoad` / `NativeHookHelper` / `XposedEntry` 中的状态写入调用和相应文档
+
 ## 0.4.3
 
 > 发布于 2026-09-28

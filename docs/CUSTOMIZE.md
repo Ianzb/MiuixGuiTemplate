@@ -419,7 +419,7 @@ HookOptionsPage(
 |---|---|
 | 应用内「关于」页 Logo 下方 | `strings.xml` → `about_based_on`（两套语言均改） |
 
-用途：同步脚手架的修复与改进时，以该版本号判断差异范围。当前已知衍生项目：**HyperNavBar** 与 **HyperRefine**（均 `Based on MiuixGuiTemplate 0.4.3`）。
+用途：同步脚手架的修复与改进时，以该版本号判断差异范围。当前已知衍生项目：**HyperNavBar**（`Based on MiuixGuiTemplate 0.4.3`）与 **HyperRefine**（`Based on MiuixGuiTemplate 0.5.0`）。
 
 ### 11.3 一次性核对清单
 
