@@ -1,11 +1,14 @@
 package cn.ianzb.miuixguitemplate.ui.component.pref
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import cn.ianzb.miuixguitemplate.hook.device.DeviceContext
 import cn.ianzb.miuixguitemplate.hook.device.DeviceType
 import cn.ianzb.miuixguitemplate.prefs.ConfigState
 import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
 import cn.ianzb.miuixguitemplate.prefs.OptionSpec
+import cn.ianzb.miuixguitemplate.xposed.HookStatusStore
 import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
 
 /**
@@ -48,6 +51,17 @@ fun rememberDependencyEnabled(spec: OptionSpec): Boolean {
 @Composable
 fun rememberOptionEnabled(spec: OptionSpec): Boolean =
     rememberDependencyEnabled(spec) && rememberDeviceScopeEnabled(spec)
+
+/**
+ * 该配置键是否已在目标进程生效（由目标进程广播回报，App 侧按版本 + 开机号作用域持久化）。
+ *
+ * 读取 [HookStatusStore.state]，目标进程重新回报后自动刷新。
+ */
+@Composable
+fun rememberHookApplied(key: String): Boolean {
+    val applied by HookStatusStore.state.collectAsState()
+    return key in applied
+}
 
 /**
  * 选项被启用时，自动为未授权的作用域目标发起申请。

@@ -407,6 +407,7 @@ data class OptionSpec(
     val entryValues: List<String> = emptyList(),
     val targetPackages: List<String> = emptyList(),
     val deviceScope: Set<DeviceType>? = null,   // 设备形态白名单；空 = 各设备通用（非白名单设备禁用不隐藏）
+    val showStatus: Boolean = false,            // 副标题展示 Hook 生效状态（已生效 / 未生效）
     val dependsOn: String? = null,              // 依赖键（绑定机制）
     val dependsOnValue: Boolean = true,
     val masterKey: String? = null,              // 滑块主开关键
@@ -436,6 +437,7 @@ data class OptionSpec(
 | `sliderUnitRes` / `sliderValueLabelRes` | SLIDER | 单位、数值类型说明 |
 | `targetPackages` | 全部 | 目标包，用于作用域申请 |
 | `deviceScope` | 全部 | 设备形态白名单（`PHONE` / `PAD` / `FOLD`）；非白名单设备上组件**禁用灰显不隐藏**，更改「当前设备类型」后实时刷新。空 = 各设备通用 |
+| `showStatus` | SWITCH / CHECKBOX | 在副标题末尾展示该键在目标进程的 Hook 生效状态（见 [4.5 Hook 生效状态](#45-hook-生效状态广播回报)），目标进程重启后刷新 |
 
 ### 3.2 `OptionRegistry`
 
@@ -592,6 +594,45 @@ object SafeModeReader {
 - `XposedEntry.onPackageReady` 与 `onSystemServerStarting` 均已接入，避免系统应用反复崩溃导致无法开机。
 - 作用域页会标注「安全模式」并提供一键恢复（`SafeModeReader.reset`）。
 
+### 4.5 Hook 生效状态（广播回报）
+
+判断某功能「是否真的在目标进程装上了 Hook」不能靠读远程偏好（Hook 侧只读）或「模块已启用」来猜，而应由**被注入的目标进程主动回报**。
+
+**Hook 侧（`:hook`，包 `...hook.status`）**
+
+```kotlin
+object HookStatusReporter {
+    fun markInstalled(key: String)                  // BaseLoad 安装成功后自动调用
+    fun flush(sourcePackage: String, sourceProcess: String)  // onPackageReady 末尾自动调用
+}
+```
+
+- `BaseLoad` 在每条 hook **安装成功后** `markInstalled(hook.key)`，并在 `onPackageReady` 末尾 `flush(...)`；无安装则自动跳过。
+- `flush` 通过 `ActivityThread.currentApplication()` 反射取目标进程 Application 作为发送上下文（不额外 hook `Application.attach`，减小失败面），把本进程已安装的键**合并为一次定向广播** `ACTION_HOOKS_ACTIVE` 发往 App。
+- Android 16+ 开启 `BroadcastOptions.setShareIdentityEnabled(true)`，使 App 侧可校验发送者 UID。
+- 协议常量见 `HookStatusContract`（动作、extras、模块包名、接收器类名）。
+
+**App 侧（`:app`，包 `...xposed`）**
+
+```kotlin
+object HookStatusStore {
+    val state: StateFlow<Set<String>>   // 当前生效的配置键集合（Compose 可观察）
+    fun initialize(context: Context)    // Application.onCreate 调用
+    fun isApplied(key: String): Boolean
+    fun record(context: Context, keys: Collection<String>)
+    fun removeKeys(context: Context, keys: Collection<String>)
+    fun clear(context: Context)
+}
+
+@Composable
+fun rememberHookApplied(key: String): Boolean   // 见 5.3
+```
+
+- `HookStatusReceiver` 校验：动作匹配 → 发送者身份可用（`sentFromUid`）→ `getPackagesForUid` 含来源包 → 模块 `versionCode` 一致（0 视为未知放行）→ 上报键为 App 已声明键子集。任一不满足即拒绝。
+- `HookStatusStore` 使用 **device-protected** 偏好，按 `versionCode` + `Settings.Global.BOOT_COUNT` 作用域：旧版本 / 上一次开机的证据自动丢弃。
+- **优化点**：不依赖系统签名级 `INTERACT_ACROSS_USERS` 权限（普通模块即可用），改用发送者 UID → 包集合校验防伪造；上报为**键集合**而非定长位掩码，天然支持任意数量与多进程功能合并。
+- 开关变更时卡片会 `removeKeys` 清除旧证据，需**重启目标进程**才会再次回报并显示「已生效」（libxposed 无法热卸载已注册的 hook）。
+
 ---
 
 ## 5. UI 组件（`:app`）
@@ -642,6 +683,7 @@ object SafeModeReader {
 @Composable fun rememberDeviceScopeEnabled(spec: OptionSpec): Boolean
 @Composable fun rememberDependencyEnabled(spec: OptionSpec): Boolean
 @Composable fun rememberOptionEnabled(spec: OptionSpec): Boolean
+@Composable fun rememberHookApplied(key: String): Boolean
 @Composable fun hookSectionTitle(section: HookSection): String
 fun ensureScopeFor(spec: OptionSpec)
 ```
@@ -650,6 +692,7 @@ fun ensureScopeFor(spec: OptionSpec)
 - `rememberDeviceScopeEnabled`：设备形态是否在 `spec.deviceScope` 白名单内；未声明白名单（null / 空）视为各设备通用。
 - `rememberDependencyEnabled`：根据 `spec.dependsOn` / `spec.dependsOnValue` 返回是否启用。
 - `rememberOptionEnabled`：**统一的组件可用性判定** = `rememberDependencyEnabled && rememberDeviceScopeEnabled`。所有 Hook 卡片以它作为 `enabled`，从而让设备独占功能在非白名单设备上**禁用灰显而不隐藏**。
+- `rememberHookApplied`：该配置键是否已在目标进程生效（读取 `HookStatusStore.state`，见 [4.5](#45-hook-生效状态广播回报)）。
 - `hookSectionTitle`：渲染分区标题；默认仅 `titleRes`，`titleEn` 非空时拼成 `中文（English）`（仅示例 / API 展示用，实际功能页应省略 `titleEn`）。
 - `ensureScopeFor`：为 `spec.targetPackages` 中未授权的包申请作用域。
 

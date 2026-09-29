@@ -100,6 +100,8 @@ internal fun featureSpecs(): List<OptionSpec> = listOf(
         summaryRes = R.string.example_switch_summary,
         defaultBoolean = false,
         targetPackages = listOf("com.example.target"),
+        // 演示 Hook 生效状态：目标进程安装同名 key 的 hook 并回报后显示「已生效」。
+        showStatus = true,
     ),
     OptionSpec(
         key = "example_checkbox",

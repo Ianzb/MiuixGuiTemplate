@@ -58,6 +58,8 @@
     <string name="module_status_summary_inactive">Not activated</string>
     <string name="module_status_summary_no_root">Activated (No Root)</string>
     <string name="module_status_root_hint">Root not granted, restart and other features unavailable</string>
+    <string name="hook_status_applied">Active</string>
+    <string name="hook_status_not_applied">Inactive</string>
     <string name="module_scope">Scope</string>
     <string name="module_scope_count">%d apps authorized</string>
     <string name="module_scope_request">Request All Scopes</string>

@@ -65,6 +65,14 @@
             android:name=".ui.screen.safemode.SafeModeActivity"
             android:exported="false"
             android:theme="@style/Theme.MiuixGuiTemplate" />
+        <!-- 接收目标进程的 Hook 生效回报。来源经发送者 UID / 包名 / 版本校验。 -->
+        <receiver
+            android:name=".xposed.HookStatusReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="cn.ianzb.miuixguitemplate.action.HOOKS_ACTIVE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

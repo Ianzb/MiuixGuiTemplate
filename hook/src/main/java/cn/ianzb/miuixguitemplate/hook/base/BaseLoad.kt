@@ -4,6 +4,7 @@ import cn.ianzb.miuixguitemplate.hook.dexkit.DexKitCacheManager
 import cn.ianzb.miuixguitemplate.hook.nativehook.BaseNativeHook
 import cn.ianzb.miuixguitemplate.hook.rule.HookSkippedException
 import cn.ianzb.miuixguitemplate.hook.rule.VersionContext
+import cn.ianzb.miuixguitemplate.hook.status.HookStatusReporter
 import cn.ianzb.miuixguitemplate.hook.xposed.HookHelper
 
 /**
@@ -58,6 +59,9 @@ abstract class BaseLoad {
             if (enabled) installNative(hook)
         }
 
+        // 本进程完成注册后，合并上报已成功安装的配置键（无安装则自动跳过）。
+        HookStatusReporter.flush(target.packageName, target.processName)
+
         if (needsDexKit) runCatching { DexKitCacheManager.releaseBridge() }
     }
 
@@ -78,6 +82,7 @@ abstract class BaseLoad {
             }
             val variant = hook.apply(target)
             HookHelper.log("${hook.tag} hook success${variant?.let { " [$it]" } ?: ""} @ ${target.packageName}")
+            HookStatusReporter.markInstalled(hook.key)
         } catch (t: HookSkippedException) {
             // 版本 / 设备筛选未命中属于主动跳过。
             HookHelper.log("${hook.tag} skipped @ ${target.packageName}: ${t.message}")

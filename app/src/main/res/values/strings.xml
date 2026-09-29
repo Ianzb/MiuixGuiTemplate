@@ -58,6 +58,8 @@
     <string name="module_status_summary_inactive">未激活</string>
     <string name="module_status_summary_no_root">已激活（无 Root）</string>
     <string name="module_status_root_hint">未授予 Root，重启等功能不可用</string>
+    <string name="hook_status_applied">已生效</string>
+    <string name="hook_status_not_applied">未生效</string>
     <string name="module_scope">作用域</string>
     <string name="module_scope_count">已授权 %d 个应用</string>
     <string name="module_scope_request">申请全部作用域</string>

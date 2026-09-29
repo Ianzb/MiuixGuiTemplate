@@ -7,10 +7,11 @@
 ### 新增
 
 - **统一的「设备独占」API**：`OptionSpec.deviceScope: Set<DeviceType>?` + `rememberOptionEnabled(spec)`（依赖项 ∧ 设备白名单）。仅某类设备可用的功能在其它设备形态上**禁用灰显、不隐藏**；读取 `ConfigState`，切换「设置 → 当前设备类型」后实时刷新；所有 Hook 卡片统一改用 `rememberOptionEnabled` 作为 `enabled`
+- **Hook 生效状态（广播回报）**：目标进程在 `BaseLoad` 完成一组注册后，合并本进程已成功安装的配置键，**一次性定向广播**回报（`HookStatusReporter` / `HookStatusContract`）；App 侧 `HookStatusReceiver` 经「发送者 UID → 包集合 + 模块版本 + 已声明键子集」校验后写入 `HookStatusStore`（device-protected，按 `versionCode` + `BOOT_COUNT` 作用域，旧版本 / 上次开机自动丢弃）；`OptionSpec.showStatus` + `rememberHookApplied(key)` 在副标题展示「已生效 / 未生效」，开关变更后先清证据、待目标进程重启重新回报。不依赖 hook 侧写远程偏好，也无需系统签名级权限
 
 ### 变更
 
-- **移除 Hook 状态提示（标题染色）功能**：libxposed 远程文件为「App 写、Hook 读」，Hook 侧 `XposedInterface.openRemoteFile` 在 Vector 等新框架上明确为**只读**，原 `HookStatusWriter` 从 Hook 侧写入必然失败、状态始终为空，故整体移除：删除 `HookStatusWriter` / `HookStatusReader` / `HookStatus` 枚举与示例「状态提示」分区，移除 `OptionSpec.hookId` / `statusId` / `demoStatus`、`rememberHookStatus` / `HookStatusTitleColor`、各卡片 `titleColor` 染色、`hook_status_*` 字符串及 `BaseLoad` / `NativeHookHelper` / `XposedEntry` 中的状态写入调用和相应文档
+- **移除旧「Hook 状态提示（标题染色）」实现，改为下述广播回报机制**：libxposed 远程文件为「App 写、Hook 读」，Hook 侧 `XposedInterface.openRemoteFile` 在 Vector 等新框架上明确为**只读**，原 `HookStatusWriter` 从 Hook 侧写入必然失败、状态始终为空，故整体移除：删除 `HookStatusWriter` / `HookStatusReader` / `HookStatus` 枚举与示例「状态提示」分区，移除 `OptionSpec.hookId` / `statusId` / `demoStatus`、`rememberHookStatus` / `HookStatusTitleColor`、各卡片 `titleColor` 染色、`hook_status_*` 字符串及 `BaseLoad` / `NativeHookHelper` / `XposedEntry` 中的状态写入调用和相应文档
 
 ## 0.4.3
 
