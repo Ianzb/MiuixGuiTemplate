@@ -1,5 +1,13 @@
 # 更新日志
 
+## 0.5.1
+
+> 发布于 2026-09-30
+
+### 新增
+
+- **CI 构建产物推送 Telegram 测试话题**：`CI Build` 工作流构建 Debug APK 并上传 Artifacts 后，自动把测试包推送到 Telegram 群的指定话题；与正式版共用 `CHANNEL_ID` / `BOT_TOKEN`，仅新增 Secret `TEST_MESSAGE_THREAD_ID` 存放话题 `message_thread_id`（`getUpdates` 中的 `message_thread_id`，或话题链接 `https://t.me/c/<群id>/<话题id>` 的末段）。消息带版本号与 Actions 运行链接；未配置该 Secret、缺 `CHANNEL_ID` / `BOT_TOKEN` 或为 `pull_request` 时自动跳过
+
 ## 0.5.0
 
 > 发布于 2026-09-29
