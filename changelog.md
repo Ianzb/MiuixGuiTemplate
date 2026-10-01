@@ -1,5 +1,13 @@
 # 更新日志
 
+## 0.5.2
+
+> 发布于 2026-10-01
+
+### 变更
+
+- **安全模式加入白名单**：自动安全模式仅对系统界面、桌面、系统进程（`com.android.systemui` / `com.miui.home` / `android` / `system`）生效；其余进程本身会自行重启，不再计数与触发，避免误判（`SafeModeReader` 与 `SafeModeManager` 同步）
+
 ## 0.5.1
 
 > 发布于 2026-09-30
