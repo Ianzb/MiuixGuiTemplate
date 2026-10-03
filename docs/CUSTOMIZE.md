@@ -20,7 +20,7 @@
 | 关于页链接 | `strings.xml` → `about_source_code_summary`、`about_telegram_summary` | 展示与跳转均使用该值；`about_telegram` 的文案**须明确写「Telegram 群组」**（不要只写「反馈渠道 / 反馈方式」，否则用户不知道这是 TG 群组） |
 | 检查更新仓库 | `app/.../UpdateChecker.kt` → `REPO` | 改为自己的 GitHub 仓库（`owner/repo`）以启用「检查更新」；未修改则保持占位仓库 |
 | 版权 | `strings.xml` → `copyright` |                                                     |
-| **Based on 标注** | `strings.xml` → `about_based_on` | 应用内「关于」页保留 `Based on MiuixGuiTemplate <版本号>` 并更新为所依据的脚手架版本（README 无需标注） |
+| Based on 标注（可选） | `strings.xml` → `about_based_on` | 应用内「关于」页可保留 `Based on MiuixGuiTemplate <版本号>` 并更新为所依据的脚手架版本，也可删除；见第 11.2 节 |
 | 参考与致谢 | 应用内 `LicensePage.kt` → `licenses_section_refs` | 保留对参考项目的致谢（可增不可删），文档不展开具体借鉴说明 |
 | 开源协议 | 根目录 `LICENSE`、`README.md`「许可证」、`strings.xml` → `license_lgpl*` | **须保持 LGPL-3.0（或更弱兼容的 GPL-3.0）**，见第 11 节            |
 | 许可证列表 | `ui/screen/about/LicensePage.kt` → `licenseSections` | 增删依赖库                                               |
@@ -118,7 +118,7 @@ android {
 
 > **`about_telegram` 的显示文案须写成「Telegram 群组」（英文 `Telegram Group`）**，不要只写「反馈渠道 / 反馈方式」，否则用户看不出这是 Telegram 群组。`about_telegram_summary` 填群组链接（`https://t.me/...`）。
 
-关于页的「GNU LGPL v3.0」跳转链接为协议官方文本地址；「参考项目」条目跳转第三方许可证页，具体参考与致谢清单在该页维护。关于页 Logo 下方的 `about_based_on` 即 **Based on 标注**，须保留并随脚手架版本更新（见第 11 节）。
+关于页的「GNU LGPL v3.0」跳转链接为协议官方文本地址；「参考项目」条目跳转第三方许可证页，具体参考与致谢清单在该页维护。关于页 Logo 下方的 `about_based_on` 为**可选的** Based on 标注，保留与否自定（见第 11 节）。
 
 ---
 
@@ -398,7 +398,7 @@ HookOptionsPage(
 4. `META-INF/xposed/java_init.list` 指向正确的入口类。
 5. 运行 `./gradlew :hook:compileDebugKotlin :app:assembleDebug` 构建通过。
 6. 安装到设备，确认模块在 LSPosed 中被识别、作用域正确、Hook 生效。
-7. **完成第 11 节「开源协议与致谢」核对表**（协议、致谢、Based on 标注，一次核对到位）。
+7. **完成第 11 节「开源协议与致谢」核对表**（协议、致谢，一次核对到位）。
 
 ---
 
@@ -414,15 +414,13 @@ HookOptionsPage(
 
 落点：应用内「第三方许可证与致谢」页面（`LicensePage.kt` → `licenses_section_refs` 分组，关于页不再单列「参考项目」入口，统一由此页承载）。
 
-### 11.2 Based on 约定
+### 11.2 Based on 标注（可选）
 
-衍生项目**只需**在应用内「关于」页保留形如 `Based on MiuixGuiTemplate <版本号>` 的文本（示例：`Based on MiuixGuiTemplate 0.3.1`），并把版本号更新为**所依据的脚手架版本**；**无需**在各自的 `README.md` 中强调或标注。
+应用内「关于」页 Logo 下方的 `Based on MiuixGuiTemplate <版本号>`（`strings.xml` → `about_based_on`）为**可选标注**：衍生项目可保留并将版本号更新为所依据的脚手架版本（便于同步脚手架的修复与改进），也可直接删除，均不影响开源协议合规。
 
-| 落点 | 文件 |
-|---|---|
-| 应用内「关于」页 Logo 下方 | `strings.xml` → `about_based_on`（两套语言均改） |
-
-用途：同步脚手架的修复与改进时，以该版本号判断差异范围。当前已知衍生项目：**HyperNavBar**（`Based on MiuixGuiTemplate 0.4.3`）与 **HyperRefine**（`Based on MiuixGuiTemplate 0.5.0`）。
+| 落点 | 文件 | 是否必须 |
+|---|---|---|
+| 应用内「关于」页 Logo 下方 | `strings.xml` → `about_based_on`（两套语言均改） | 可选 |
 
 ### 11.3 一次性核对清单
 
@@ -432,7 +430,8 @@ HookOptionsPage(
 | 2 | README「许可证」章节声明 LGPL-3.0 并保留第三方许可说明 | 不得改回 Apache-2.0 |
 | 3 | 关于页协议条目指向 LGPL-3.0 | `license_lgpl*` + `openUri` 指向 LGPL-3.0 文本 |
 | 4 | 保留参考与致谢 | 应用内 `LicensePage.kt` `licenses_section_refs` 分组保留致谢；文档仅保留指向该页的说明 |
-| 5 | 保留并更新 Based on 标注 | 应用内「关于」页（`about_based_on`），版本号 = 所依据脚手架版本；README 无需标注 |
-| 6 | 第三方许可证页完整 | `licenseSections` 覆盖实际依赖 |
-| 7 | 引入的第三方源文件保留原始版权 / SPDX 声明 | 如自 miuix 复制的 `Apache-2.0` 文件头 |
-| 8 | 修改过的第三方源文件标注改动 | 文件头或相邻注释注明修改点 |
+| 5 | 第三方许可证页完整 | `licenseSections` 覆盖实际依赖 |
+| 6 | 引入的第三方源文件保留原始版权 / SPDX 声明 | 如自 miuix 复制的 `Apache-2.0` 文件头 |
+| 7 | 修改过的第三方源文件标注改动 | 文件头或相邻注释注明修改点 |
+
+> Based on 标注为可选项，不纳入上述核对表；是否保留见 11.2。

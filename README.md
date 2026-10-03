@@ -147,20 +147,20 @@ MiuixGuiTemplate 是个人 Android 模块开发所使用的脚手架模板，开
 
 # 使用本模板的项目
 
-基于本模板的衍生项目**无需**在各自的 `README.md` 中标注来源；只需保留应用内「关于」页 Logo 下方的文本，并将版本号更新为所依据的脚手架版本，便于同步脚手架的修复与改进：
+基于本模板的衍生项目**无需**在 `README.md` 或应用内「关于」页标注来源。应用内 Logo 下方的 `Based on MiuixGuiTemplate <版本号>` 为**可选项**：保留时建议将版本号更新为所依据的脚手架版本，便于同步脚手架的修复与改进；不保留亦不影响合规。
 
 ```text
 Based on MiuixGuiTemplate <版本号>
 ```
 
-当前使用本模板的项目：
+当前使用本模板的项目（版本号仅作信息记录，非标注要求）：
 
-| 项目 | 标注 |
+| 项目 | 所依据脚手架版本 |
 |---|---|
-| [HyperNavBar](https://github.com/HyperNavBar/HyperNavBar) | `Based on MiuixGuiTemplate 0.4.3` |
-| [HyperRefine](https://github.com/Ianzb/HyperRefine) | `Based on MiuixGuiTemplate 0.5.0` |
+| [HyperNavBar](https://github.com/HyperNavBar/HyperNavBar) | 0.4.3 |
+| [HyperRefine](https://github.com/Ianzb/HyperRefine) | 0.5.0 |
 
-该约定连同开源协议义务已汇总为一张核对清单，见[二次开发指南 · 开源协议与致谢](docs/CUSTOMIZE.md#11-开源协议与致谢必读)。
+开源协议义务已汇总为一张核对清单，见[二次开发指南 · 开源协议与致谢](docs/CUSTOMIZE.md#11-开源协议与致谢必读)。
 
 <br>
 
@@ -168,4 +168,4 @@ Based on MiuixGuiTemplate <版本号>
 
 本项目以 [GNU Lesser General Public License v3.0](LICENSE)（LGPL-3.0）开源。
 
-本仓库同时包含 Apache-2.0 许可的第三方代码（自 [miuix](https://github.com/compose-miuix-ui/miuix) 等引入的文件保留其原始版权与许可声明）。按照 LGPL-3.0 的传染性要求，本项目整体以 LGPL-3.0 授权分发；基于本模板的衍生作品须以 LGPL-3.0 或 GPL-3.0 授权公开，并保留应用内「参考与致谢」与 Based on 标注。
+本仓库同时包含 Apache-2.0 许可的第三方代码（自 [miuix](https://github.com/compose-miuix-ui/miuix) 等引入的文件保留其原始版权与许可声明）。按照 LGPL-3.0 的传染性要求，本项目整体以 LGPL-3.0 授权分发；基于本模板的衍生作品须以 LGPL-3.0 或 GPL-3.0 授权公开，并保留第三方代码的原始版权与许可声明。
