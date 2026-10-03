@@ -166,6 +166,6 @@ Based on MiuixGuiTemplate <版本号>
 
 # 许可证
 
-本项目以 [GNU Lesser General Public License v3.0](LICENSE)（LGPL-3.0）开源。
+本项目以 [GNU Affero General Public License v3.0](LICENSE)（AGPL-3.0）开源。
 
-本仓库同时包含 Apache-2.0 许可的第三方代码（自 [miuix](https://github.com/compose-miuix-ui/miuix) 等引入的文件保留其原始版权与许可声明）。按照 LGPL-3.0 的传染性要求，本项目整体以 LGPL-3.0 授权分发；基于本模板的衍生作品须以 LGPL-3.0 或 GPL-3.0 授权公开，并保留第三方代码的原始版权与许可声明。
+本仓库同时包含 Apache-2.0 许可的第三方代码（自 [miuix](https://github.com/compose-miuix-ui/miuix) 等引入的文件保留其原始版权与许可声明）。AGPL-3.0 与 GPL-3.0 兼容（AGPL-3.0 §13）；基于本模板的衍生作品须以 AGPL-3.0 授权公开，并保留第三方代码的原始版权与许可声明。
