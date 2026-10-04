@@ -1,5 +1,17 @@
 # 更新日志
 
+## 0.5.3
+
+> 发布于 2026-10-04
+
+### 优化
+
+- **安装包体积大幅精简**：Release 开启 R8 代码与资源压缩、Debug/Release 的 dex 采用传统压缩打包。注意：libxposed 模块此前直接开 R8 会因 `compileOnly` 的 API 不可见而破坏 `Hooker` 实现（`AbstractMethodError`，所有 hook 失效），故新增 `prepareLibxposedR8` 任务从 AAR 解出 `classes.jar` 作为 `-libraryjars` 仅提供给 R8 解析（不打包进 APK，LSPosed 会拒绝打包 API 的模块），并配合 `proguard-rules.pro` 保留 hook 入口与实现；功能不受影响。
+
+### 修复
+
+- **「重启应用」弹窗全选判断失效**：传入的包名列表可能含重复项，`selected`（Set）大小永远小于 `packages.size`，导致「全选」按钮无法切换为「全不选」；现在 `QuickActionDialog` 内部去重并用 `containsAll` 判断。
+
 ## 0.5.2
 
 > 发布于 2026-10-01
