@@ -6,7 +6,7 @@
 
 ### 优化
 
-- **安装包体积大幅精简**：Release 开启 R8 代码与资源压缩、Debug/Release 的 dex 采用传统压缩打包。注意：libxposed 模块此前直接开 R8 会因 `compileOnly` 的 API 不可见而破坏 `Hooker` 实现（`AbstractMethodError`，所有 hook 失效），故新增 `prepareLibxposedR8` 任务从 AAR 解出 `classes.jar` 作为 `-libraryjars` 仅提供给 R8 解析（不打包进 APK，LSPosed 会拒绝打包 API 的模块），并配合 `proguard-rules.pro` 保留 hook 入口与实现；功能不受影响。
+- **安装包体积大幅精简**：Release 开启 R8 代码与资源压缩、Debug/Release 的 dex 采用传统压缩打包。注意：libxposed 模块直接开 R8 时 `compileOnly` 的 API 对 R8 不可见，若用 Kotlin SAM Lambda 实现 `Hooker`，会被编译成 invokedynamic（`$$ExternalSyntheticLambda`，keep 规则无法匹配）而被 R8 破坏，导致 `AbstractMethodError`、hook 全部失效；现改为具名的 `ChainHooker` 实现并整体保留 hook 侧代码，功能不受影响。
 
 ### 修复
 
