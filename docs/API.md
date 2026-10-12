@@ -515,8 +515,13 @@ object HookPrefs {
     fun getString(key: String, defaultValue: String? = null): String?
     fun getStringSet(key: String, defaultValue: Set<String> = emptySet()): Set<String>
     fun getAll(): Map<String, *>
+    fun registerListener(onChange: () -> Unit)   // 偏好变化回调（不支持时静默忽略）
 }
 ```
+
+`registerListener` 用于「改配置即时生效」的功能（例如滑条调整后立刻重算画面）：宿主 / 框架不支持
+偏好变化监听时会静默忽略，此时功能退化为目标进程重启后生效，因此不要把它当作唯一生效路径，
+仍要在 `init()` 中按当前配置套用一次。
 
 ---
 
@@ -534,7 +539,7 @@ object XposedServiceManager {
     var scope: List<String>             // Compose 可观察
 
     fun init()                          // 在 Application.onCreate 调用（含 Root 检测）
-    fun checkRoot()                     // 异步检测 Root 权限
+    fun checkRoot()                     // 异步检测 Root 权限（会真正拉起一次 su）
     fun getService(): XposedService?
     fun refreshScope()
     fun isInScope(packageName: String): Boolean
@@ -542,6 +547,10 @@ object XposedServiceManager {
     fun removeScope(packages: List<String>)
 }
 ```
+
+**Root 检测时机**：`checkRoot()` 会真正拉起一次 `su`，在部分 Root 管理器上会弹出授权 / 使用
+提示，因此只在两个时机调用——应用启动（`init()`）与用户在主页手动点按状态卡片；不要做定时轮询
+或每次回到前台都检测，其余场景复用上一次结果（`isRootAvailable` / `rootChecked`）。
 
 ### 4.2 `RootHelper`
 
@@ -698,7 +707,7 @@ fun ensureScopeFor(spec: OptionSpec)
 
 **绑定机制（`dependsOn`）：**
 
-`dependsOn = "masterKey"` 时，仅当 `masterKey` 的布尔值等于 `dependsOnValue`（默认 `true`）时组件才启用；否则置灰不可交互。
+`dependsOn = "masterKey"` 时，仅当 `masterKey` 的布尔值等于 `dependsOnValue`（默认 `true`）时组件才启用；否则置灰不可交互。依赖支持**多级链**（如 总开关 → 功能开关 → 滑条）：链上任意一环节未满足时，组件同样置灰不可交互。
 
 **设备独占（`deviceScope`）：**
 
@@ -729,6 +738,7 @@ fun HookOptionsPage(
     subPages: List<HookSubPage> = emptyList(),          // 子页面功能并入搜索
     isBlurEnabled: Boolean = true,
     extraBottomPadding: Dp = 0.dp,
+    topContent: (@Composable () -> Unit)? = null,        // 页面顶部提示区（搜索展开时隐藏）
     onArrowClick: (OptionSpec) -> Unit = {},
     customActionPackages: List<String> = emptyList(),   // 额外注入重启应用包名
     topBarActions: (@Composable () -> Unit)? = null,     // 顶栏右侧扩展槽
@@ -754,6 +764,7 @@ fun HookSectionCard(
   - 包名来源 = 全部 `PACKAGE_LIST` 选项解析结果 + `customActionPackages`，去重。
   - 二次开发可通过 `customActionPackages` 直接暴露任意自定义应用，无需用户手动输入。
 - **顶栏扩展**：`topBarActions` 渲染在自动生成的「重启应用」按钮之前；子页面可用 `QuickActionsAction(packages)` 注入同样式的右上角入口（见 5.6）。
+- **顶部提示区**：`topContent` 渲染在搜索栏上方（搜索展开时隐藏），用于放置系统版本要求等说明卡片；为空则不显示。
 
 ### 5.5 完整使用示例
 
@@ -929,6 +940,18 @@ AnimatedVisibility(
 **设备独占：** 需要仅在特定设备形态显示 / 生效的功能，声明 `OptionSpec.deviceScope`；非白名单设备上组件保持可见但**禁用灰显**，hook 侧由 `BaseHook.deviceScope` / `BaseNativeHook.deviceScope` 用同一份设备形态同步跳过。
 
 ---
+
+### 5.8 主页 Pager 手势冲突（横向拖拽子组件）
+
+主页 `HorizontalPager` 采用 Cross-Axis 拦截模式（`userScrollEnabled = false` + 自实现拖拽接管，见 `MainActivity`）。该模式在 `PointerEventPass.Initial` 阶段（父级先收到事件）消费横向拖拽，因此**页面内需要横向拖动的组件（如 `SliderPreference`）默认收不到手势，无法拖动**。
+
+模板在 `ui/util/PagerSwipeOverride.kt`（改编自 miuix `PagerGestureUtils.horizontalPagerSwipeOverride`，Apache-2.0）提供放行机制：
+
+- **Pager 侧**：以 `Modifier.pagerSwipeOverride(pagerState = pagerState)` 替代 miuix 的 `pagerGestureOverride`；其余配置（`userScrollEnabled = false`、`pageNestedScrollConnection = PagerGestureNestedScrollConnection`）保持不变。
+- **子组件侧**：`Modifier.claimPagerSwipe()` 在按下时同步「认领」本次手势（只观察、不消费事件），被认领的手势 Pager 不再拦截。`HookSliderCard` 已内置；新增其它横向拖拽子组件时手工挂上即可。
+- 非拖拽区域的左右滑动切页、惯性分页、触控板滚轮 / Pan 翻页、无障碍翻页均不受影响。
+
+<br>
 
 ## 6. 二级页面模板
 

@@ -1,5 +1,23 @@
 # 更新日志
 
+## 0.5.4
+
+> 发布于 2026-10-12
+
+### 新增
+
+- **主页 Pager 手势放行**：新增 `ui/util/PagerSwipeOverride.kt`（改编自 miuix `PagerGestureUtils`，Apache-2.0）——`Modifier.pagerSwipeOverride` 在被子组件认领的手势内不拦截翻页，`Modifier.claimPagerSwipe` 供滑条等横向拖拽子组件按下时认领
+- **`HookOptionsPage` 顶部提示区**：新增 `topContent` 槽位，渲染在搜索栏上方、搜索展开时隐藏，用于放置系统版本要求等说明卡片（见 [接口文档](docs/API.md) 5.4）
+
+### 优化
+
+- **多级依赖链**：`rememberDependencyEnabled` 现在会沿 `dependsOn` 向上检查依赖链（总开关 → 功能开关 → 组件），链上任意一环节未满足即置灰禁用，避免中间开关关闭时下游组件仍可交互
+- `HookSliderCard` 补充 `sliderValueLabelRes`（标题与滑块同属一个组件）的规范说明；`hook` 模块补齐 JVM 单测依赖（`libs.junit` + 真实 `org.json`），便于为 Hook 侧纯逻辑编写单元测试
+
+### 修复
+
+- **Root 权限不再反复申请**：去掉主页「已激活但无 Root」时每 3 秒一次的定时轮询，以及每次回到前台都检测一次的逻辑；现在只在应用启动（`XposedServiceManager.init`）与用户点按主页状态卡片时各检测一次，避免无权限时反复弹出授权窗口、有权限时反复弹出权限使用提示
+
 ## 0.5.3
 
 > 发布于 2026-10-04
@@ -34,16 +52,16 @@
 
 ### 新增
 
-- **统一的「设备独占」API**：`OptionSpec.deviceScope: Set<DeviceType>?` + `rememberOptionEnabled(spec)`（依赖项 ∧ 设备白名单）。仅某类设备可用的功能在其它设备形态上**禁用灰显、不隐藏**；读取 `ConfigState`，切换「设置 → 当前设备类型」后实时刷新；所有 Hook 卡片统一改用 `rememberOptionEnabled` 作为 `enabled`
-- **Hook 生效状态（广播回报）**：目标进程在 `BaseLoad` 完成一组注册后，合并本进程已成功安装的配置键，**一次性定向广播**回报（`HookStatusReporter` / `HookStatusContract`）；App 侧 `HookStatusReceiver` 经「发送者 UID → 包集合 + 模块版本 + 已声明键子集」校验后写入 `HookStatusStore`（device-protected，按 `versionCode` + `BOOT_COUNT` 作用域，旧版本 / 上次开机自动丢弃）；`OptionSpec.showStatus` + `rememberHookApplied(key)` 在副标题展示「已生效 / 未生效」，开关变更后先清证据、待目标进程重启重新回报。不依赖 hook 侧写远程偏好，也无需系统签名级权限
+- **统一的「设备独占」API**：`OptionSpec.deviceScope: Set<DeviceType>?` + `rememberOptionEnabled(spec)`（依赖项 ∧ 设备白名单）。仅某类设备可用的功能在其它设备形态上 **禁用灰显、不隐藏**；读取 `ConfigState`，切换「设置 → 当前设备类型」后实时刷新；所有 Hook 卡片统一改用 `rememberOptionEnabled` 作为 `enabled`
+- **Hook 生效状态（广播回报）**：目标进程在 `BaseLoad` 完成一组注册后，合并本进程已成功安装的配置键， **一次性定向广播**回报（`HookStatusReporter` / `HookStatusContract`）；App 侧 `HookStatusReceiver` 经「发送者 UID → 包集合 + 模块版本 + 已声明键子集」校验后写入 `HookStatusStore`（device-protected，按 `versionCode` + `BOOT_COUNT` 作用域，旧版本 / 上次开机自动丢弃）；`OptionSpec.showStatus` + `rememberHookApplied(key)` 在副标题展示「已生效 / 未生效」，开关变更后先清证据、待目标进程重启重新回报。不依赖 hook 侧写远程偏好，也无需系统签名级权限
 
 ### 变更
 
-- **移除旧「Hook 状态提示（标题染色）」实现，改为下述广播回报机制**：libxposed 远程文件为「App 写、Hook 读」，Hook 侧 `XposedInterface.openRemoteFile` 在 Vector 等新框架上明确为**只读**，原 `HookStatusWriter` 从 Hook 侧写入必然失败、状态始终为空，故整体移除：删除 `HookStatusWriter` / `HookStatusReader` / `HookStatus` 枚举与示例「状态提示」分区，移除 `OptionSpec.hookId` / `statusId` / `demoStatus`、`rememberHookStatus` / `HookStatusTitleColor`、各卡片 `titleColor` 染色、`hook_status_*` 字符串及 `BaseLoad` / `NativeHookHelper` / `XposedEntry` 中的状态写入调用和相应文档
+- **移除旧「Hook 状态提示（标题染色）」实现，改为下述广播回报机制**：libxposed 远程文件为「App 写、Hook 读」，Hook 侧 `XposedInterface.openRemoteFile` 在 Vector 等新框架上明确为 **只读**，原 `HookStatusWriter` 从 Hook 侧写入必然失败、状态始终为空，故整体移除：删除 `HookStatusWriter` / `HookStatusReader` / `HookStatus` 枚举与示例「状态提示」分区，移除 `OptionSpec.hookId` / `statusId` / `demoStatus`、`rememberHookStatus` / `HookStatusTitleColor`、各卡片 `titleColor` 染色、`hook_status_*` 字符串及 `BaseLoad` / `NativeHookHelper` / `XposedEntry` 中的状态写入调用和相应文档
 
 ### 修复
 
-- **安全模式（崩溃循环保护）在 libxposed 上失效**：远程偏好对 hooked app 为**只读**，原 `SafeModeManager` 从 hook 侧写入必然抛 `UnsupportedOperationException`（被吞后静默失效）。改为：hook 侧仅**只读** `safe_mode_<pkg>`；App 侧根据「目标进程成功装载 hook」的回报记录启动、窗口内重复启动累计为疑似崩溃，达到阈值（普通 3 / 关键 2）后把 `safe_mode_<pkg>` 回写远程偏好；hook 下次启动读到即跳过全部 hook
+- **安全模式（崩溃循环保护）在 libxposed 上失效**：远程偏好对 hooked app 为 **只读**，原 `SafeModeManager` 从 hook 侧写入必然抛 `UnsupportedOperationException`（被吞后静默失效）。改为：hook 侧仅 **只读** `safe_mode_<pkg>`；App 侧根据「目标进程成功装载 hook」的回报记录启动、窗口内重复启动累计为疑似崩溃，达到阈值（普通 3 / 关键 2）后把 `safe_mode_<pkg>` 回写远程偏好；hook 下次启动读到即跳过全部 hook
 
 ## 0.4.3
 
@@ -80,7 +98,7 @@
 - **安全模式页**：设置页「模块」分区新增安全模式声明与入口，二级页可逐应用开关安全模式并查看崩溃计数（`SafeModeReader.setSafeMode`）
 - **设置页「模块」整合**：设备类型（默认 / 手机 / 平板 / 折叠屏，支持手动覆盖）与安全模式置于模块区域
 - **文档**：新增/重写 [原生 Hook 开发指南](docs/NATIVE_HOOK.md)，明确 JavaHook 与 NativeHook 的区分，聚焦 Rust 应用 Hook 全流程；同步更新接口文档
-- **子页面搜索（支持多级）**：`HookOptionsPage` 新增 `subPages` / `HookSubPage`，可把子页面内的功能并入功能页搜索；`HookSubPage.subPages` 支持**递归嵌套**，多级页面深处的功能同样可被搜索直达（搜索结果摘要显示「父 / 子」路径，命中后直接打开对应层级页面，子页面无需再放搜索栏）
+- **子页面搜索（支持多级）**：`HookOptionsPage` 新增 `subPages` / `HookSubPage`，可把子页面内的功能并入功能页搜索；`HookSubPage.subPages` 支持 **递归嵌套**，多级页面深处的功能同样可被搜索直达（搜索结果摘要显示「父 / 子」路径，命中后直接打开对应层级页面，子页面无需再放搜索栏）
 - **Miuix 标准显隐动画**：新增 `ui/util/MiuixAnimations.kt`（`MiuixExpandSpec`），组件显示 / 隐藏统一使用 Miuix 弹簧动画（`folmeSpring(damping = 1.0f, response = 0.4f)`）
 - **顶栏扩展槽与重启应用**：`HookOptionsPage` / `SubPageScaffold` / `BaseSubPageActivity` 新增 `topBarActions` 扩展槽；新增通用 `QuickActionsAction`（`MiuixIcons.Refresh` 重启图标 → `QuickActionDialog`），统一右上角「重启」入口样式；`QuickActionDialog` 统一为「重启应用」：标题「重启应用」且无小标题，列表用 `Card` 圆角容器，每行 `CheckboxPreference`（对勾在右、默认全选），底部「全选 / 全不选」+「重启」（无勾选时禁用）
 - **SystemUI 重启优化**：新增 `AppRestarter.restartSystemUi()`（`pkill -f` → `killall` → `force-stop` 兜底），`restart()` 对 `com.android.systemui` 特判，结束进程由系统自动拉起而不再触发系统重启
@@ -90,10 +108,10 @@
 
 ### 变更
 
-- **精简包体**：移除体积巨大的 `material-icons-extended`（约 83MB 的类），改用 `material-icons-core`，并在 `ui/icons/StatusIcons.kt` 内联原本使用的 3 个 Rounded 图标（外观不变）。（注意：**不要开启 R8 混淆**，它会破坏 libxposed 模块的加载与 Hook）
+- **精简包体**：移除体积巨大的 `material-icons-extended`（约 83MB 的类），改用 `material-icons-core`，并在 `ui/icons/StatusIcons.kt` 内联原本使用的 3 个 Rounded 图标（外观不变）。（注意： **不要开启 R8 混淆**，它会破坏 libxposed 模块的加载与 Hook）
 - **示例页 → 功能页**：`ui/screen/examples/ExamplesPage.kt` 更名为 `ui/screen/features/FeaturesPage.kt`（`ExamplesPageView` → `FeaturesPageView`、`exampleSpecs` → `featureSpecs`、子页 `ExampleSubPageActivity` → `FeatureSubPageActivity`），标签页「示例」改为「功能」，与真实模块形态一致；功能页小标题改为单语言，`HookSection.titleEn` 仅保留用于示例展示 API 英文组件名
 - 搜索文案由「搜索组件」改为「搜索功能」（`search_hint`），同步更新二次开发指南与接口文档
-- **许可要求调整**：衍生项目只需在应用内「关于」页保留 `Based on MiuixGuiTemplate <版本号>` 标注，**不再要求**在各自的 `README.md` 中强调；同步更新 README、二次开发指南与示例注释
+- **许可要求调整**：衍生项目只需在应用内「关于」页保留 `Based on MiuixGuiTemplate <版本号>` 标注， **不再要求**在各自的 `README.md` 中强调；同步更新 README、二次开发指南与示例注释
 - 关于页「反馈渠道」文案改为「Telegram 群组」（英文 `Telegram Group`），并强调不要在文档 / 界面中只写「反馈渠道 / 反馈方式」，以免用户看不出是 TG 群组
 - **Telegram 话题推送**：`release.yml` 支持可选 Secret `MESSAGE_THREAD_ID`，多话题群（Forum）可指定发布到哪个话题（不填则发默认 / General 话题）
 - **移除热重载功能**：删除设置页「全局热重载」、作用域页与重启应用入口中的热重载，以及 `XposedServiceManager.hotReload` / `runningTargets`、`NativeHookHelper.reset`、`PackageTarget.restored`、`XposedEntry` 的 `onHotReloading` / `onHotReloaded` 与 `module.prop` 的 `autoHotReload`；保留「重启」功能（含 SystemUI 重启优化）

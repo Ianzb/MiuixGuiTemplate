@@ -356,6 +356,10 @@ HookOptionsPage(
 - **禁止按配置值隐藏**：依赖前置选项的功能必须始终显示、前置未满足时禁用灰显（见 7.1）；不得用 `AnimatedVisibility` / 条件渲染根据配置值隐藏组件或分区。
 - **顶栏重启应用**：批量「重启」入口统一为 `Refresh`（重启）图标 → `QuickActionDialog`。`HookOptionsPage` 自动生成；二级页面通过 `BaseSubPageActivity.topBarActions` 注入 `QuickActionsAction(packages)`，不要自行实现按钮样式。对话框固定标题「重启应用」且**无小标题**，应用列表用 `Card` 圆角容器，每行 `CheckboxPreference`（`checkboxLocation = End`，默认全选），底部左「全选 / 全不选」（全选时显示「全不选」）+ 右「重启」（无勾选禁用），重启完成后弹出成功提示（`quick_action_restart_success`）。完整规范见 [接口文档](API.md) 5.6。
 
+### 7.7 滑条 / 横向拖拽子组件
+
+自定义页面里放入需要横向拖拽的组件（滑条等）时，组件必须挂 `Modifier.claimPagerSwipe()`——`HookSliderCard` 已自动挂载；否则主页 Cross-Axis 翻页会先一步消费横向拖拽，组件拖不动。详见 [接口文档](API.md) 5.8。
+
 ---
 
 ## 8. 主题与颜色

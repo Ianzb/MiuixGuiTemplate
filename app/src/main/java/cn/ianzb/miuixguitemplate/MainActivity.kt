@@ -55,6 +55,7 @@ import cn.ianzb.miuixguitemplate.ui.screen.settings.SettingsPageView
 import cn.ianzb.miuixguitemplate.ui.theme.AppTheme
 import cn.ianzb.miuixguitemplate.ui.util.applyWindowBackground
 import cn.ianzb.miuixguitemplate.ui.util.isInDarkTheme
+import cn.ianzb.miuixguitemplate.ui.util.pagerSwipeOverride
 import cn.ianzb.miuixguitemplate.ui.util.shouldExpandNavigationRail
 import cn.ianzb.miuixguitemplate.ui.util.shouldShowSplitPane
 import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
@@ -85,8 +86,6 @@ import top.yukonga.miuix.kmp.icon.extended.Settings
 import top.yukonga.miuix.kmp.theme.ColorSchemeMode
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.PagerGestureNestedScrollConnection
-import top.yukonga.miuix.kmp.utils.PagerInterceptionMode
-import top.yukonga.miuix.kmp.utils.pagerGestureOverride
 import top.yukonga.miuix.kmp.utils.springAnimateToPage
 
 class MainActivity : ComponentActivity() {
@@ -94,12 +93,6 @@ class MainActivity : ComponentActivity() {
     override fun attachBaseContext(newBase: Context) {
         val language = LocaleHelper.getSavedLanguage(newBase)
         super.attachBaseContext(LocaleHelper.wrapContext(newBase, language))
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // 回到前台时重新检测 Root（用户可能刚刚授予权限）。
-        XposedServiceManager.checkRoot()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -316,10 +309,8 @@ private fun MainScreen(
                 contentPadding = pagerPadding,
                 modifier = Modifier
                     .fillMaxSize()
-                    .pagerGestureOverride(
-                        pagerState = pagerState,
-                        mode = PagerInterceptionMode.CrossAxisInterceptor,
-                    ),
+                    // Cross-Axis 拦截 + 子组件（滑条）手势放行：见 PagerSwipeOverride.kt
+                    .pagerSwipeOverride(pagerState = pagerState),
                 userScrollEnabled = false,
                 pageNestedScrollConnection = PagerGestureNestedScrollConnection,
             ) { page ->

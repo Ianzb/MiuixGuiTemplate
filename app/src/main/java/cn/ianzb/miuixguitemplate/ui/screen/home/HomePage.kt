@@ -50,8 +50,6 @@ import cn.ianzb.miuixguitemplate.ui.util.rememberBlurState
 import cn.ianzb.miuixguitemplate.ui.util.shouldShowSplitPane
 import cn.ianzb.miuixguitemplate.util.SystemVersionDetector
 import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
-import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.seconds
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
@@ -80,19 +78,6 @@ fun HomePageView(
     val hazeState = rememberBlurState()
     val blurActive = isBlurEnabled && hazeState != null
     val barColor = if (blurActive) Color.Transparent else MiuixTheme.colorScheme.surface
-
-    // 已激活但无 Root 时自动轮询检测，用户授予权限后卡片自动更新。
-    val rootPollActivated = XposedServiceManager.isActivated
-    val rootPollChecked = XposedServiceManager.rootChecked
-    val rootPollAvailable = XposedServiceManager.isRootAvailable
-    LaunchedEffect(rootPollActivated, rootPollChecked, rootPollAvailable) {
-        if (rootPollActivated && rootPollChecked && !rootPollAvailable) {
-            while (true) {
-                delay(3.seconds)
-                XposedServiceManager.checkRoot()
-            }
-        }
-    }
 
     // 每次切回主页时刷新作用域，保证授权变化能及时反映。
     LaunchedEffect(refreshKey) {
@@ -206,7 +191,9 @@ fun HomePageView(
                                 imageVector = statusIcon,
                                 iconTint = iconTint,
                                 statusColor = statusColor,
-                                onClick = {},
+                                // 手动重新检测一次 Root（仅在打开应用与点按状态卡时各检测一次，
+                                // 避免后台反复执行 su 触发权限弹窗）。
+                                onClick = { XposedServiceManager.checkRoot() },
                                 compact = true,
                                 modifier = Modifier.weight(1f).fillMaxHeight(),
                             )
@@ -236,7 +223,8 @@ fun HomePageView(
                                 imageVector = statusIcon,
                                 iconTint = iconTint,
                                 statusColor = statusColor,
-                                onClick = {},
+                                // 手动重新检测一次 Root（同上）。
+                                onClick = { XposedServiceManager.checkRoot() },
                                 modifier = Modifier.weight(1f).fillMaxHeight(),
                             )
                             Column(

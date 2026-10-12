@@ -21,8 +21,25 @@ object HookPrefs {
     @Volatile
     private var prefs: SharedPreferences? = null
 
+    /** 已注册的偏好变化监听（持有强引用，避免被 GC 后不再回调）。 */
+    private val changeListeners =
+        java.util.Collections.synchronizedList(mutableListOf<SharedPreferences.OnSharedPreferenceChangeListener>())
+
     fun init(remote: SharedPreferences) {
         prefs = remote
+    }
+
+    /**
+     * 注册偏好变化监听（宿主 / 框架不支持时静默忽略）。
+     *
+     * 供需要「改配置即时生效」的功能使用（例如滑条调整后立刻重算）；
+     * 不支持的场景下功能会在目标进程重启后生效。
+     */
+    fun registerListener(onChange: () -> Unit) {
+        val target = prefs ?: return
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> onChange() }
+        changeListeners.add(listener)
+        runCatching { target.registerOnSharedPreferenceChangeListener(listener) }
     }
 
     private fun key(key: String): String =

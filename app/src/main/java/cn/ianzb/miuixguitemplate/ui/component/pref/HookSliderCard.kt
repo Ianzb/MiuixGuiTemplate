@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.prefs.ConfigState
 import cn.ianzb.miuixguitemplate.prefs.OptionSpec
+import cn.ianzb.miuixguitemplate.ui.util.claimPagerSwipe
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
@@ -38,6 +39,8 @@ import top.yukonga.miuix.kmp.basic.Text as MiuixText
  * - 支持整数 / 小数 / 自定义范围（内部定点换算，避免浮点精度丢失）
  * - 当前值与默认值同一行显示，两侧显示最小值 / 最大值
  * - 点击卡片空白弹出居中输入卡片（取消 / 恢复默认 / 确定）
+ * - 标题（[OptionSpec.sliderValueLabelRes]，可直接复用 `titleRes`）显示在滑块行数值左侧，
+ *   与滑块同属一个组件；未设置时才会退化为组件外部的独立标题（规范不推荐）
  */
 @Composable
 fun HookSliderCard(
@@ -83,6 +86,8 @@ fun HookSliderCard(
             SliderPreference(
                 value = value,
                 onValueChange = { ConfigState.set(spec.key, roundToDecimals(it, spec.sliderDecimals)) },
+                // 按下即认领横向手势：避免主页 Pager 的 Cross-Axis 拦截吞掉滑条拖拽
+                modifier = Modifier.claimPagerSwipe(),
                 valueRange = spec.sliderMin..spec.sliderMax,
                 steps = sliderSteps(spec),
                 title = valueLabel,
