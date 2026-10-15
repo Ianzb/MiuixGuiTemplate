@@ -28,12 +28,21 @@ object SafeModeReader {
     private const val SAFE_PREFIX = "safe_mode_"
     private const val COUNT_PREFIX = "crash_count_"
     private const val LAST_PREFIX = "last_start_"
+    private const val USER_RESTART_PREFIX = "user_restart_"
 
     /** 存活窗口：启动后在该时长内再次启动，视为上一次未成功加载（疑似崩溃）。 */
     private const val SURVIVE_MS = 15_000L
 
+    /** 用户在应用内主动重启后的免计窗口：这一段时间内的启动不计入疑似崩溃。 */
+    private const val USER_RESTART_GRACE_MS = 30_000L
+
     private const val DEFAULT_THRESHOLD = 3
-    private const val CRITICAL_THRESHOLD = 2
+
+    /**
+     * 关键进程同样要求连续 3 次快速重启：
+     * 「系统 ANR 重启 + 用户手动重启」这种两次组合很常见，阈值 2 会误判为崩溃循环。
+     */
+    private const val CRITICAL_THRESHOLD = 3
 
     /**
      * 安全模式白名单：仅对系统界面、桌面、系统进程启用自动安全模式。
@@ -80,14 +89,36 @@ object SafeModeReader {
     fun crashCount(packageName: String): Int =
         prefs?.getInt("$COUNT_PREFIX$packageName", 0) ?: 0
 
+    /** 用户在应用内主动重启目标应用（含「重启系统界面」）时调用；其后 30s 内的启动免计。 */
+    fun noteUserRestart(packageName: String) {
+        if (packageName !in SAFE_MODE_WHITELIST) return
+        prefs?.edit { putLong("$USER_RESTART_PREFIX$packageName", System.currentTimeMillis()) }
+    }
+
     /**
      * 记录一次目标进程启动。窗口内的重复启动累计为疑似崩溃，达到阈值即置安全模式并同步到远程偏好。
+     *
+     * [processName] 含 `:` 的子进程（如 `com.android.systemui:plugin`）不参与计数，
+     * 避免与主进程的上报混合造成误判。
      */
-    fun recordProcessStart(packageName: String) {
+    fun recordProcessStart(packageName: String, processName: String = packageName) {
         // 只对白名单（系统界面 / 桌面 / 系统进程）做自动安全模式判定。
         if (packageName !in SAFE_MODE_WHITELIST) return
+        if (':' in processName) return
         val p = prefs ?: return
         val now = System.currentTimeMillis()
+        // 用户主动重启后的首次启动：记为一次正常启动，不参与崩溃计数。
+        val userRestartAt = p.getLong("$USER_RESTART_PREFIX$packageName", 0L)
+        if (userRestartAt != 0L && now - userRestartAt in 0..USER_RESTART_GRACE_MS) {
+            p.edit {
+                putLong("$LAST_PREFIX$packageName", now)
+                putInt("$COUNT_PREFIX$packageName", 1)
+                remove("$USER_RESTART_PREFIX$packageName")
+            }
+            refresh()
+            syncToRemote()
+            return
+        }
         val last = p.getLong("$LAST_PREFIX$packageName", 0L)
         val count = if (last != 0L && now - last in 0..SURVIVE_MS) {
             p.getInt("$COUNT_PREFIX$packageName", 0) + 1
@@ -122,6 +153,7 @@ object SafeModeReader {
                 remove("$SAFE_PREFIX$packageName")
                 remove("$COUNT_PREFIX$packageName")
                 remove("$LAST_PREFIX$packageName")
+                remove("$USER_RESTART_PREFIX$packageName")
             }
         }
         refresh()

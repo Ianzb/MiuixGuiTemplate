@@ -30,6 +30,7 @@ object AppRestarter {
             return RootHelper.exec("reboot")
         }
         if (!isRunning(packageName)) return true
+        SafeModeReader.noteUserRestart(packageName)
         val stopped = RootHelper.exec("am force-stop $packageName")
         val launch = runCatching {
             context.packageManager.getLaunchIntentForPackage(packageName)
@@ -59,6 +60,7 @@ object AppRestarter {
      */
     fun restartSystemUi(processName: String = SYSTEM_UI_PACKAGE): Boolean {
         if (!XposedServiceManager.isRootAvailable) return false
+        SafeModeReader.noteUserRestart(SYSTEM_UI_PACKAGE)
         if (RootHelper.exec("pkill -f $processName")) return true
         if (RootHelper.exec("killall $processName")) return true
         return RootHelper.exec("am force-stop $processName")

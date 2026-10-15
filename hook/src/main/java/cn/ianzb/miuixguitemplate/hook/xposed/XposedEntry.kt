@@ -4,6 +4,7 @@ import cn.ianzb.miuixguitemplate.hook.base.HookEntryRegistry
 import cn.ianzb.miuixguitemplate.hook.base.PackageTarget
 import cn.ianzb.miuixguitemplate.hook.prefs.HookPrefs
 import cn.ianzb.miuixguitemplate.hook.safemode.SafeModeManager
+import cn.ianzb.miuixguitemplate.hook.status.HookStatusReporter
 import io.github.libxposed.api.XposedModule
 import io.github.libxposed.api.XposedModuleInterface.ModuleLoadedParam
 import io.github.libxposed.api.XposedModuleInterface.PackageReadyParam
@@ -35,6 +36,8 @@ class XposedEntry : XposedModule() {
             runCatching { load.onPackageReady(target) }
                 .onFailure { HookHelper.log("load failed for ${target.packageName}", it) }
         }
+        // 全部 Load 完成后统一上报生效状态（每个进程一次广播；多 Load 不会互相顶掉）。
+        HookStatusReporter.flush(target.packageName, target.processName)
     }
 
     override fun onSystemServerStarting(param: SystemServerStartingParam) {
@@ -44,5 +47,8 @@ class XposedEntry : XposedModule() {
         if (SafeModeManager.handleStart("system")) {
             HookHelper.log("SafeMode: system_server is in safe mode, skip hooks")
         }
+        val target = PackageTarget.fromSystemServer(param)
+        // 全部 Load 完成后统一上报生效状态（每个进程一次广播；多 Load 不会互相顶掉）。
+        HookStatusReporter.flush(target.packageName, target.processName)
     }
 }

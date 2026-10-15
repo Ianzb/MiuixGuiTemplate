@@ -59,9 +59,8 @@ abstract class BaseLoad {
             if (enabled) installNative(hook)
         }
 
-        // 本进程完成注册后，合并上报已成功安装的配置键（无安装则自动跳过）。
-        HookStatusReporter.flush(target.packageName, target.processName)
-
+        // 生效状态由 XposedEntry 在本包全部 Load 完成后统一上报：
+        // 每个进程只发一次广播（作为一次进程启动证据），多 Load 时不会互相顶掉。
         if (needsDexKit) runCatching { DexKitCacheManager.releaseBridge() }
     }
 
