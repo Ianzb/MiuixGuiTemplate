@@ -13,8 +13,8 @@ android {
         applicationId = "cn.ianzb.miuixguitemplate"
         minSdk = 35
         targetSdk = 37
-        versionCode = 12
-        versionName = "0.5.4"
+        versionCode = 13
+        versionName = "0.5.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
