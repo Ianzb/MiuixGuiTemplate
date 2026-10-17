@@ -106,7 +106,7 @@ $env:KEY_PASSWORD="你的密钥密码"
 | `MESSAGE_THREAD_ID` | （可选）多话题群（Forum）指定话题的 `message_thread_id`；不填则发到默认 / General 话题 |
 | `TEST_MESSAGE_THREAD_ID` | （可选）测试版推送的话题 `message_thread_id`（同一群的另一个话题），与 `CHANNEL_ID` / `BOT_TOKEN` 配合使用；不填则跳过 CI 的「上传到Telegram」步骤 |
 
-**4. 发布**：手动运行 `Release Build` 工作流并填写版本号（会自动 `versionCode` +1 并提交），或先改好 `versionName` 再推送 `v0.4.1` 形式的标签。
+**4. 发布**：手动运行 `Release Build` 工作流并填写版本号（会自动 `versionCode` +1 并提交），或先改好 `versionName` 再推送 `vX.Y.Z` 形式的标签。
 
 > 只开发 / 只构建 Debug 时无需上述配置，`assembleDebug` 不受影响；未放置 `release.keystore` 或未设置环境变量时请勿运行 `assembleRelease`。
 
@@ -153,12 +153,12 @@ MiuixGuiTemplate 是个人 Android 模块开发所使用的脚手架模板，开
 Based on MiuixGuiTemplate <版本号>
 ```
 
-当前使用本模板的项目（版本号仅作信息记录，非标注要求）：
+当前使用本模板的项目：
 
-| 项目 | 所依据脚手架版本 |
-|---|---|
-| [HyperNavBar](https://github.com/HyperNavBar/HyperNavBar) | 0.4.3 |
-| [HyperRefine](https://github.com/Ianzb/HyperRefine) | 0.5.0 |
+| 项目 |
+|---|
+| [HyperNavBar](https://github.com/HyperNavBar/HyperNavBar) |
+| [HyperRefine](https://github.com/Ianzb/HyperRefine) |
 
 开源协议义务已汇总为一张核对清单，见[二次开发指南 · 开源协议与致谢](docs/CUSTOMIZE.md#11-开源协议与致谢必读)。
 

@@ -16,3 +16,6 @@ local.properties
 /.idea/
 /hook/build/
 /release.keystore
+
+# 逆向分析产物（本地保留，不入库）
+/reverse_report/

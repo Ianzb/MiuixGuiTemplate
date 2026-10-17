@@ -13,7 +13,7 @@
 
 - **改机需授权**：任何会接触用户真实设备的操作（尤其是 `adb`）都必须先取得用户明确同意，逐次授权，绝不擅自连接或扫描用户设备。
 - **最小权限**：默认只读；只执行定位 Hook 所必需的命令，不做与需求无关的探索。
-- **隐私优先**：不抓取、不保存、不上传用户个人数据；只保留包名、类名、方法签名等定位信息。
+- **隐私优先**：不抓取、不保存、不上传用户个人数据；只保留包名、类名、方法签名等定位信息。公开仓库的提交红线（序列号、用户名、绝对路径等）见 [第 6 节](#6-隐私保护公开仓库)。
 - **协议优先**：复用第三方代码前先看许可证；无许可证 / 非开源的一律只借鉴思路、不复用代码，并补致谢。
 - **可追溯**：每一次引入的第三方内容都记录来源 / 许可 / 改动，落到第三方许可证与致谢页面。
 
@@ -72,9 +72,18 @@
 1. 明确功能入口与调用链；优先静态分析（反编译 / DexKit），尽量减少真机操作。
 2. 用 `dumpsys package` / `pm path` 确认版本与安装路径，必要时经授权 `adb pull` 目标 APK。
 3. 通过 `logcat` / `uiautomator dump` 验证触发路径（需授权）。
-4. 产出类名、方法签名、字段、混淆映射等定位信息，并据此编写 Hook。
+4. 产出类名、方法签名、字段、混淆映射等定位信息，并据此编写 Hook；逆向产物与报告按 [1.5](#15-逆向产物与报告存放) 统一落盘到 `reverse_report/`。
 
-### 1.5 实现与验证
+### 1.5 逆向产物与报告存放
+
+所有逆向分析的中间产物与分析报告统一放在仓库根的 `reverse_report/`，**按目标应用（包名）分类**。该目录已在仓库 `.gitignore` 中忽略，**永不入库、不产生 git 痕迹**，以避免第三方应用代码 / 资源的版权与合规风险（不要 `git add -f` 强制提交）。
+
+- **目录约定**：`reverse_report/<包名>/`；通用 / 跨应用内容放 `reverse_report/_common/`。新增目标应用时新建 `<包名>/` 并登记到 `reverse_report/README.md`。
+- **默认落盘**（均不得提交）：`adb pull` 的 APK、反编译输出（jadx / apktool / smali）、DexKit 定位结果与 dex 转储、类名 / 方法签名 / 字段与混淆映射、Frida / hook 脚本、关键 `logcat` / `uiautomator dump` 抓取、分析笔记与最终报告。
+- **命名建议**：`<日期>-<主题>.<扩展名>`，如 `20260930-volume-method.txt`。
+- **内容边界**：只保留定位信息（包名、类名、方法签名、字段、必要反编译片段），不保存用户个人数据，不把第三方专有代码 / 资源复制进项目源码或可提交文件。
+
+### 1.6 实现与验证
 
 按 [二次开发指南](CUSTOMIZE.md) 第 6 节落地：
 
@@ -85,7 +94,7 @@
 5. 更新 `META-INF/xposed/scope.list`；
 6. 构建并在 LSPosed 中验证功能生效（启用开关并重启目标应用）。
 
-### 1.6 页面组织规范
+### 1.7 页面组织规范
 
 - **页面名用功能**：模板的示例页已按真实形态命名为「功能」页（`ui/screen/features/FeaturesPage.kt`，子页 `FeatureSubPageActivity.kt`）。新增页面沿用功能命名，不要以组件类型命名。
 - **小标题单语言**：功能页分区小标题只传 `HookSection.titleRes`，**不要传 `titleEn`**。`titleEn`（拼成 `中文（English）`）仅用于模板示例展示 API 英文组件名，英文名以[接口文档](API.md) 5.1 为准。
@@ -156,11 +165,141 @@
 
 ---
 
-## 4. 检查清单
+## 4. 构建与日志（避免命令卡死）
+
+> **警告**：不要用 PowerShell 管道截断长驻命令（Gradle / `adb logcat` 等）的输出，例如
+> `.\gradlew.bat ... 2>&1 | Select-Object -Last 80`。`Select-Object -Last` 会先缓冲整条输出流，
+> 而 Gradle 守护进程会一直保持 stdout 打开，导致命令长时间无输出、**看似卡死**（实际在等待流结束）。
+
+**推荐做法（二选一）**
+
+1. 直接运行，让终端 / 工具自行捕获与截断输出：
+   ```
+   .\gradlew.bat :hook:compileDebugKotlin :app:assembleDebug --console=plain
+   ```
+2. 需要落盘后再看尾部时，重定向到**临时目录**日志（勿提交），再读取尾部：
+   ```
+   .\gradlew.bat :hook:compileDebugKotlin :app:assembleDebug --console=plain *> "$env:TEMP\build.log"
+   Get-Content "$env:TEMP\build.log" -Tail 80
+   ```
+
+**其他约束**
+
+- `adb logcat` 用 `-d`（一次性 dump）或按标签过滤，避免 `Select-Object` 管道；需要持续观察时输出到文件再 `-Tail`。
+- 不要把构建日志、反编译产物写入会被提交的路径；逆向产物统一放 `reverse_report/`（已被 `.gitignore` 忽略，见 1.5）。
+
+---
+
+## 5. 英文文案与专有名词（`values-en`）
+
+界面英文文案集中在 `app/src/main/res/values-en/strings.xml`，与 `values/strings.xml` 同名键一一对应（当前各 189 条）。**专有名词一律使用官方英文名：不直译、不臆造**，中文侧继续按小米中文名书写；同一条文案里只允许一种写法。本节规则归纳自 HyperOS 4 英文界面文案修订。
+
+### 5.1 官方英文名的取值来源（按顺序）
+
+1. **设备自带资源最权威**：已知包名的英文值可直接从 `reverse_report/<包名>/*-resources.txt` 查（`resource 0x7f12xxxx string/xxx` 下面第一行 `()` 即默认英文值）。已核对过的例子：
+
+   | 资源 | 英文值 | 对应中文 |
+   |---|---|---|
+   | `string/mi_smart_hub_entry_title` | `Xiaomi Smart Hub` | 融合设备中心 |
+   | `string/state_screen_synergy` | `Using Home screen+` | 妙享桌面 |
+   | `string/quick_settings_mishare_advert_all_close` | `Xiaomi Share is off` | 小米互传 |
+   | 应用流转状态文案 | `Using app handoff` | 应用流转 |
+
+2. **英文界面**：把系统语言切成 English，进对应页面截图核对（系统组件与小米应用的英文名都在这里）。
+3. **官方资料**：小米官网 / 发布会英文页（用于系统尚未带英文资源的新功能）。
+4. 查不到官方名时，**宁可用描述性英文**说明这个开关做什么，也不要新造一个专有名词。
+
+### 5.2 已确认的写法对照
+
+| 采用（官方英文） | 不要写成 | 说明 |
+|---|---|---|
+| `HyperOS`（`HyperOS 4`） | `Hyper OS` | 系统名 |
+| `MiuixGuiTemplate` | `Miuix Gui Template` | 模板名，`app_name` 不翻译；衍生项目替换为自己的名称 |
+| `Xiaomi Smart Hub` | `Fusion Device Center` | 融合设备中心 |
+| `Home screen+` | `Mi Share Desktop` | 妙享桌面（跨设备桌面） |
+| `app handoff` | `cross-device streaming` | 应用流转 |
+| `Xiaomi Share` | `Mi Share` | 小米互传（旧名不再使用） |
+| `Mi Browser` | `Xiaomi Browser` | 小米浏览器（官方英文名仍是 `Mi Browser`） |
+| `Xiaomi Hyper XiaoAi` | `Xiao Ai` / `XiaoAI` | 超级小爱 |
+| `App vault` | `Assistant` | 负一屏 |
+| `Control center` | `control panel` | 控制中心 |
+| `Charging boost` | `fast charge` | 快充加速；通知文案 `charging boost start / end reminders` |
+| `Passkeys` / `Passwords` | 用 `Passkey` 当分区名 | 通行密钥；功能名 `Passkeys`，设置入口分区名 `Passwords` |
+| `AOD` / `always-on display` | `AOD screen` | 息屏显示；标题里用 `AOD`，正文可用全称 |
+| `notification shade` | `notification panel` | 下拉后的通知栏 |
+| `split screen`（`side-by-side` / `top-and-bottom`） | `split window left/right` | 分屏与方向 |
+| `Wi-Fi` / `WLAN` | `Wifi` / `wifi` | 无线网络；`WLAN / mobile data` 指 WLAN 与移动数据 |
+| `Root` | `root`（指权限时） | 权限名，如 `Root access not granted.` |
+| `System UI` | `SystemUI` / `System Ui` | 系统界面；界面文案统一写 `System UI`，进程与包名在代码里按 `com.android.systemui` 书写 |
+| `DexKit` / `LSPosed` / `Miuix` / `libxposed` | 大小写随意写 | 框架与依赖名按官方大小写 |
+
+### 5.3 写法规则
+
+- **说明文字写成完整句子**：句首大写、句末句号、补足冠词。例如 `Root not granted, restart and other features unavailable` → `Root access not granted. App restart and other root-dependent features are unavailable.`；`failed, check permission and scope` → `Failed to clear the cache. Check permissions and scope.`
+- **不要用 `app(s)` / `time(s)` / `%d apps authorized` 这类缩写或直译计数**，改成「标签: 数值」：`Apps in scope: %d`、`Crashes: %d`、`Apps with hooks disabled: %d · tap to manage`。
+- **标题用名词短语，说明放副标题**：`titleRes` 写名词短语（`App appearance`），不要写成句子；描述性内容进 `summaryRes`。
+- **开关文案描述「解除什么限制」，不用 `Allow …`**：`Allow lock screen notifications` → `Remove lock screen notification restrictions`；`Allow editing protected notifications` → `Allow disabling protected notifications`。
+- **直译不通就写行为**：`Stepless split ratio` → `Freely adjust split-screen ratios`；`Hide overflow` → `Hide the ellipsis`；`Larger is stronger` → `Higher values increase the blur`。
+- **同一概念固定用同一术语**：`appearance`（不用 `beautify`）、`split screen`、`notification shade`、`Control center`、`app handoff`。
+- **占位符**：一条字符串里出现多个 `%` 时必须显式声明 `formatted="false"`（或改用 `%1$s` 位置参数），否则构建会报 `Multiple substitutions specified in non-positional format`。
+- **转义**：`&` 写成 `&amp;`，`'` 写成 `\'`。
+
+### 5.4 流程与自检
+
+1. 改动中文键时**同时**改 `values-en` 里的同名键（键名与数量一一对应）；
+2. 出现新专有名词时，先按 5.1 查到官方英文名、补进 5.2 表格，再写进文案；
+3. 提交前构建一次，确认不再出现 `Multiple substitutions specified in non-positional format` 等资源告警；
+4. 纯英文文案修订可以不单独写 `changelog.md`；若同时改了中文文案或功能行为，按常规写日志。
+
+---
+
+## 6. 隐私保护（公开仓库）
+
+本仓库是公开仓库：**任何被 git 跟踪的内容都会进入提交历史**，推送后再删除也仍可从历史中检出。设备与个人信息必须在提交前清理，不能依赖事后修改。
+
+### 6.1 禁止写入的内容
+
+- 设备序列号（`adb devices` 输出的 serial）及其他设备唯一标识；
+- 用户名、用户目录、绝对路径（如 `C:/Users/<user>`、`/home/<user>`、`D:/...`）；
+- 手机号、邮箱、账号、IP、MAC 地址、Wi-Fi 名称等可关联到个人的信息；
+- 通知内容、联系人、剪贴板、相册等抓取到的个人数据；
+- 未脱敏的截图与完整 logcat。
+
+> 技术说明可以保留设备型号与实测参数（如屏幕圆角、dpi），但不要与序列号等唯一标识同时出现；示例统一使用占位符：`<serial>`、`<user>`、`%LOCALAPPDATA%`、`~/...`。
+
+### 6.2 本机配置的存放
+
+- 设备序列号、SDK 路径等本机差异只放在**已被 git 忽略**的文件（如 `local.properties`）或环境变量中；
+- 文档与示例命令统一使用占位符，例如 `adb -s <serial> install -r app/build/outputs/apk/debug/app-arm64-v8a-debug.apk`；
+- 新增本地配置文件前，先确认 `.gitignore` 已覆盖，再写入内容。
+
+### 6.3 日志、截图与逆向产物
+
+- 抓取前说明用途并取得同意，只取定位问题所需的最小范围；
+- 原始日志与逆向产物只放 `reverse_report/<包名>/`（已在 `.gitignore` 中忽略），永不提交、不 `git add -f`；
+- 贴到 Issue / PR 前先脱敏：序列号、账号、通知内容、路径、IP 一律替换为占位符。
+
+### 6.4 提交前自检
+
+```powershell
+# 在本地把占位符替换为实际值后执行；替换后的命令不要提交
+git grep -n -i -E -e "<serial>" -e "<user>" -e "[A-Za-z]:\\Users\\" -e "[A-Za-z]:\\[A-Za-z0-9_.]"
+```
+
+- `git diff` 逐项确认文档、示例、脚本与测试数据没有带入本机路径或个人信息；
+- 公开仓库中一旦误提交：立即删除，并评估是否需要改写历史；改写历史（force-push）会影响所有协作者与克隆，必须先取得同意。
+
+---
+
+## 7. 检查清单
 
 - [ ] 涉及真机的 `adb` 操作均已获得用户明确授权，且在白名单内。
 - [ ] 未执行任何未授权 / 修改设备 / 读取隐私的命令。
+- [ ] 公开文件中没有设备序列号、用户名、用户目录、绝对路径、账号等本机信息；示例均使用占位符。
+- [ ] 日志 / 截图已脱敏；逆向产物与报告只存放在 `reverse_report/`（`.gitignore` 已忽略，未被提交）。
 - [ ] 复用的第三方代码已核对许可证并保留原始声明。
 - [ ] 无许可证 / 非开源参考已致谢，且未复制其代码。
 - [ ] `LicensePage.kt`、`README.md`、`docs/CUSTOMIZE.md`、`changelog.md` 已同步。
+- [ ] 新增 / 修改的文案已在 `values-en` 补同名键，专有名词按 [第 5 节](#5-英文文案与专有名词values-en) 的对照表取官方英文名。
+- [ ] 构建日志没有 `Multiple substitutions specified in non-positional format` 一类的资源告警。
 - [ ] 构建通过并在 LSPosed 中验证 Hook 生效。
