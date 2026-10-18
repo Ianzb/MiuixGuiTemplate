@@ -1,5 +1,18 @@
 # 更新日志
 
+## 0.6.0
+
+> 发布于 2026-10-18
+
+### 优化
+
+- **液态玻璃底栏整体移植 SukiSU-Ultra**：`ui/component/liquid/LiquidGlassNavigationBar.kt` 按 [SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra)（GPL-3.0；其上游为 compose-miuix-ui 示例 / [Kyant0/AndroidLiquidGlass](https://github.com/Kyant0/AndroidLiquidGlass)，Apache-2.0）的 `FloatingBottomBar` 重写，替换此前的 `IosLiquidGlassNavigationBar`：
+  - **折射不再被采样区裁断**：主胶囊背景采样显式设置 `padding = maxOf(padding, 40.dp)`，圆角处的高光与折射有足够取样空间，边缘不再出现硬切；`Lens.kt` 的圆角半径查找修正为 `centeredCoord`（此前用带 padding 的 `coord` 会取错角半径）。
+  - **按压即定位**：按下底栏任意位置，指示器胶囊立即吸附到手指所在的标签，松手即切换；取消手势回弹到当前标签（新增 `DampedDragAnimation.onDragCancelled`）。`updateValue` 改为 `UNDISPATCHED` 启动，拖拽识别改走 `Initial` 阶段 + `positionChangeIgnoreConsumed`，不再因事件被消费而中断。
+  - **交互高光**：`InteractiveHighlight` 改用 AGSL 着色器光斑（Android 13 以下回退径向渐变）并带弹簧位置动画，按压亮度提升到 0.06 / 0.12。
+  - **尺寸与样式**：底栏宽度改为内容自适应（`width(IntrinsicSize.Min)`，每个标签至少 76dp），以 28dp 水平边距居中，不再是整行铺满的宽胶囊；标签图标/文字按 SukiSU-Ultra 的 11sp / 14sp 规格与 64dp 高度；指示器胶囊保持 56dp、按压缩放 78/56，重力高光按 3° 量化以避免抖动。
+- **许可证页**：「参考项目」分组新增 SukiSU-Ultra（GPL-3.0）。
+
 ## 0.5.5
 
 > 发布于 2026-10-17

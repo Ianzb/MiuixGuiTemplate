@@ -165,6 +165,12 @@ private val licenseSections: List<LicenseSection> = listOf(
                 "非开源，仅思路参考",
                 "https://github.com/KiminonawaResa/HyperLight",
             ),
+            LibraryInfo(
+                "SukiSU-Ultra",
+                "-",
+                "GPL-3.0",
+                "https://github.com/SukiSU-Ultra/SukiSU-Ultra",
+            ),
         ),
     ),
 )
