@@ -1,5 +1,20 @@
 # 更新日志
 
+## 0.7.0
+
+> 发布于 2026-10-26
+
+### 新增
+
+- **Hook 状态四色徽标**：功能卡片的生效状态由灰色两态文本改为标题后的 Miuix `Badge`，固定语义为「未生效（红）/ 等待启动（黄）/ 已生效（绿）/ 不可用（灰）」。`HookStatus` 增加 `WAITING` 与 `UNAVAILABLE`；`HookStatusStore` 按模块 `versionCode` 与 `BOOT_COUNT` 隔离证据：开关关闭或从未上报时等待，目标回报失败时未生效，作用域缺失或设备类型不匹配时不可用。
+- **Hook 状态上报协议补全**：`HookStatusContract` 增加 `evaluated_keys` 与 `failed_keys`；`BaseLoad` 在安装前标记已评估、安装成功标记已安装、异常或能力不支持标记失败。上报仍为每进程一次，避免多次 Load 把启动误计为崩溃。
+- **状态辅助组件**：新增 `HookStatus`、`HookStatusStore`、`HookStatusBadge` 等组件，`HookCards` 的开关 / 复选框卡片在 `OptionSpec.showStatus` 且启用时渲染徽标；`HookOptionSupport.rememberHookStatus` 统一处理作用域与设备类型导致的「不可用」。
+- **文档**：`docs/API.md` §4.5 与 `OptionSpec.showStatus` KDoc 补充四态、颜色、重置与限制说明。
+
+### 变更
+
+- **`OptionSpec.showStatus` 语义**：从“启用后展示灰色生效摘要”改为“展示四色状态徽标”；未提供独立 Hook 的子选项不应声明该字段，避免出现假绿或假红。
+
 ## 0.6.0
 
 > 发布于 2026-10-18
