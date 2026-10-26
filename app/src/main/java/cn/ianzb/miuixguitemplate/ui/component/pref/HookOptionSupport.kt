@@ -3,11 +3,13 @@ package cn.ianzb.miuixguitemplate.ui.component.pref
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import cn.ianzb.miuixguitemplate.hook.device.DeviceContext
 import cn.ianzb.miuixguitemplate.hook.device.DeviceType
 import cn.ianzb.miuixguitemplate.prefs.ConfigState
 import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
 import cn.ianzb.miuixguitemplate.prefs.OptionSpec
+import cn.ianzb.miuixguitemplate.xposed.HookStatus
 import cn.ianzb.miuixguitemplate.xposed.HookStatusStore
 import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
 
@@ -34,19 +36,24 @@ fun rememberDeviceScopeEnabled(spec: OptionSpec): Boolean {
     return rememberEffectiveDeviceType() in scope
 }
 
-/** 解析依赖项：依赖项（含其自身的依赖链，如 总开关 → 功能开关 → 组件）满足条件时组件启用。 */
+/**
+ * 解析依赖项：沿 [OptionSpec.dependsOn] 链向上逐级校验，任一级未满足即禁用（传递依赖）。
+ *
+ * 例如「笔记」依赖「应用专属适配」，「应用专属适配」依赖顶栏总开关；顶栏总开关关闭时，
+ * 「笔记」也会一并禁用。
+ */
 @Composable
-fun rememberDependencyEnabled(spec: OptionSpec): Boolean = dependencyEnabled(spec, depth = 0)
-
-@Composable
-private fun dependencyEnabled(spec: OptionSpec, depth: Int): Boolean {
-    if (depth >= 8) return true
-    val dependencyKey = spec.dependsOn ?: return true
-    val dependencySpec = OptionRegistry.find(dependencyKey)
-    val dependencyDefault = dependencySpec?.defaultBoolean ?: false
-    val dependencyValue = ConfigState.bool(dependencyKey, dependencyDefault)
-    if (spec.dependsOnValue != dependencyValue) return false
-    return dependencySpec?.dependsOn == null || dependencyEnabled(dependencySpec, depth + 1)
+fun rememberDependencyEnabled(spec: OptionSpec): Boolean {
+    var current = spec
+    val visited = HashSet<String>()
+    while (true) {
+        val dependencyKey = current.dependsOn ?: return true
+        if (!visited.add(dependencyKey)) return true
+        val dependencySpec = OptionRegistry.find(dependencyKey) ?: return true
+        val dependencyValue = ConfigState.bool(dependencyKey, dependencySpec.defaultBoolean)
+        if (current.dependsOnValue != dependencyValue) return false
+        current = dependencySpec
+    }
 }
 
 /**
@@ -59,14 +66,26 @@ fun rememberOptionEnabled(spec: OptionSpec): Boolean =
     rememberDependencyEnabled(spec) && rememberDeviceScopeEnabled(spec)
 
 /**
- * 该配置键是否已在目标进程生效（由目标进程广播回报，App 侧按版本 + 开机号作用域持久化）。
+ * 该配置项在当前版本 / 当前开机内的四态状态。
  *
- * 读取 [HookStatusStore.state]，目标进程重新回报后自动刷新。
+ * 读取 [HookStatusStore.snapshot]；目标进程重新回报后自动刷新。
+ * 灰色「不可用」只表示 UI 前置条件不满足：作用域未勾选，或设备形态不在白名单内。
+ * 条件满足后才看目标进程回报：有成功记录为「已生效」，已回报但无成功记录为「未生效」，
+ * 完全没回报为「等待启动」。安装失败不再单独显示灰色。
  */
 @Composable
-fun rememberHookApplied(key: String): Boolean {
-    val applied by HookStatusStore.state.collectAsState()
-    return key in applied
+fun rememberHookStatus(spec: OptionSpec): HookStatus {
+    val snapshot by HookStatusStore.snapshot.collectAsState()
+    val grantedScope = XposedServiceManager.scope
+    val deviceSupported = rememberDeviceScopeEnabled(spec)
+    val scopeGranted = spec.targetPackages.isEmpty() || spec.targetPackages.all { it in grantedScope }
+    // 订阅快照 / 作用域 / 设备形态以触发重组；状态判定统一走 statusFor，避免 UI 与存储两套规则漂移。
+    return remember(snapshot, spec, deviceSupported, scopeGranted) {
+        when {
+            !deviceSupported || !scopeGranted -> HookStatus.UNAVAILABLE
+            else -> HookStatusStore.statusFor(spec.key, spec.targetPackages)
+        }
+    }
 }
 
 /**

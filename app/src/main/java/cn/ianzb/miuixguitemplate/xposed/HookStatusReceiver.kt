@@ -16,8 +16,6 @@ import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
  *    若某些 ROM/框架未透传发送者 UID，则退回「来源包必须是 App 已声明的目标包」；
  * 3. 模块 versionCode 必须与当前一致（0 视为未知、放行）；
  * 4. 上报的键必须是 App 已声明的配置键子集。
- *
- * 同时，每条有效回报视为一次目标进程启动，用于安全模式的崩溃循环计数。
  */
 class HookStatusReceiver : BroadcastReceiver() {
 
@@ -28,7 +26,6 @@ class HookStatusReceiver : BroadcastReceiver() {
         val specs = OptionRegistry.all()
         val knownKeys = specs.mapTo(HashSet()) { it.key }
         val declaredTargets = specs.flatMapTo(HashSet()) { it.targetPackages }
-
         val senderUid = runCatching { sentFromUid }.getOrDefault(-1)
         val pakOk = if (senderUid >= 0) {
             val senderPackages = context.packageManager
@@ -44,12 +41,13 @@ class HookStatusReceiver : BroadcastReceiver() {
             Log.w(TAG, "rejected hook report: identity/package mismatch uid=$senderUid pkg=$sourcePackage")
             return
         }
+        val source = requireNotNull(sourcePackage)
 
         // 目标进程成功装载 hook 即视为一次进程启动，用于安全模式的崩溃循环计数。
         SafeModeReader.initialize(context)
         SafeModeReader.recordProcessStart(
-            sourcePackage!!,
-            intent.getStringExtra(HookStatusContract.EXTRA_SOURCE_PROCESS) ?: sourcePackage,
+            source,
+            intent.getStringExtra(HookStatusContract.EXTRA_SOURCE_PROCESS) ?: source,
         )
 
         val reportedVersion = intent.getLongExtra(HookStatusContract.EXTRA_MODULE_VERSION, 0L)
@@ -64,17 +62,28 @@ class HookStatusReceiver : BroadcastReceiver() {
             .getStringArrayListExtra(HookStatusContract.EXTRA_INSTALLED_KEYS)
             .orEmpty()
             .filter { it in knownKeys }
-        if (applied.isEmpty()) {
+        val failed = intent
+            .getStringArrayListExtra(HookStatusContract.EXTRA_FAILED_KEYS)
+            .orEmpty()
+            .filter { it in knownKeys }
+        val evaluated = intent
+            .getStringArrayListExtra(HookStatusContract.EXTRA_EVALUATED_KEYS)
+            .orEmpty()
+            .filter { it in knownKeys }
+        if (evaluated.isEmpty()) {
             Log.w(
                 TAG,
-                "rejected hook report: no known keys from $sourcePackage " +
+                "rejected hook report: no evaluated known keys from $source " +
                     "(reported=${intent.getStringArrayListExtra(HookStatusContract.EXTRA_INSTALLED_KEYS)}, known=${knownKeys.size})"
             )
             return
         }
 
-        HookStatusStore.record(context, applied)
-        Log.i(TAG, "recorded ${applied.size} applied hook keys from $sourcePackage: $applied")
+        HookStatusStore.record(context, applied, failed, evaluated, source)
+        Log.i(
+            TAG,
+            "recorded hook status from $source: applied=$applied failed=$failed evaluated=$evaluated"
+        )
     }
 
     private companion object {
