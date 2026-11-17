@@ -233,6 +233,8 @@ fun HookOptionsPage(
         extraBottomPadding = extraBottomPadding,
         listState = listState,
         scrollBehavior = scrollBehavior,
+        // 本页是唯一可搜索的页面：顶栏搜索入口只在这里出现（底栏入口同样只在功能页）。
+        topBarSearchAction = true,
         topBarActions = {
             topBarActions?.invoke()
             if (quickActionPackages.isNotEmpty()) {

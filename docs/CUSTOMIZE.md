@@ -64,7 +64,7 @@ android {
 }
 ```
 
-> **miuix OS4 玻璃组件**：`gradle/libs.versions.toml` 的 `miuix` 指向 miuix 主干快照（`0.9.4-<短哈希>-SNAPSHOT`），其 `miuix-glass` / `miuix-material` / `miuix-glass-icons` 尚未上架 Maven Central，需先在本机执行一次 `publishToMavenLocal`（命令与本项目使用的提交见 `README.md`「构建 · miuix OS4 玻璃组件」）。上游正式发版后可改回正式版本号并移除 `settings.gradle.kts` 的 `mavenLocal()`。
+> **miuix OS4 玻璃组件**：`gradle/libs.versions.toml` 的 `miuix` 使用 Maven Central 上的正式版本 `0.9.5-beta01`（含 `miuix-glass` / `miuix-material` / `miuix-glass-icons`），无需本地发布，`settings.gradle.kts` 也不再声明 `mavenLocal()`。
 
 ### 1.2 源码包重命名
 

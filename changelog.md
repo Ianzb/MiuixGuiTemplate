@@ -19,7 +19,7 @@
 - **模块级玻璃对话框**：新增 `ui/component/AppDialog.kt`（`AppDialog` / `AppDialogButtonRow` / `AppDialogButton`），内部走 `GlassDialog` + `GlassDialogButton`（`Normal`/`Primary`/`Destructive`），并自动取当前页面的 `LocalPreferenceBackdrop` 作为采样源；`SystemRestartConfirmDialog`、`UpdateDialog`、`QuickActionDialog` 与文本、滑块、包名列表三处设置对话框全部改用该封装。
 - **全局搜索（复刻示例的两个入口）**：新增 `ui/component/search/`（`AppSearchOverlay` / `AppSearchResults` / `AppSearchState` / `AppSearchIndex`），搜索界面按 miuix 示例 `GlassSearchOverlay.kt` 复刻（400ms 弹簧曲线展开、取消按钮位移/缩放/模糊、跟随键盘、返回键退出），入口在**底部玻璃底栏右侧的搜索圆钮**与**各主页面顶栏的搜索按钮**两处，且绘制在底栏 / 侧栏之上。
 - **功能页搜索改为全局搜索**：页面不再内联 `SearchBar`；搜索结果来自 `OptionRegistry`（含子页面内的功能），摘要显示「分区 / 子页面路径」，点击后自动切到功能页并滚动到对应分区或直接打开对应子页面。
-  - 底栏搜索入口**只在功能页出现**，其它页面用顶栏入口；
+  - 底栏搜索入口与顶栏搜索入口都**只在功能页出现**（可搜索的内容都在该页，其它页面不再显示搜索按钮）；
   - 跳转落位后补写顶栏状态（`heightOffset` / `contentOffset`），大标题像手动下滑一样收起并出现渐变模糊；
   - 目标分区卡片播放两次「变灰闪烁」强调位置（`HookSectionCard(flashToken)`）。
 
@@ -27,12 +27,13 @@
 
 - **底栏改用官方 `GlassNavigationBar`**：移除此前移植的液态玻璃实现，改为官方 OS4 玻璃底栏（54dp 高、25dp 图标、11sp 标签、指示器外扩 5dp、按压缩放 0.6，自带底部安全区留白），图标换成 `MiuixIcons.Glass.*`（`HomeOutline` / `ListView` / `SettingsOutline` / `Info`）；悬浮底栏描边从 `Highlight.GlassStrokeMiddle*` 改为 `material.EdgeStrokes.Middle*` 配 `Modifier.edgeStroke`。
 - **功能页与二级页组件统一到 miuix 新版组件**：开关 / 复选改 content-slot 版 `BasicComponent` + `Switch` / `Checkbox`（状态徽标跟随标题渲染），下拉 → `GlassDropdownPreference`（玻璃气泡弹层），单选 → `RadioButtonPreference`，滑条 → `SliderPreference`，文本、数值、包名列表 → `GlassDialog` + `GlassDialogButton`。
+- **顶栏统一走 `GlassTopAppBar`**：上游 0.9.5 把 `BlurTopAppBar` 收为 glass 模块内部实现，且玻璃组件在缺少运行时着色器的设备上会自行把 backdrop 视为 `null`、退化成实色带，因此删除 `AppTopAppBar` 里那份并行的 `BlurredBar` + `BlurTopAppBar` 回退实现，只按着色器可用性决定是否传入 backdrop。
 - **顶栏图标统一到玻璃样式**：返回按钮按官方示例改为 `GlassIconButton` + `MiuixIcons.Glass.ChevronBackward`（28dp，RTL 自动镜像），非玻璃环境仍用 `IconButton` + `MiuixIcons.Back`（24dp）；功能页右上角刷新动作改用 `AppTopAppBarIconAction`，跟随顶栏玻璃材质。
 - **移除 haze 依赖**：渐变模糊全部改用 miuix `drawBackdrop` / `textureBlur` / `progressiveTextureBlur` / `BlurDefaults.blurColors`，`libs.versions.toml` 与 `app/build.gradle.kts` 中的 `haze` 已删除。
 - **主页信息卡合并**：为让主页可滚动而拆开的「设备信息」/「系统版本」两张卡重新合并为一张「设备信息」卡，仍保留足够的可滚动高度。
 - **顶栏动作间距**：按 miuix 示例的规范，多个顶栏动作之间插入 `Spacer(Modifier.width(8.dp))`（功能页右上角「重启 / 刷新 / 搜索」不再相互贴边）。
 - **底栏宽度收敛**：复刻 miuix 示例 `GlassPage` 的底栏写法——胶囊可用宽度超过阈值（400.dp）时，把整条玻璃底栏收成「344.dp 胶囊 + 搜索按钮」并居中，手机上仍铺满、宽屏不再被拉满。
-- **许可证页**：登记 iOS 液态玻璃示例（miuix 官方示例 `component/liquid`，Apache-2.0）；Miuix 版本标注为 `0.9.4（OS4 玻璃快照）`。
+- **许可证页**：登记 iOS 液态玻璃示例（miuix 官方示例 `component/liquid`，Apache-2.0）；Miuix 版本标注为 `0.9.5-beta01`。
 
 ### 修复
 
@@ -53,7 +54,7 @@
 
 - 侧栏样式仅在宽屏（`shouldShowSplitPane()` 为真）生效，窄屏始终使用「底栏样式」。
 - iOS 液态玻璃底栏依赖 AGSL 运行时着色器，Android 13 以下自动回退为实色底栏。
-- **构建需先生成 miuix 本地快照**：本项目依赖 miuix 主干（`ac0af467`）的 OS4 玻璃模块，这些模块尚未发布到 Maven Central，需先执行 `publishToMavenLocal`，详见 `README.md`「构建 · miuix OS4 玻璃组件」。
+- **依赖改用 Maven Central 正式版本**：miuix `0.9.5-beta01` 已把 `miuix-glass` / `miuix-material` / `miuix-glass-icons` 一起发上 Maven Central，`gradle/libs.versions.toml` 由本地快照（`0.9.4-ac0af467-SNAPSHOT`）改回正式版本号，`settings.gradle.kts` 移除 `mavenLocal()`，CI 也不再克隆 miuix 源码执行 `publishToMavenLocal`——任意机器直接 `./gradlew assembleDebug` 即可。该版本 AAR 以 Android 37.2 编译，`compileSdk` 同步改为 `release(37) { minorApiLevel = 2 }`（需安装 SDK Platform 37.2）。
 
 ## 0.7.0
 

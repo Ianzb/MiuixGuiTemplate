@@ -1035,8 +1035,8 @@ Scaffold                     ← 只负责弹层：无顶栏 / 底栏，contentW
 
 **两个搜索入口**（与 miuix 示例 `GlassPage` 一致）：
 
-1. 底部玻璃底栏右侧的独立搜索圆钮（`GlassNavigationBar` 的 `trailingAction`，胶囊之外的一颗 `GlassIconButton`）——**只在「功能」页出现**（可搜索的内容都在该页），其它页面用顶栏入口；
-2. 主页面顶栏右侧的搜索按钮（`AppPageScaffold` 自动渲染；只有在 `LocalAppSearchState` 可用的主页容器内才出现，二级页面 / 许可证页等独立 Activity 不会出现）。多个顶栏动作之间按 miuix 示例的规范插入 `Spacer(Modifier.width(8.dp))`，按钮不相互贴边。
+1. 底部玻璃底栏右侧的独立搜索圆钮（`GlassNavigationBar` 的 `trailingAction`，胶囊之外的一颗 `GlassIconButton`）——**只在「功能」页出现**（可搜索的内容都在该页）；
+2. 功能页顶栏右侧的搜索按钮（`AppPageScaffold(topBarSearchAction = true)` 时渲染，只有 `HookOptionsPage` 传入该值，因此其它页面不会出现；同时在 `LocalAppSearchState` 可用的主页容器内才生效，二级页面 / 许可证页等独立 Activity 不会出现）。多个顶栏动作之间按 miuix 示例的规范插入 `Spacer(Modifier.width(8.dp))`，按钮不相互贴边。
 
 两处入口共用同一个 `AppSearchState`，唤起同一个搜索界面。
 

@@ -57,8 +57,10 @@ val AppPageContentWindowInsets: WindowInsets
  * @param titleAlpha 标题透明度，随滚动变化的页面（如关于页）用它做淡入。
  * @param expandable 是否允许大标题折叠成小标题；保持大标题的页面传 `false`。
  * @param useGlassTopBar 是否使用 OS4 玻璃顶栏；默认 `true`（二级页也走同一条路径）。
- *   置为 `false` 时回退到 [BlurredBar] + `BlurTopAppBar`（仅用于需要常驻带区的特殊页面）。
+ *   置为 `false` 时不再单独渲染另一种顶栏，而是让玻璃顶栏不采样 backdrop（缺少运行时着色器时同样走这条路）。
  * @param color 顶栏底色覆盖项；为空时按模糊是否生效自动取透明或主题表面色。
+ * @param topBarSearchAction 是否在顶栏渲染全局搜索入口（只有可搜索的「功能页」为 true；
+ *   搜索状态由主页容器通过 `LocalAppSearchState` 下发，独立 Activity 中该值为 false 时也不会渲染）。
  * @param actions 顶栏右侧动作区。
  */
 @Composable
@@ -72,6 +74,7 @@ fun AppPageScaffold(
     expandable: Boolean = true,
     useGlassTopBar: Boolean = true,
     color: Color? = null,
+    topBarSearchAction: Boolean = false,
     actions: @Composable RowScope.() -> Unit = {},
     contentWindowInsets: WindowInsets = AppPageContentWindowInsets,
     content: @Composable (PaddingValues) -> Unit,
@@ -88,7 +91,6 @@ fun AppPageScaffold(
             AppTopAppBar(
                 title = title,
                 scrollBehavior = scrollBehavior,
-                blurActive = blurActive,
                 color = barColor,
                 backdrop = topBarBackdrop,
                 onBack = onBack,
@@ -97,7 +99,7 @@ fun AppPageScaffold(
                 useGlassTopBar = useGlassTopBar,
                 actions = {
                     actions()
-                    if (openSearch != null) {
+                    if (topBarSearchAction && openSearch != null) {
                         // 与 miuix 示例一致：顶栏多个动作之间用 8.dp 间隔，按钮不相互贴边。
                         Spacer(Modifier.width(8.dp))
                         AppTopAppBarIconAction(onClick = openSearch) {
@@ -138,6 +140,7 @@ fun AppLazyPage(
     scrollBehavior: ScrollBehavior = MiuixScrollBehavior(),
     onBack: (() -> Unit)? = null,
     topBarActions: @Composable RowScope.() -> Unit = {},
+    topBarSearchAction: Boolean = false,
     contentWindowInsets: WindowInsets = AppPageContentWindowInsets,
     content: LazyListScope.() -> Unit,
 ) {
@@ -148,6 +151,7 @@ fun AppLazyPage(
         scrollBehavior = scrollBehavior,
         onBack = onBack,
         actions = topBarActions,
+        topBarSearchAction = topBarSearchAction,
         contentWindowInsets = contentWindowInsets,
     ) { innerPadding ->
         LazyColumn(

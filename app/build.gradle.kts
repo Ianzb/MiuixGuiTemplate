@@ -6,7 +6,8 @@ plugins {
 android {
     namespace = "cn.ianzb.miuixguitemplate"
     compileSdk {
-        version = release(37)
+        // miuix 0.9.5-beta01 的 AAR 以 Android 37.2 编译，compileSdk 必须跟上（37.0 会被 AGP 拒绝）。
+        version = release(37) { minorApiLevel = 2 }
     }
 
     defaultConfig {

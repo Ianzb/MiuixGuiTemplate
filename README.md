@@ -53,6 +53,7 @@ cd MiuixGuiTemplate
 
 # 设置 JDK 25（CI 使用 temurin 25）和 Android SDK
 # 编辑 local.properties 指向你的 SDK 路径
+# 需要 Android SDK Platform 37.2（compileSdk = 37 minor 2，miuix AAR 以此编译）
 
 # 构建 Debug APK
 ./gradlew assembleDebug
@@ -61,23 +62,18 @@ cd MiuixGuiTemplate
 # app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
 ```
 
-## miuix OS4 玻璃组件（首次构建前必做）
+## miuix 依赖
 
-本项目使用 miuix 主干的 OS4 玻璃组件（`miuix-glass`、`miuix-material`、`miuix-glass-icons`），这些模块**尚未发布到 Maven Central**，需先由源码在本地仓库生成快照：
+OS4 玻璃组件（`miuix-glass`、`miuix-material`、`miuix-glass-icons`）自 **0.9.5-beta01** 起已随 miuix 一起发布到 Maven Central，本项目直接使用正式版本，**不需要**克隆源码或执行 `publishToMavenLocal`：
 
-```bash
-# 1. 克隆 miuix 并切到本项目使用的提交
-git clone https://github.com/compose-miuix-ui/miuix.git ../miuix
-git -C ../miuix checkout ac0af467
-
-# 2. 发布到 ~/.m2/repository（版本号为 0.9.4-<短哈希>-SNAPSHOT）
-cd ../miuix && ./gradlew publishToMavenLocal && cd -
-
-# 3. 回到本项目正常构建
-./gradlew assembleDebug
+```toml
+# gradle/libs.versions.toml
+miuix = "0.9.5-beta01"
 ```
 
-`settings.gradle.kts` 已为 `top.yukonga.miuix.kmp` 分组启用 `mavenLocal()`，其余依赖仍走 Maven Central。上游正式发布含玻璃组件的版本后，把 `gradle/libs.versions.toml` 的 `miuix` 改回正式版本号即可移除该步骤（CI 工作流已内置上述发布步骤并带缓存）。
+`settings.gradle.kts` 只保留 `google()` 与 `mavenCentral()`（已移除 `mavenLocal()`），因此任意机器 / CI 上 `./gradlew assembleDebug` 都能直接解析依赖。
+
+> 二次开发若需要跟随 miuix 主干尚未发版的提交，可以自行在本地 `publishToMavenLocal` 并把 `miuix` 改成对应快照版本号、临时加回 `mavenLocal()`；本项目默认不这样做。
 
 <br>
 
