@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -73,6 +74,7 @@ class SafeModeActivity : BaseSubPageActivity() {
         val scope = XposedServiceManager.scope
         val safeModePackages = SafeModeReader.safeModePackages
         val scrollBehavior = LocalSubPageScrollBehavior.current
+        val listState = rememberLazyListState()
         var query by remember { mutableStateOf("") }
 
         val packageManager = context.packageManager
@@ -91,6 +93,7 @@ class SafeModeActivity : BaseSubPageActivity() {
         }
 
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .then(
@@ -98,6 +101,7 @@ class SafeModeActivity : BaseSubPageActivity() {
                         Modifier.pageScrollModifiers(
                             showTopAppBar = true,
                             topAppBarScrollBehavior = scrollBehavior,
+                            contentState = listState,
                         )
                     } else {
                         Modifier

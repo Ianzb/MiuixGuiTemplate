@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -84,11 +85,13 @@ class ScopeListActivity : BaseSubPageActivity() {
         val safeModePackages = SafeModeReader.safeModePackages
         val coroutineScope = rememberCoroutineScope()
         val scrollBehavior = LocalSubPageScrollBehavior.current
+        val listState = rememberLazyListState()
         var query by remember { mutableStateOf("") }
         val packageManager = context.packageManager
         val filteredScope = remember(scope, query) { filterPackages(scope, query, packageManager) }
 
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .then(
@@ -96,6 +99,7 @@ class ScopeListActivity : BaseSubPageActivity() {
                         Modifier.pageScrollModifiers(
                             showTopAppBar = true,
                             topAppBarScrollBehavior = scrollBehavior,
+                            contentState = listState,
                         )
                     } else {
                         Modifier

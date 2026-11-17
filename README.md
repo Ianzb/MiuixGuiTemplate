@@ -30,6 +30,9 @@
 - **二级页面模板** — 独立 Activity，自动套用主题与背景模糊配置
 - **应用内检查更新** — 设置页「更新」分区支持启动自动检查与手动检查；发现新版本弹窗展示 Release 更新说明并跳转下载页（仓库地址见 `UpdateChecker.REPO`，需改为自己的仓库）
 - **功能标签页** — 以「功能页 + 子页面搜索」的形态内置每种组件类型的示例，便于快速上手
+- **两种悬浮底栏** — 设置页可切换 `HyperOS 玻璃`（官方 `GlassNavigationBar`）与 `iOS 液态玻璃`（移植自 miuix 官方示例，镜面折射 + 动态高光），窄屏与未启用侧栏的宽屏生效
+- **可切换侧栏** — 宽屏可用 `GlassNavigationRail` 取代底栏，形态可选「顶部胶囊」与「左侧面板」；页面内容按侧栏宽度让位，侧栏玻璃可连续采样页面内容
+- **渐变模糊统一走 miuix** — 顶栏 / 底栏 / 侧栏的模糊全部由 `drawBackdrop`、`textureBlur`、`progressiveTextureBlur` 与 `BlurDefaults.blurColors` 提供，不再依赖 haze
 
 <br>
 
@@ -57,6 +60,24 @@ cd MiuixGuiTemplate
 # APK 输出位置（仅 arm64-v8a）
 # app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
 ```
+
+## miuix OS4 玻璃组件（首次构建前必做）
+
+本项目使用 miuix 主干的 OS4 玻璃组件（`miuix-glass`、`miuix-material`、`miuix-glass-icons`），这些模块**尚未发布到 Maven Central**，需先由源码在本地仓库生成快照：
+
+```bash
+# 1. 克隆 miuix 并切到本项目使用的提交
+git clone https://github.com/compose-miuix-ui/miuix.git ../miuix
+git -C ../miuix checkout ac0af467
+
+# 2. 发布到 ~/.m2/repository（版本号为 0.9.4-<短哈希>-SNAPSHOT）
+cd ../miuix && ./gradlew publishToMavenLocal && cd -
+
+# 3. 回到本项目正常构建
+./gradlew assembleDebug
+```
+
+`settings.gradle.kts` 已为 `top.yukonga.miuix.kmp` 分组启用 `mavenLocal()`，其余依赖仍走 Maven Central。上游正式发布含玻璃组件的版本后，把 `gradle/libs.versions.toml` 的 `miuix` 改回正式版本号即可移除该步骤（CI 工作流已内置上述发布步骤并带缓存）。
 
 <br>
 
@@ -132,7 +153,7 @@ $env:KEY_PASSWORD="你的密钥密码"
 
 # 第三方库
 
-- [miuix](https://github.com/compose-miuix-ui/miuix) — HyperOS 风格 Compose UI 组件库
+- [miuix](https://github.com/compose-miuix-ui/miuix) — HyperOS 风格 Compose UI 组件库（含 iOS 液态玻璃底栏示例，`component/liquid`）
 - [libxposed API](https://github.com/libxposed/api) — 现代 Xposed 模块 API（102）
 - [DexKit](https://github.com/LuckyPray/DexKit) — Dex 解析与缓存
 - [AndroidX Compose](https://developer.android.com/jetpack/compose) — 声明式 UI 框架

@@ -1,5 +1,60 @@
 # 更新日志
 
+## 0.8.0
+
+> 发布于 2026-11-17
+
+### 新增
+
+- **HyperOS 4 玻璃组件**：升级到 miuix 最新主干（含尚未上架 Maven Central 的 `miuix-glass` / `miuix-material` / `miuix-glass-icons`），全面改用 OS4 玻璃材质组件；`RuntimeShader` / `asBrush` / `isRuntimeShaderSupported` / `EdgeStroke` 统一迁移到 `top.yukonga.miuix.kmp.material`，`miuix-shader` 模块已并入 blur/material。
+- **玻璃顶栏 `AppTopAppBar`**：新增 `ui/component/AppTopAppBar.kt`，按运行时着色器可用性选择 `GlassTopAppBar`（采样页面 `backdrop`，滚动时标题与着色带渐显、支持展开/收起大标题、带区渐变取自 `GlassTopAppBarDefaults.bandBrush`）或回退到 `BlurredBar` + `BlurTopAppBar`；同时提供 `AppSubPageTopAppBar`、`AppTopAppBarIconAction`、`LocalIsGlassTopBar`。二级页与其它页面走同一条玻璃顶栏路径。
+- **页面级顶栏 backdrop**：`BlurUtils.kt` 新增 `rememberTopBarBackdrop(blurActive)`，各页面自建顶栏采样层，并把 `Modifier.layerBackdrop` 施加在**不含顶栏的内容容器**上；顶栏据此折射页面真实内容，模糊关闭时返回 `null` 走实色回退。
+- **`PageBackdrop` 页面根容器**：一次完成「把页面内容录入采样图层」与「通过 `LocalPreferenceBackdrop` 下发 backdrop」，主页、功能页、设置页、关于页、许可证页与二级页全部改用该容器。
+- **悬浮导航拆成两个独立选项**：设置页「界面」新增「底栏样式」与「侧栏样式」两个下拉，平板可组合出更合适的形态。
+  - **底栏样式**：`HyperOS 玻璃`（官方 `GlassNavigationBar`，默认）与 `iOS 液态玻璃`（移植自 miuix 官方示例的 `component/liquid`，带镜面折射、动态高光与拖动指示器）。
+  - **侧栏样式**：`关闭`、`顶部胶囊`（默认）、`左侧面板`；仅在宽屏生效，启用后由侧栏取代底栏，进入应用时停在所选形态，可点击胶囊上的按钮在胶囊/面板之间切换。
+  - 旧的合并枚举 `NavBarStyle` 与 `nav_bar_style` 键自动迁移到新键 `bottom_bar_style` / `rail_style`，0.8.0 之前的 `floating_navbar` / `liquid_glass` / `show_navigation_rail` / `nav_rail_position` 同样兼容。
+- **iOS 液态玻璃底栏**：新增 `ui/component/liquid/`（`LiquidGlassNavigationBar`、`Lens`、`InnerShadow`、`Vibrancy`、`CombinedBackdrop`）与 `ui/component/animation/`（`DampedDragAnimation`、`InteractiveHighlight`），文件保留上游版权与 `SPDX-License-Identifier: Apache-2.0` 声明。
+- **页面级侧栏留白**：新增 `LocalAppPageStartInset` 与 `Modifier.pageStartInset()`，把侧栏宽度下发到每个页面的内容间距（等价于 miuix 示例的 `rememberAppPageInsets`）。页面根布局与背景仍是全宽，因此侧栏玻璃能连续采样到整片页面内容。
+- **模块级玻璃对话框**：新增 `ui/component/AppDialog.kt`（`AppDialog` / `AppDialogButtonRow` / `AppDialogButton`），内部走 `GlassDialog` + `GlassDialogButton`（`Normal`/`Primary`/`Destructive`），并自动取当前页面的 `LocalPreferenceBackdrop` 作为采样源；`SystemRestartConfirmDialog`、`UpdateDialog`、`QuickActionDialog` 与文本、滑块、包名列表三处设置对话框全部改用该封装。
+- **全局搜索（复刻示例的两个入口）**：新增 `ui/component/search/`（`AppSearchOverlay` / `AppSearchResults` / `AppSearchState` / `AppSearchIndex`），搜索界面按 miuix 示例 `GlassSearchOverlay.kt` 复刻（400ms 弹簧曲线展开、取消按钮位移/缩放/模糊、跟随键盘、返回键退出），入口在**底部玻璃底栏右侧的搜索圆钮**与**各主页面顶栏的搜索按钮**两处，且绘制在底栏 / 侧栏之上。
+- **功能页搜索改为全局搜索**：页面不再内联 `SearchBar`；搜索结果来自 `OptionRegistry`（含子页面内的功能），摘要显示「分区 / 子页面路径」，点击后自动切到功能页并滚动到对应分区或直接打开对应子页面。
+  - 底栏搜索入口**只在功能页出现**，其它页面用顶栏入口；
+  - 跳转落位后补写顶栏状态（`heightOffset` / `contentOffset`），大标题像手动下滑一样收起并出现渐变模糊；
+  - 目标分区卡片播放两次「变灰闪烁」强调位置（`HookSectionCard(flashToken)`）。
+
+### 变更
+
+- **底栏改用官方 `GlassNavigationBar`**：移除此前移植的液态玻璃实现，改为官方 OS4 玻璃底栏（54dp 高、25dp 图标、11sp 标签、指示器外扩 5dp、按压缩放 0.6，自带底部安全区留白），图标换成 `MiuixIcons.Glass.*`（`HomeOutline` / `ListView` / `SettingsOutline` / `Info`）；悬浮底栏描边从 `Highlight.GlassStrokeMiddle*` 改为 `material.EdgeStrokes.Middle*` 配 `Modifier.edgeStroke`。
+- **功能页与二级页组件统一到 miuix 新版组件**：开关 / 复选改 content-slot 版 `BasicComponent` + `Switch` / `Checkbox`（状态徽标跟随标题渲染），下拉 → `GlassDropdownPreference`（玻璃气泡弹层），单选 → `RadioButtonPreference`，滑条 → `SliderPreference`，文本、数值、包名列表 → `GlassDialog` + `GlassDialogButton`。
+- **顶栏图标统一到玻璃样式**：返回按钮按官方示例改为 `GlassIconButton` + `MiuixIcons.Glass.ChevronBackward`（28dp，RTL 自动镜像），非玻璃环境仍用 `IconButton` + `MiuixIcons.Back`（24dp）；功能页右上角刷新动作改用 `AppTopAppBarIconAction`，跟随顶栏玻璃材质。
+- **移除 haze 依赖**：渐变模糊全部改用 miuix `drawBackdrop` / `textureBlur` / `progressiveTextureBlur` / `BlurDefaults.blurColors`，`libs.versions.toml` 与 `app/build.gradle.kts` 中的 `haze` 已删除。
+- **主页信息卡合并**：为让主页可滚动而拆开的「设备信息」/「系统版本」两张卡重新合并为一张「设备信息」卡，仍保留足够的可滚动高度。
+- **顶栏动作间距**：按 miuix 示例的规范，多个顶栏动作之间插入 `Spacer(Modifier.width(8.dp))`（功能页右上角「重启 / 刷新 / 搜索」不再相互贴边）。
+- **底栏宽度收敛**：复刻 miuix 示例 `GlassPage` 的底栏写法——胶囊可用宽度超过阈值（400.dp）时，把整条玻璃底栏收成「344.dp 胶囊 + 搜索按钮」并居中，手机上仍铺满、宽屏不再被拉满。
+- **许可证页**：登记 iOS 液态玻璃示例（miuix 官方示例 `component/liquid`，Apache-2.0）；Miuix 版本标注为 `0.9.4（OS4 玻璃快照）`。
+
+### 修复
+
+- **启动即闪退（RenderNode 栈溢出）**：玻璃顶栏若采样「包含顶栏自身」的图层，会触发 `RenderNode::prepareTreeImpl` 与 `SkiaDisplayList::prepareListAndChildren` 成对无限递归，表现为启动首帧 `SIGSEGV` / `stack pointer is not in a rw map`。现改为顶栏只采样页面内容层（见上条），并在 `pagerContent` 中把整页 backdrop 固定为 `null` 作为安全网。
+- **主页没有渐变模糊**：主页内容不足一屏时 `LazyColumn` 无法滚动，`GlassTopAppBar` 的渐进模糊强度由滚动偏移驱动，`ramp` 恒为 0，条带永不出现。现拆卡并新增「快捷入口」卡片，主页可滚动后顶栏渐变模糊/标题渐显恢复正常。
+- **侧栏遮挡页面内容**：此前把留白加在 `HorizontalPager` 上，导致侧栏展开/收起过程中与页面内容错位。现改为页面级 inset；且留白来源从 `animateDpAsState(tween(300))` 改为 `GlassNavigationRailState.progress`，与侧栏形变逐帧同步，不再出现面板已展开而内容尚未让位的遮挡。
+- **关闭侧栏后页面整体右移留白**：`GlassNavigationRail` 关闭后不再参与组合，它的 `state` 会停留在原来的展开进度上；`sidebarInset` 现在按 `useRail` 归零，侧栏关闭或窄屏改用底部悬浮栏时页面恢复全宽。
+- **功能页「自定义后缀」「自定义应用列表」弹窗退回旧版样式**：功能页仅把 backdrop 传给单个组件，`AppDialog` 取到的采样源为 `null`，`GlassDialog(backdrop = null)` 因此退化成不透明材质。改用 `PageBackdrop` 后恢复玻璃样式，与二级页表现一致。
+- **二级页内容不足一屏时没有模糊、大标题还会卡在折叠态**：miuix 的 `MiuixScrollBehavior` 默认 `canScroll = { true }`，内容不足一屏时上滑手势先被顶栏的 `onPreScroll` 整段吃掉（折叠大标题），列表拿不到任何位移，松手后大标题停在折叠态，玻璃带区也永不出现。现与官方 demo（`utils/PageUtils.kt`）对齐，在 `pageScrollModifiers` 里把 `overScrollVertical` 的回弹位移写入 `TopAppBarState.overscrollOffset`，并由二级页脚手架按列表 `canScrollForward/Backward` 传入 `canScroll`：短页面上滑直接弹性回弹，回弹过程中玻璃带区与渐变模糊照常出现，松手回弹并恢复大标题。
+- **二级页返回按钮**：与「第三方许可证与致谢」页一致，返回按钮就是组件库的 `GlassIconButton` + `MiuixIcons.Glass.ChevronBackward`（28dp、RTL 自动镜像），胶囊材质跟随顶栏 `materialProgress`：静止时为裸箭头，随滚动 / 弹性回弹浮出玻璃胶囊，不再自绘任何按钮底板。
+- **Hook 设置卡片徽标位置**：`HookSwitchCard` / `HookCheckboxCard` 从 `SwitchPreference` / `CheckboxPreference` 改为 content-slot 版 `BasicComponent`，状态徽标（可用/不可用等）跟随标题渲染，不再被挤到行尾控件旁。
+- **对话框 / 下拉被悬浮底栏遮住**：弹层原本注册在页面自己的 `Scaffold`（`popupHost` 与页面同层、在底栏之下），手机端贴底弹层与下拉气泡会被悬浮底栏压住。现按 miuix 示例的层级，由 `MainActivity` 最外层「只负责弹层」的 `Scaffold` 承载所有浮层（`AppDialog` 与 `GlassDropdownPreference` 统一 `renderInRootScaffold = true`）：弹层与遮罩直接盖在底栏 / 侧栏之上，不需要任何避让垫高，无底栏页面（二级页、许可证页）位置也不受影响。
+- **对话框按钮文案折行**：「取消 / 恢复默认 / 确定」三等分时，「恢复默认」在窄屏或大字体下被折成两行（「恢复默 / 认」）。`AppDialogButton` 改为固定单行 + `TextAutoSize` 自动缩字号，放得下时保持原字号，英文 “Restore Default” 同样不再折行。
+- **关于页滚到底卡片被推到顶栏下并硬停**：列表末尾的占位用了 `fillParentMaxHeight()`，可滚动距离比「大标题刚好消失」多出一个顶栏内边距，首张卡片被推到顶栏/状态栏下面后才停住。改为按「列表视口 − 顶部内边距」取最小高度，滚到底时首张卡片正好停在顶栏下沿。
+- **关于页滚动到「只剩卡片」时的顿挫**：新增两段吸附（大标题 ⇄ 只剩卡片），手势过半后由弹簧动画收到固定锚点，不再停在中间状态；同时玻璃顶栏路径下不再读取 `collapsed`，避免在大标题消失的临界点触发整页重组。
+
+### 注意
+
+- 侧栏样式仅在宽屏（`shouldShowSplitPane()` 为真）生效，窄屏始终使用「底栏样式」。
+- iOS 液态玻璃底栏依赖 AGSL 运行时着色器，Android 13 以下自动回退为实色底栏。
+- **构建需先生成 miuix 本地快照**：本项目依赖 miuix 主干（`ac0af467`）的 OS4 玻璃模块，这些模块尚未发布到 Maven Central，需先执行 `publishToMavenLocal`，详见 `README.md`「构建 · miuix OS4 玻璃组件」。
+
 ## 0.7.0
 
 > 发布于 2026-10-26

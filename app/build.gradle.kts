@@ -13,8 +13,8 @@ android {
         applicationId = "cn.ianzb.miuixguitemplate"
         minSdk = 35
         targetSdk = 37
-        versionCode = 15
-        versionName = "0.7.0"
+        versionCode = 17
+        versionName = "0.8.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -85,12 +85,14 @@ dependencies {
 
     implementation(libs.miuix.core)
     implementation(libs.miuix.ui)
-    implementation(libs.miuix.shader)
     implementation(libs.miuix.blur)
     implementation(libs.miuix.preference)
     implementation(libs.miuix.icons)
     implementation(libs.miuix.squircle)
     implementation(libs.miuix.navigation)
+    // OS4 玻璃组件（HyperOS 4 材质），依赖本地发布的 miuix 快照
+    implementation(libs.miuix.material)
+    implementation(libs.miuix.glass)
+    implementation(libs.miuix.glass.icons)
     implementation(libs.material.icons)
-    implementation(libs.haze)
 }

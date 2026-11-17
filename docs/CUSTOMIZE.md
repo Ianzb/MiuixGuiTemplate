@@ -64,6 +64,8 @@ android {
 }
 ```
 
+> **miuix OS4 玻璃组件**：`gradle/libs.versions.toml` 的 `miuix` 指向 miuix 主干快照（`0.9.4-<短哈希>-SNAPSHOT`），其 `miuix-glass` / `miuix-material` / `miuix-glass-icons` 尚未上架 Maven Central，需先在本机执行一次 `publishToMavenLocal`（命令与本项目使用的提交见 `README.md`「构建 · miuix OS4 玻璃组件」）。上游正式发版后可改回正式版本号并移除 `settings.gradle.kts` 的 `mavenLocal()`。
+
 ### 1.2 源码包重命名
 
 1. 将 `app/src/main/java/cn/ianzb/miuixguitemplate/` 重命名为 `com/yourname/yourmodule/`；
@@ -281,7 +283,7 @@ HookOptionsPage(
 )
 ```
 
-子页面内的功能通过 `HookSubPage` 并入父页搜索（子页面自身无需再放搜索栏）；多级页面可继续嵌套 `subPages`，搜索可达并直接打开对应层级：
+子页面内的功能通过 `HookSubPage` 并入全局搜索（子页面自身无需再放搜索入口，搜索界面与入口由导航容器统一提供）；多级页面可继续嵌套 `subPages`，搜索可达并直接打开对应层级：
 
 ```kotlin
 HookOptionsPage(
@@ -384,6 +386,7 @@ HookOptionsPage(
 | 项目 | 位置 | 说明 |
 |---|---|---|
 | 应用类 | `TemplateApp.kt` | 初始化配置、服务绑定；改包名后自动生效 |
+| 底栏 / 侧栏样式 | `AppSettings.kt` + `MainActivity.kt` + `SettingsPage.kt` | 默认 `BottomBarStyle.HyperOS` + `RailStyle.Top`；新增样式需同时改两处枚举、`MainActivity` 的 `when` 分支与 `strings.xml` |
 | 检查更新 | `SettingsPage.kt` / `MainActivity.kt` | 当前为占位（点击仅提示），接入真实更新逻辑时替换 |
 | 清空 DexKit 缓存 | `SettingsPage.kt` + `xposed/RootHelper.kt` | 需要 Root，删除作用域应用的 `cache/<CACHE_DIR>` |
 | README | `README.md` | 项目简介、链接、构建说明 |

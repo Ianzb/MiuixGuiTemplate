@@ -23,7 +23,9 @@
     <string name="home_device_model">设备型号</string>
     <string name="home_hyperos_version">HyperOS 版本</string>
     <string name="home_android_version">Android 版本</string>
-    <string name="home_system_version">系统版本</string>
+    <string name="home_shortcuts">快捷入口</string>
+    <string name="home_component_demo">组件演示</string>
+    <string name="home_component_demo_summary">查看全部内置组件与示例页面</string>
     <string name="home_app_version">应用版本</string>
 
     <!-- Settings -->
@@ -39,6 +41,15 @@
     <string name="theme_monet_system">Monet 跟随系统</string>
     <string name="theme_monet_light">Monet 浅色</string>
     <string name="theme_monet_dark">Monet 深色</string>
+    <string name="bottom_bar_style">底栏样式</string>
+    <string name="bottom_bar_style_hyperos">HyperOS 玻璃</string>
+    <string name="bottom_bar_style_ios">iOS 液态玻璃</string>
+    <string name="bottom_bar_style_summary">窄屏与未启用侧栏的宽屏使用该样式</string>
+    <string name="rail_style">侧栏样式</string>
+    <string name="rail_style_none">关闭</string>
+    <string name="rail_style_top">顶部胶囊</string>
+    <string name="rail_style_left">左侧面板</string>
+    <string name="rail_style_summary">仅在宽屏生效；启用后由侧栏取代底栏，进入时停在所选形态</string>
     <string name="floating_navbar">悬浮导航栏</string>
     <string name="floating_navbar_summary">使用悬浮样式的底部导航栏</string>
     <string name="liquid_glass">液态玻璃效果</string>
@@ -209,7 +220,7 @@
     <string name="about_telegram">Telegram 群组</string>
     <string name="about_telegram_summary">https://t.me/your-channel</string>
     <string name="about_dependencies">第三方许可证与致谢</string>
-    <string name="about_based_on">Based on MiuixGuiTemplate 0.7.0</string>
+    <string name="about_based_on">Based on MiuixGuiTemplate 0.8.0</string>
     <string name="license_agpl">GNU AGPL v3.0</string>
     <string name="license_agpl_summary">查看完整协议文本</string>
     <string name="third_party_licenses_title">第三方许可证与致谢</string>

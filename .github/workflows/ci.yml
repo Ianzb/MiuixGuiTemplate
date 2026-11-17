@@ -2,6 +2,8 @@ name: CI Build
 
 env:
   PROGRAM_NAME: "MiuixGuiTemplate"
+  # 本项目使用的 miuix 主干提交（OS4 玻璃组件尚未发布到 Maven Central）
+  MIUIX_COMMIT: "ac0af4671bc9e4489d0960685a46a5b1ffd557da"
 
 on:
   workflow_dispatch:
@@ -42,6 +44,23 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
+
+      - name: 缓存 miuix OS4 快照
+        id: miuix_cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/top/yukonga/miuix
+          key: miuix-snapshot-${{ env.MIUIX_COMMIT }}-v1
+
+      - name: 发布 miuix OS4 快照到本地仓库
+        if: steps.miuix_cache.outputs.cache-hit != 'true'
+        run: |
+          set -e
+          git clone --filter=blob:none --no-checkout https://github.com/compose-miuix-ui/miuix.git "$RUNNER_TEMP/miuix"
+          git -C "$RUNNER_TEMP/miuix" checkout "${{ env.MIUIX_COMMIT }}"
+          chmod +x "$RUNNER_TEMP/miuix/gradlew"
+          cd "$RUNNER_TEMP/miuix"
+          ./gradlew publishToMavenLocal --console=plain
 
       - name: 读取版本号
         id: get_version

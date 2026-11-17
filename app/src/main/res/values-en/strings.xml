@@ -23,7 +23,9 @@
     <string name="home_device_model">Device Model</string>
     <string name="home_hyperos_version">HyperOS Version</string>
     <string name="home_android_version">Android Version</string>
-    <string name="home_system_version">System Version</string>
+    <string name="home_shortcuts">Shortcuts</string>
+    <string name="home_component_demo">Components</string>
+    <string name="home_component_demo_summary">Browse all built-in components and sample pages</string>
     <string name="home_app_version">App Version</string>
 
     <!-- Settings -->
@@ -39,6 +41,15 @@
     <string name="theme_monet_system">Monet Follow System</string>
     <string name="theme_monet_light">Monet Light</string>
     <string name="theme_monet_dark">Monet Dark</string>
+    <string name="bottom_bar_style">Bottom Bar Style</string>
+    <string name="bottom_bar_style_hyperos">HyperOS Glass</string>
+    <string name="bottom_bar_style_ios">iOS Liquid Glass</string>
+    <string name="bottom_bar_style_summary">Used on narrow screens and on wide screens without a rail</string>
+    <string name="rail_style">Rail Style</string>
+    <string name="rail_style_none">Off</string>
+    <string name="rail_style_top">Top Pill</string>
+    <string name="rail_style_left">Left Panel</string>
+    <string name="rail_style_summary">Wide screens only; when enabled the rail replaces the bottom bar and starts in the selected form</string>
     <string name="floating_navbar">Floating Navbar</string>
     <string name="floating_navbar_summary">Use floating style bottom navigation bar</string>
     <string name="liquid_glass">Liquid Glass</string>
@@ -209,7 +220,7 @@
     <string name="about_telegram">Telegram Group</string>
     <string name="about_telegram_summary">https://t.me/your-channel</string>
     <string name="about_dependencies">Third Party Licenses &amp; Credits</string>
-    <string name="about_based_on">Based on MiuixGuiTemplate 0.7.0</string>
+    <string name="about_based_on">Based on MiuixGuiTemplate 0.8.0</string>
     <string name="license_agpl">GNU AGPL v3.0</string>
     <string name="license_agpl_summary">View full license text</string>
     <string name="third_party_licenses_title">Third Party Licenses &amp; Credits</string>

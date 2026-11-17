@@ -1,0 +1,170 @@
+package cn.ianzb.miuixguitemplate.ui.component
+
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import cn.ianzb.miuixguitemplate.R
+import cn.ianzb.miuixguitemplate.ui.component.search.rememberAppSearchOpen
+import cn.ianzb.miuixguitemplate.ui.util.PageBackdrop
+import cn.ianzb.miuixguitemplate.ui.util.pageScrollModifiers
+import cn.ianzb.miuixguitemplate.ui.util.pageStartInset
+import cn.ianzb.miuixguitemplate.ui.util.rememberTopBarBackdrop
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.ScrollBehavior
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.glass.Search
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+
+/**
+ * 所有页面的统一窗口内边距：只保留水平方向的系统栏与挖孔，垂直方向交给各页内容自行处理，
+ * 这样顶栏与底栏才能覆盖到状态栏/导航栏之下（与官方示例一致）。
+ */
+val AppPageContentWindowInsets: WindowInsets
+    @Composable
+    get() = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
+
+/**
+ * 页面骨架：玻璃顶栏 + [PageBackdrop] 采样图层。
+ *
+ * 把「顶栏模糊源」与「页面内容录入采样图层」两件事绑定在一个 API 内，页面内所有玻璃组件
+ * （[AppDialog]、`GlassDropdownPreference`、`GlassDialog` 等）都能通过 [LocalPreferenceBackdrop]
+ * 拿到同一个 backdrop，不会因为漏传而退化成不透明材质。
+ *
+ * @param title 顶栏标题。
+ * @param isBlurEnabled 总开关（用户设置中的「背景模糊」）；关闭时顶栏用纯色、弹层用不透明材质。
+ * @param scrollBehavior 该页滚动行为，需与内容列表共用，顶栏折叠/浮现由它驱动。
+ * @param onBack 非空时在顶栏左侧渲染返回按钮（二级页使用）。
+ * @param titleAlpha 标题透明度，随滚动变化的页面（如关于页）用它做淡入。
+ * @param expandable 是否允许大标题折叠成小标题；保持大标题的页面传 `false`。
+ * @param useGlassTopBar 是否使用 OS4 玻璃顶栏；默认 `true`（二级页也走同一条路径）。
+ *   置为 `false` 时回退到 [BlurredBar] + `BlurTopAppBar`（仅用于需要常驻带区的特殊页面）。
+ * @param color 顶栏底色覆盖项；为空时按模糊是否生效自动取透明或主题表面色。
+ * @param actions 顶栏右侧动作区。
+ */
+@Composable
+fun AppPageScaffold(
+    title: String,
+    isBlurEnabled: Boolean,
+    modifier: Modifier = Modifier,
+    scrollBehavior: ScrollBehavior = MiuixScrollBehavior(),
+    onBack: (() -> Unit)? = null,
+    titleAlpha: (() -> Float)? = null,
+    expandable: Boolean = true,
+    useGlassTopBar: Boolean = true,
+    color: Color? = null,
+    actions: @Composable RowScope.() -> Unit = {},
+    contentWindowInsets: WindowInsets = AppPageContentWindowInsets,
+    content: @Composable (PaddingValues) -> Unit,
+) {
+    val topBarBackdrop = rememberTopBarBackdrop(isBlurEnabled)
+    val blurActive = topBarBackdrop != null
+    val barColor = color ?: if (blurActive) Color.Transparent else MiuixTheme.colorScheme.surface
+    // 全局搜索入口：只有在主页容器（`LocalAppSearchState` 可用）内才渲染顶栏搜索按钮，
+    // 二级页面 / 许可证页等独立 Activity 没有搜索状态，因此不会出现一个按了没反应的图标。
+    val openSearch = rememberAppSearchOpen()
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            AppTopAppBar(
+                title = title,
+                scrollBehavior = scrollBehavior,
+                blurActive = blurActive,
+                color = barColor,
+                backdrop = topBarBackdrop,
+                onBack = onBack,
+                titleAlpha = titleAlpha ?: { 1f },
+                expandable = expandable,
+                useGlassTopBar = useGlassTopBar,
+                actions = {
+                    actions()
+                    if (openSearch != null) {
+                        // 与 miuix 示例一致：顶栏多个动作之间用 8.dp 间隔，按钮不相互贴边。
+                        Spacer(Modifier.width(8.dp))
+                        AppTopAppBarIconAction(onClick = openSearch) {
+                            Icon(
+                                imageVector = MiuixIcons.Glass.Search,
+                                contentDescription = stringResource(R.string.search_hint),
+                                tint = MiuixTheme.colorScheme.onSurface,
+                            )
+                        }
+                    }
+                },
+            )
+        },
+        contentWindowInsets = contentWindowInsets,
+    ) { innerPadding ->
+        PageBackdrop(topBarBackdrop) {
+            content(innerPadding)
+        }
+    }
+}
+
+/**
+ * 单列表页面的骨架：在 [AppPageScaffold] 基础上直接给出配置好的 [LazyColumn]。
+ *
+ * 列表已经处理了顶栏滚动联动（`pageScrollModifiers`）与宽屏侧栏留白（`pageStartInset`），
+ * 页面只需要提供 `item { }` 内容。
+ *
+ * @param extraBottomPadding 额外底部留白，例如为悬浮底栏/悬浮按钮让出空间。
+ * @param listState 需要外部控制滚动位置时传入（例如回到顶部）。
+ */
+@Composable
+fun AppLazyPage(
+    title: String,
+    isBlurEnabled: Boolean,
+    extraBottomPadding: Dp = 0.dp,
+    modifier: Modifier = Modifier,
+    listState: LazyListState = rememberLazyListState(),
+    scrollBehavior: ScrollBehavior = MiuixScrollBehavior(),
+    onBack: (() -> Unit)? = null,
+    topBarActions: @Composable RowScope.() -> Unit = {},
+    contentWindowInsets: WindowInsets = AppPageContentWindowInsets,
+    content: LazyListScope.() -> Unit,
+) {
+    AppPageScaffold(
+        title = title,
+        isBlurEnabled = isBlurEnabled,
+        modifier = modifier,
+        scrollBehavior = scrollBehavior,
+        onBack = onBack,
+        actions = topBarActions,
+        contentWindowInsets = contentWindowInsets,
+    ) { innerPadding ->
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .pageStartInset()
+                .pageScrollModifiers(
+                    showTopAppBar = true,
+                    topAppBarScrollBehavior = scrollBehavior,
+                    contentState = listState,
+                ),
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                bottom = innerPadding.calculateBottomPadding() + extraBottomPadding,
+            ),
+            content = content,
+        )
+    }
+}

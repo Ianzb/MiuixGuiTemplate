@@ -18,15 +18,20 @@ import cn.ianzb.miuixguitemplate.ui.component.pref.HookSubPage
  * 功能页：模块全部功能入口（模板以各组件类型作为示例功能）。
  *
  * 页面布局由通用组件 [HookOptionsPage] 提供；子页面内的功能通过 [HookSubPage]
- * 并入本页搜索，命中后打开对应子页面。
+ * 并入全局搜索（底栏 / 顶栏搜索入口），命中后由 [pendingSearchKey] 触发跳转。
  *
  * > 实际开发时应把本页替换为真实功能，小标题使用单语言（默认中文），不要再传
  * > `HookSection.titleEn`——该参数仅用于模板示例展示 API 英文组件名。
+ *
+ * @param pendingSearchKey 全局搜索命中的配置键：本页据此滚动到对应分区或打开对应子页面。
+ * @param onSearchKeyHandled [pendingSearchKey] 处理完毕后的回调。
  */
 @Composable
 fun FeaturesPageView(
     isBlurEnabled: Boolean = true,
     extraBottomPadding: Dp = 0.dp,
+    pendingSearchKey: String? = null,
+    onSearchKeyHandled: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val specs = remember { featureSpecs() }
@@ -50,6 +55,8 @@ fun FeaturesPageView(
         onArrowClick = {
             context.startActivity(Intent(context, FeatureSubPageActivity::class.java))
         },
+        externalSearchKey = pendingSearchKey,
+        onExternalSearchHandled = onSearchKeyHandled,
     )
 }
 
