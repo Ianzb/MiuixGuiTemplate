@@ -98,10 +98,7 @@ fun AppPageScaffold(
                 expandable = expandable,
                 useGlassTopBar = useGlassTopBar,
                 actions = {
-                    actions()
                     if (topBarSearchAction && openSearch != null) {
-                        // 与 miuix 示例一致：顶栏多个动作之间用 8.dp 间隔，按钮不相互贴边。
-                        Spacer(Modifier.width(8.dp))
                         AppTopAppBarIconAction(onClick = openSearch) {
                             Icon(
                                 imageVector = MiuixIcons.Glass.Search,
@@ -109,7 +106,10 @@ fun AppPageScaffold(
                                 tint = MiuixTheme.colorScheme.onSurface,
                             )
                         }
+                        // 与 miuix 示例一致：顶栏多个动作之间用 8.dp 间隔，按钮不相互贴边。
+                        Spacer(Modifier.width(8.dp))
                     }
+                    actions()
                 },
             )
         },
