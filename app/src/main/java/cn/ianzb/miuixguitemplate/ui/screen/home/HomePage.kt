@@ -37,6 +37,8 @@ import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
 import cn.ianzb.miuixguitemplate.ui.screen.scope.ScopeListActivity
 import cn.ianzb.miuixguitemplate.ui.component.AppLazyPage
+import cn.ianzb.miuixguitemplate.ui.component.AppSectionCard
+import cn.ianzb.miuixguitemplate.ui.component.sectionCardPadding
 import cn.ianzb.miuixguitemplate.ui.util.isInDarkTheme
 import cn.ianzb.miuixguitemplate.ui.util.shouldShowSplitPane
 import cn.ianzb.miuixguitemplate.util.SystemVersionDetector
@@ -45,7 +47,6 @@ import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
@@ -135,8 +136,8 @@ fun HomePageView(
 
             val cardsModifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp)
-                .padding(top = 12.dp)
+                // 首页首组卡片：上方补 12.dp 与顶栏/大标题拉开距离，其余外边距走统一规范。
+                .sectionCardPadding(top = 12.dp)
                 .height(IntrinsicSize.Min)
 
             if (isWideScreen) {
@@ -238,34 +239,27 @@ fun HomePageView(
                 }
             }
 
-            SmallTitle(
-                text = stringResource(R.string.home_device_info)
-            )
-            Card(
-                modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp)
-            ) {
-                Column {
-                    BasicComponent(
-                        title = stringResource(R.string.home_device_name),
-                        summary = deviceName,
-                    )
-                    BasicComponent(
-                        title = stringResource(R.string.home_device_model),
-                        summary = deviceModel,
-                    )
-                    BasicComponent(
-                        title = stringResource(R.string.home_hyperos_version),
-                        summary = hyperOsVersion,
-                    )
-                    BasicComponent(
-                        title = stringResource(R.string.home_android_version),
-                        summary = androidVersion,
-                    )
-                    BasicComponent(
-                        title = stringResource(R.string.home_app_version),
-                        summary = appVersion
-                    )
-                }
+            AppSectionCard(title = stringResource(R.string.home_device_info)) {
+                BasicComponent(
+                    title = stringResource(R.string.home_device_name),
+                    summary = deviceName,
+                )
+                BasicComponent(
+                    title = stringResource(R.string.home_device_model),
+                    summary = deviceModel,
+                )
+                BasicComponent(
+                    title = stringResource(R.string.home_hyperos_version),
+                    summary = hyperOsVersion,
+                )
+                BasicComponent(
+                    title = stringResource(R.string.home_android_version),
+                    summary = androidVersion,
+                )
+                BasicComponent(
+                    title = stringResource(R.string.home_app_version),
+                    summary = appVersion
+                )
             }
         }
 
@@ -273,12 +267,7 @@ fun HomePageView(
             val uriHandler = LocalUriHandler.current
             val sourceCodeUrl = stringResource(R.string.about_source_code_summary)
             val telegramUrl = stringResource(R.string.about_telegram_summary)
-            SmallTitle(
-                text = stringResource(R.string.home_shortcuts)
-            )
-            Card(
-                modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp)
-            ) {
+            AppSectionCard(title = stringResource(R.string.home_shortcuts)) {
                 ArrowPreference(
                     title = stringResource(R.string.home_component_demo),
                     summary = stringResource(R.string.home_component_demo_summary),

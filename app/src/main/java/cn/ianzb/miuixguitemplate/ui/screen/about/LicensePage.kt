@@ -1,7 +1,6 @@
 package cn.ianzb.miuixguitemplate.ui.screen.about
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -9,7 +8,6 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,8 +22,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.ui.component.AppPageScaffold
+import cn.ianzb.miuixguitemplate.ui.component.AppSectionCard
 import cn.ianzb.miuixguitemplate.ui.util.pageScrollModifiers
-import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.preference.ArrowPreference
@@ -226,11 +224,7 @@ fun LicensePageContent(
                     items = section.libraries,
                     key = { "${section.titleRes}_${it.name}" },
                 ) { library ->
-                    Card(
-                        modifier = Modifier
-                            .padding(horizontal = 12.dp)
-                            .padding(bottom = 12.dp)
-                    ) {
+                    AppSectionCard {
                         ArrowPreference(
                             title = library.name,
                             summary = buildString {
@@ -247,9 +241,6 @@ fun LicensePageContent(
                 }
             }
 
-            item {
-                Spacer(Modifier.height(12.dp))
-            }
         }
     }
 }

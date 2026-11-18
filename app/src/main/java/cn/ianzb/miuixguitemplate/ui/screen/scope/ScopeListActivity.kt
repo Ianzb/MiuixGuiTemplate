@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import cn.ianzb.miuixguitemplate.R
+import cn.ianzb.miuixguitemplate.ui.component.AppSectionCard
 import cn.ianzb.miuixguitemplate.ui.component.SystemRestartConfirmDialog
 import cn.ianzb.miuixguitemplate.ui.screen.subpage.BaseSubPageActivity
 import cn.ianzb.miuixguitemplate.ui.util.LocalSubPageScrollBehavior
@@ -42,7 +43,6 @@ import kotlin.time.Duration.Companion.milliseconds
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
-import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.TextButton
@@ -185,11 +185,7 @@ class ScopeListActivity : BaseSubPageActivity() {
                         }
                     }
 
-                    Card(
-                        modifier = Modifier
-                            .padding(horizontal = 12.dp)
-                            .padding(top = 12.dp)
-                    ) {
+                    AppSectionCard(topSpace = 12.dp) {
                         BasicComponent(
                             title = appName,
                             summary = summary,

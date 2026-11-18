@@ -38,6 +38,7 @@ import cn.ianzb.miuixguitemplate.RailStyle
 import cn.ianzb.miuixguitemplate.UpdateChecker
 import cn.ianzb.miuixguitemplate.ui.component.AppLazyPage
 import cn.ianzb.miuixguitemplate.ui.component.CurrentChangelogDialog
+import cn.ianzb.miuixguitemplate.ui.component.AppSectionCard
 import cn.ianzb.miuixguitemplate.ui.util.LocalPreferenceBackdrop
 import cn.ianzb.miuixguitemplate.xposed.RootHelper
 import cn.ianzb.miuixguitemplate.xposed.SafeModeReader
@@ -46,10 +47,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.basic.BasicComponent
-import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.glass.GlassDropdownPreference
-import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.ColorSchemeMode
@@ -135,10 +134,7 @@ fun SettingsPageView(
     ) {
         item {
             Column {
-                SmallTitle(text = stringResource(R.string.settings_module))
-                Card(
-                    modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp)
-                ) {
+                AppSectionCard(title = stringResource(R.string.settings_module)) {
                     val autoDevice = remember { DeviceContext.detected.type }
                     val deviceOptions = listOf(
                         stringResource(
@@ -232,99 +228,91 @@ fun SettingsPageView(
                     )
                 }
 
-                SmallTitle(text = stringResource(R.string.settings_interface))
-                Card(
-                    modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp)
-                ) {
-                    Column {
-                        val modes = listOf(
-                            stringResource(R.string.theme_system),
-                            stringResource(R.string.theme_light),
-                            stringResource(R.string.theme_dark),
-                            stringResource(R.string.theme_monet_system),
-                            stringResource(R.string.theme_monet_light),
-                            stringResource(R.string.theme_monet_dark)
-                        )
-                        val modesEnum = listOf(
-                            ColorSchemeMode.System,
-                            ColorSchemeMode.Light,
-                            ColorSchemeMode.Dark,
-                            ColorSchemeMode.MonetSystem,
-                            ColorSchemeMode.MonetLight,
-                            ColorSchemeMode.MonetDark
-                        )
-                        val currentIndex = modesEnum.indexOf(currentMode).takeIf { it >= 0 } ?: 0
+                AppSectionCard(title = stringResource(R.string.settings_interface)) {
+                    val modes = listOf(
+                        stringResource(R.string.theme_system),
+                        stringResource(R.string.theme_light),
+                        stringResource(R.string.theme_dark),
+                        stringResource(R.string.theme_monet_system),
+                        stringResource(R.string.theme_monet_light),
+                        stringResource(R.string.theme_monet_dark)
+                    )
+                    val modesEnum = listOf(
+                        ColorSchemeMode.System,
+                        ColorSchemeMode.Light,
+                        ColorSchemeMode.Dark,
+                        ColorSchemeMode.MonetSystem,
+                        ColorSchemeMode.MonetLight,
+                        ColorSchemeMode.MonetDark
+                    )
+                    val currentIndex = modesEnum.indexOf(currentMode).takeIf { it >= 0 } ?: 0
 
-                        GlassDropdownPreference(
-                            title = stringResource(R.string.theme_mode),
-                            items = modes,
-                            selectedIndex = currentIndex,
-                            onSelectedIndexChange = { onModeChange(modesEnum[it]) },
-                            backdrop = LocalPreferenceBackdrop.current,
-                            renderInRootScaffold = true,
-                        )
+                    GlassDropdownPreference(
+                        title = stringResource(R.string.theme_mode),
+                        items = modes,
+                        selectedIndex = currentIndex,
+                        onSelectedIndexChange = { onModeChange(modesEnum[it]) },
+                        backdrop = LocalPreferenceBackdrop.current,
+                        renderInRootScaffold = true,
+                    )
 
-                        // 底栏样式与侧栏样式各自独立：平板可以「左侧面板侧栏 + iOS 底栏」这类组合，
-                        // 窄屏只用到底栏样式（侧栏不生效）。
-                        val bottomBarStyles = listOf(
-                            stringResource(R.string.bottom_bar_style_hyperos),
-                            stringResource(R.string.bottom_bar_style_ios)
-                        )
-                        val bottomBarStyleValues = BottomBarStyle.entries
+                    // 底栏样式与侧栏样式各自独立：平板可以「左侧面板侧栏 + iOS 底栏」这类组合，
+                    // 窄屏只用到底栏样式（侧栏不生效）。
+                    val bottomBarStyles = listOf(
+                        stringResource(R.string.bottom_bar_style_hyperos),
+                        stringResource(R.string.bottom_bar_style_ios)
+                    )
+                    val bottomBarStyleValues = BottomBarStyle.entries
 
-                        GlassDropdownPreference(
-                            title = stringResource(R.string.bottom_bar_style),
-                            summary = stringResource(R.string.bottom_bar_style_summary),
-                            items = bottomBarStyles,
-                            selectedIndex = bottomBarStyleValues.indexOf(bottomBarStyle)
-                                .takeIf { it >= 0 } ?: 0,
-                            onSelectedIndexChange = {
-                                onBottomBarStyleChange(bottomBarStyleValues[it])
-                            },
-                            backdrop = LocalPreferenceBackdrop.current,
-                            renderInRootScaffold = true,
-                        )
+                    GlassDropdownPreference(
+                        title = stringResource(R.string.bottom_bar_style),
+                        summary = stringResource(R.string.bottom_bar_style_summary),
+                        items = bottomBarStyles,
+                        selectedIndex = bottomBarStyleValues.indexOf(bottomBarStyle)
+                            .takeIf { it >= 0 } ?: 0,
+                        onSelectedIndexChange = {
+                            onBottomBarStyleChange(bottomBarStyleValues[it])
+                        },
+                        backdrop = LocalPreferenceBackdrop.current,
+                        renderInRootScaffold = true,
+                    )
 
-                        val railStyles = listOf(
-                            stringResource(R.string.rail_style_none),
-                            stringResource(R.string.rail_style_top),
-                            stringResource(R.string.rail_style_left)
-                        )
-                        val railStyleValues = RailStyle.entries
+                    val railStyles = listOf(
+                        stringResource(R.string.rail_style_none),
+                        stringResource(R.string.rail_style_top),
+                        stringResource(R.string.rail_style_left)
+                    )
+                    val railStyleValues = RailStyle.entries
 
-                        GlassDropdownPreference(
-                            title = stringResource(R.string.rail_style),
-                            summary = stringResource(R.string.rail_style_summary),
-                            items = railStyles,
-                            selectedIndex = railStyleValues.indexOf(railStyle)
-                                .takeIf { it >= 0 } ?: 0,
-                            onSelectedIndexChange = {
-                                onRailStyleChange(railStyleValues[it])
-                            },
-                            backdrop = LocalPreferenceBackdrop.current,
-                            renderInRootScaffold = true,
-                        )
+                    GlassDropdownPreference(
+                        title = stringResource(R.string.rail_style),
+                        summary = stringResource(R.string.rail_style_summary),
+                        items = railStyles,
+                        selectedIndex = railStyleValues.indexOf(railStyle)
+                            .takeIf { it >= 0 } ?: 0,
+                        onSelectedIndexChange = {
+                            onRailStyleChange(railStyleValues[it])
+                        },
+                        backdrop = LocalPreferenceBackdrop.current,
+                        renderInRootScaffold = true,
+                    )
 
-                        SwitchPreference(
-                            title = stringResource(R.string.blur_enabled),
-                            summary = stringResource(R.string.blur_enabled_summary),
-                            checked = isBlurEnabled,
-                            onCheckedChange = onBlurEnabledChange
-                        )
+                    SwitchPreference(
+                        title = stringResource(R.string.blur_enabled),
+                        summary = stringResource(R.string.blur_enabled_summary),
+                        checked = isBlurEnabled,
+                        onCheckedChange = onBlurEnabledChange
+                    )
 
-                        SwitchPreference(
-                            title = stringResource(R.string.hide_launcher_icon),
-                            summary = stringResource(R.string.hide_launcher_icon_summary),
-                            checked = hideLauncherIcon,
-                            onCheckedChange = onHideLauncherIconChange
-                        )
-                    }
+                    SwitchPreference(
+                        title = stringResource(R.string.hide_launcher_icon),
+                        summary = stringResource(R.string.hide_launcher_icon_summary),
+                        checked = hideLauncherIcon,
+                        onCheckedChange = onHideLauncherIconChange
+                    )
                 }
 
-                SmallTitle(text = stringResource(R.string.settings_language))
-                Card(
-                    modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp)
-                ) {
+                AppSectionCard(title = stringResource(R.string.settings_language)) {
                     val languageNames = listOf(
                         stringResource(R.string.language_default),
                         stringResource(R.string.language_zh_cn),
@@ -352,32 +340,27 @@ fun SettingsPageView(
                     )
                 }
 
-                SmallTitle(text = stringResource(R.string.settings_update))
-                Card(
-                    modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp)
-                ) {
-                    Column {
-                        SwitchPreference(
-                            title = stringResource(R.string.check_update_on_launch),
-                            summary = stringResource(R.string.check_update_on_launch_summary),
-                            checked = checkUpdateOnLaunch,
-                            onCheckedChange = onCheckUpdateOnLaunchChange,
-                        )
+                AppSectionCard(title = stringResource(R.string.settings_update)) {
+                    SwitchPreference(
+                        title = stringResource(R.string.check_update_on_launch),
+                        summary = stringResource(R.string.check_update_on_launch_summary),
+                        checked = checkUpdateOnLaunch,
+                        onCheckedChange = onCheckUpdateOnLaunchChange,
+                    )
 
-                        ArrowPreference(
-                            title = stringResource(R.string.check_update),
-                            summary = if (isCheckingUpdate) {
-                                stringResource(R.string.check_update_checking)
-                            } else {
-                                stringResource(R.string.check_update_summary, appVersion)
-                            },
-                            onClick = onCheckUpdate,
-                        )
-                        ArrowPreference(
-                            title = stringResource(R.string.current_changelog),
-                            onClick = { showChangelog = true },
-                        )
-                    }
+                    ArrowPreference(
+                        title = stringResource(R.string.check_update),
+                        summary = if (isCheckingUpdate) {
+                            stringResource(R.string.check_update_checking)
+                        } else {
+                            stringResource(R.string.check_update_summary, appVersion)
+                        },
+                        onClick = onCheckUpdate,
+                    )
+                    ArrowPreference(
+                        title = stringResource(R.string.current_changelog),
+                        onClick = { showChangelog = true },
+                    )
                 }
                 if (showChangelog) {
                     val notes = remember(context, appVersion) {
@@ -390,25 +373,20 @@ fun SettingsPageView(
                     CurrentChangelogDialog(appVersion, notes) { showChangelog = false }
                 }
 
-                SmallTitle(text = stringResource(R.string.settings_data))
-                Card(
-                    modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp)
-                ) {
-                    Column {
-                        ArrowPreference(
-                            title = stringResource(R.string.export_settings),
-                            summary = stringResource(R.string.export_settings_summary),
-                            onClick = {
-                                exportLauncher.launch("MiuixGuiTemplate_settings.json")
-                            }
-                        )
+                AppSectionCard(title = stringResource(R.string.settings_data)) {
+                    ArrowPreference(
+                        title = stringResource(R.string.export_settings),
+                        summary = stringResource(R.string.export_settings_summary),
+                        onClick = {
+                            exportLauncher.launch("MiuixGuiTemplate_settings.json")
+                        }
+                    )
 
-                        ArrowPreference(
-                            title = stringResource(R.string.import_settings),
-                            summary = stringResource(R.string.import_settings_summary),
-                            onClick = { importLauncher.launch("application/json") }
-                        )
-                    }
+                    ArrowPreference(
+                        title = stringResource(R.string.import_settings),
+                        summary = stringResource(R.string.import_settings_summary),
+                        onClick = { importLauncher.launch("application/json") }
+                    )
                 }
 
                 MiuixText(

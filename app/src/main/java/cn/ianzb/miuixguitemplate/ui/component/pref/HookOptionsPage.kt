@@ -1,8 +1,5 @@
 package cn.ianzb.miuixguitemplate.ui.component.pref
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -20,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cn.ianzb.miuixguitemplate.R
+import cn.ianzb.miuixguitemplate.ui.component.AppSectionCard
 import cn.ianzb.miuixguitemplate.prefs.ConfigState
 import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
 import cn.ianzb.miuixguitemplate.prefs.OptionSpec
@@ -28,11 +26,9 @@ import cn.ianzb.miuixguitemplate.ui.component.AppLazyPage
 import cn.ianzb.miuixguitemplate.ui.component.AppTopAppBarIconAction
 import cn.ianzb.miuixguitemplate.ui.component.search.AppSearchIndex
 import cn.ianzb.miuixguitemplate.ui.util.LocalPreferenceBackdrop
-import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
-import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.glass.GlassTopAppBarDefaults
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Refresh
@@ -308,13 +304,11 @@ fun HookSectionCard(
     } else {
         baseColor
     }
-    Column(modifier = modifier.fillMaxWidth()) {
-        SmallTitle(text = hookSectionTitle(section))
-        Card(
-            modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp),
-            colors = CardDefaults.defaultColors(color = cardColor),
-        ) {
-            content()
-        }
+    AppSectionCard(
+        title = hookSectionTitle(section),
+        modifier = modifier,
+        colors = CardDefaults.defaultColors(color = cardColor),
+    ) {
+        content()
     }
 }

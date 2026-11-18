@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import cn.ianzb.miuixguitemplate.R
+import cn.ianzb.miuixguitemplate.ui.component.AppSectionCard
 import cn.ianzb.miuixguitemplate.ui.screen.subpage.BaseSubPageActivity
 import cn.ianzb.miuixguitemplate.ui.util.LocalSubPageScrollBehavior
 import cn.ianzb.miuixguitemplate.ui.util.pageScrollModifiers
@@ -32,7 +33,6 @@ import cn.ianzb.miuixguitemplate.xposed.XposedServiceManager
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 import top.yukonga.miuix.kmp.basic.BasicComponent
-import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.Switch
@@ -126,12 +126,7 @@ class SafeModeActivity : BaseSubPageActivity() {
                 }
             }
             item {
-                Card(
-                    modifier = Modifier
-                        .padding(horizontal = 12.dp)
-                        .padding(top = 12.dp)
-                        .padding(bottom = 12.dp)
-                ) {
+                AppSectionCard(topSpace = 12.dp) {
                     MiuixText(
                         text = stringResource(R.string.safe_mode_declaration),
                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
@@ -187,11 +182,7 @@ class SafeModeActivity : BaseSubPageActivity() {
                         }
                     }
 
-                    Card(
-                        modifier = Modifier
-                            .padding(horizontal = 12.dp)
-                            .padding(bottom = 12.dp)
-                    ) {
+                    AppSectionCard {
                         BasicComponent(
                             title = appName,
                             summary = summary,

@@ -38,6 +38,7 @@
 
 ### 修复
 
+- **卡片分组间距**：统一组间留白，修复主页状态卡片与「设备信息」标题之间的间距偏小。
 - **更新弹窗 Markdown 渲染**：当前版本日志与新版本发布说明共用 Markdown 渲染，支持标题、列表、强调、行内代码和链接，长日志可滚动查看。
 - **项目与更新链接**：应用内项目地址、更新检查和 README 克隆命令指向 `Ianzb/MiuixGuiTemplate`。
 - **启动即闪退（RenderNode 栈溢出）**：玻璃顶栏若采样「包含顶栏自身」的图层，会触发 `RenderNode::prepareTreeImpl` 与 `SkiaDisplayList::prepareListAndChildren` 成对无限递归，表现为启动首帧 `SIGSEGV` / `stack pointer is not in a rw map`。现改为顶栏只采样页面内容层（见上条），并在 `pagerContent` 中把整页 backdrop 固定为 `null` 作为安全网。

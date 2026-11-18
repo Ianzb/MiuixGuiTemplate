@@ -698,7 +698,8 @@ fun rememberHookStatus(spec: OptionSpec): HookStatus   // 见 5.3
 | `HookOptionView` | 分发器 | 按 `OptionSpec.type` 渲染对应组件 |
 | `HookOptionsPage` | `Scaffold` + 分区列表 | 通用功能页面（顶栏 + 分区列表；搜索由导航容器统一提供） |
 | `HookSubPage` | — | 子页面搜索入口：把子页面（支持多级嵌套）内的功能并入全局搜索 |
-| `HookSectionCard` | `SmallTitle` + `Card` | 组件分区卡片容器；`flashToken` 递增时卡片变灰闪烁两次（搜索跳转强调） |
+| `AppSectionCard` | `SmallTitle` + `Card` | 统一分组卡片容器：自动带「标题 + 卡片 + 外边距」，`topSpace` 控制首组与顶栏的距离，`colors` 供高亮复用；所有页面用它，禁止再手写 12dp 内边距 |
+| `HookSectionCard` | `AppSectionCard` | 组件分区卡片（基于 `AppSectionCard`）；`flashToken` 递增时卡片变灰闪烁两次（搜索跳转强调） |
 | `AppSearchOverlay` | `BasicTextField` + Miuix 主题 | 全局搜索界面（复刻 miuix 示例 `GlassSearchOverlay` 的动效与层级） |
 | `AppSearchState` / `AppSearchIndex` | — | 搜索展开状态 / 「配置键 → 分区、子页面路径」索引 |
 
@@ -911,12 +912,11 @@ HookSectionCard(
 
 ### 5.6 布局规范（间距统一，强制要求）
 
-> **所有页面必须遵循以下间距规范**，新增页面 / 组件时请复用 `HookOptionsPage`、`HookSectionCard`、`SubPageScaffold`，禁止自行硬编码间距，以保证全局视觉一致。
+> **所有页面必须遵循以下间距规范**，新增页面 / 组件时请复用 `HookOptionsPage`、`AppSectionCard`、`SubPageScaffold`，禁止自行硬编码间距，以保证全局视觉一致。
 
 | 位置 | 规范 | 说明 |
 |---|---|---|
-| 卡片水平内边距 | `Modifier.padding(horizontal = 12.dp)` | 所有卡片统一左右 12dp |
-| 卡片间距 | `Modifier.padding(bottom = 12.dp)` | **统一用 `bottom`，不要用 `top`**；避免与标题上间距叠加导致不一致 |
+| 分组卡片外边距 | `AppSectionCard`（或 `Modifier.sectionCardPadding(top = …)`） | 左右各 12 dp、底部 12 dp，统一由卡片组自己承担；首组用 `topSpace` / `top` 补与顶栏的距离；多列卡片组把 `sectionCardPadding` 加在整组上 |
 | 分组标题 | `SmallTitle(text = hookSectionTitle(section))` | 单语言标题（仅 `titleRes`）；`titleEn` 仅示例展示用；**不要额外加 `Modifier.padding(top = ...)`**，`SmallTitle` 默认 `insideMargin = PaddingValues(28.dp, 8.dp)` 已提供标准间距 |
 | 组件行内边距 | `BasicComponentDefaults.InsideMargin`（16dp） | 由 Miuix 组件默认提供，不要覆盖 |
 | 页面顶/底内边距 | 使用 `Scaffold` 的 `innerPadding` + `extraBottomPadding` | 不要额外加固定 top 间距 |
@@ -1297,6 +1297,7 @@ Card { HookSwitchCard(spec) }
 | 配置系统 | `app/.../prefs/` |
 | 服务与状态 | `app/.../xposed/XposedServiceManager.kt`、`RootHelper.kt`、`SafeModeReader.kt` |
 | 组件 | `app/.../ui/component/pref/`（`HookCards.kt`、`HookDropdownCards.kt`、`HookSliderCard.kt`、`HookTextCard.kt`、`HookOptionView.kt`、`HookOptionSupport.kt`、`HookOptionsPage.kt`） |
+| 分组卡片容器 | `app/.../ui/component/AppSectionCard.kt`（`AppSectionCard` / `Modifier.sectionCardPadding()`） |
 | 顶栏重启应用 | `app/.../ui/component/QuickActionsAction.kt` |
 | 显隐动画 | `app/.../ui/util/MiuixAnimations.kt`（`MiuixExpandSpec`） |
 | 二级页面模板 | `app/.../ui/component/SubPageScaffold.kt`、`app/.../ui/screen/subpage/BaseSubPageActivity.kt` |
