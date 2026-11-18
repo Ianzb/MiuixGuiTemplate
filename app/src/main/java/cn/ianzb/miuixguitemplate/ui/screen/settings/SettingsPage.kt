@@ -11,8 +11,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
@@ -31,7 +35,9 @@ import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
 import cn.ianzb.miuixguitemplate.ui.screen.safemode.SafeModeActivity
 import cn.ianzb.miuixguitemplate.BottomBarStyle
 import cn.ianzb.miuixguitemplate.RailStyle
+import cn.ianzb.miuixguitemplate.UpdateChecker
 import cn.ianzb.miuixguitemplate.ui.component.AppLazyPage
+import cn.ianzb.miuixguitemplate.ui.component.CurrentChangelogDialog
 import cn.ianzb.miuixguitemplate.ui.util.LocalPreferenceBackdrop
 import cn.ianzb.miuixguitemplate.xposed.RootHelper
 import cn.ianzb.miuixguitemplate.xposed.SafeModeReader
@@ -80,11 +86,8 @@ fun SettingsPageView(
 
     LaunchedEffect(Unit) { SafeModeReader.refresh() }
 
-    val appVersion = remember {
-        try {
-            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0"
-        } catch (_: Exception) { "1.0" }
-    }
+    val appVersion = remember(context) { UpdateChecker.currentVersion(context) }
+    var showChangelog by rememberSaveable { mutableStateOf(false) }
 
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json")
@@ -370,7 +373,21 @@ fun SettingsPageView(
                             },
                             onClick = onCheckUpdate,
                         )
+                        ArrowPreference(
+                            title = stringResource(R.string.current_changelog),
+                            onClick = { showChangelog = true },
+                        )
                     }
+                }
+                if (showChangelog) {
+                    val notes = remember(context, appVersion) {
+                        try {
+                            UpdateChecker.currentChangelog(context, appVersion)
+                        } catch (_: java.io.IOException) {
+                            ""
+                        }
+                    }
+                    CurrentChangelogDialog(appVersion, notes) { showChangelog = false }
                 }
 
                 SmallTitle(text = stringResource(R.string.settings_data))

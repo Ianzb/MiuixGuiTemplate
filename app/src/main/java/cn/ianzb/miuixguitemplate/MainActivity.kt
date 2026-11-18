@@ -551,16 +551,23 @@ private fun BottomNavigationBar(
         }
 
         // iOS 液态玻璃底栏：移植自 miuix example 的 component/liquid（见 ui/component/liquid/）。
-        // 左右留白、底部 inset、指示器/胶囊形变、折射与边缘高光均由组件自身负责，这里不加 modifier。
         BottomBarStyle.IOS -> {
-            IosLiquidGlassNavigationBar(
-                items = items,
-                icons = icons,
-                selectedIndex = selectedIndex,
-                onItemClick = onItemSelected,
-                backdrop = if (blurActive) backdrop else null,
-                isBlurActive = blurActive,
-            )
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                IosLiquidGlassNavigationBar(
+                    items = items,
+                    icons = icons,
+                    selectedIndex = selectedIndex,
+                    onItemClick = onItemSelected,
+                    backdrop = if (blurActive) backdrop else null,
+                    isBlurActive = blurActive,
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .glassNavigationBarWidth(items.size, trailingActionWidth = 0.dp),
+                )
+            }
         }
     }
 }
@@ -570,11 +577,14 @@ private fun BottomNavigationBar(
  *
  * 手机上底栏本就该铺满（左右各 24.dp 留白）；但宽度变大后继续拉伸会让胶囊被拉得很长、
  * tab 间距变得松散。示例的做法是：按「胶囊 + 右侧搜索按钮」估算胶囊可用宽度，
- * 超过 400.dp 时把整条底栏收成 344.dp 胶囊 + 动作按钮并居中（居中由父级 `Box` 负责），
- * 否则保持铺满。344.dp / 400.dp 为示例 4 个 tab 的实测值，本项目同样是 4 个 tab。
+ * 超过 400.dp 时把底栏收成 344.dp 胶囊加预留的动作按钮宽度，由父级 `Box` 居中，
+ * 否则保持铺满。液态玻璃底栏没有独立动作按钮，因此无需预留宽度。
  */
-private fun Modifier.glassNavigationBarWidth(itemCount: Int): Modifier = layout { measurable, constraints ->
-    val actionWidth = (GlassNavigationBarDefaults.Height + GlassNavigationBarDefaults.ActionSpacing).roundToPx()
+private fun Modifier.glassNavigationBarWidth(
+    itemCount: Int,
+    trailingActionWidth: Dp = GlassNavigationBarDefaults.Height + GlassNavigationBarDefaults.ActionSpacing,
+): Modifier = layout { measurable, constraints ->
+    val actionWidth = trailingActionWidth.roundToPx()
     // 示例里 4 个 tab 时胶囊宽 344.dp、每个 tab 的额外间距 10.dp - 6.dp 归入可用宽度判断，
     // 阈值 400.dp；这里保持同一组数值，仅把 tab 数换成参数。
     val extraSpacing = (NavigationBarItemSpacing * (itemCount - 1) - NavigationBarSpacingPadding).roundToPx()

@@ -86,6 +86,12 @@ private val licenseSections: List<LicenseSection> = listOf(
                 "Apache-2.0",
                 "https://developer.android.com/jetpack/androidx/compose/material-icons",
             ),
+            LibraryInfo(
+                "commonmark-java",
+                "0.30.0",
+                "BSD-2-Clause",
+                "https://github.com/commonmark/commonmark-java",
+            ),
         ),
     ),
     LicenseSection(

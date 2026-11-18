@@ -32,6 +32,8 @@
     <string name="settings_interface">界面</string>
     <string name="settings_language">语言</string>
     <string name="settings_update">更新</string>
+    <string name="current_changelog">查看当前更新日志</string>
+    <string name="current_changelog_unavailable">暂无当前版本的更新日志。</string>
     <string name="settings_data">数据管理</string>
     <string name="settings_module">模块</string>
     <string name="theme_mode">主题模式</string>
@@ -42,8 +44,8 @@
     <string name="theme_monet_light">Monet 浅色</string>
     <string name="theme_monet_dark">Monet 深色</string>
     <string name="bottom_bar_style">底栏样式</string>
-    <string name="bottom_bar_style_hyperos">HyperOS 玻璃</string>
-    <string name="bottom_bar_style_ios">iOS 液态玻璃</string>
+    <string name="bottom_bar_style_hyperos">悬浮</string>
+    <string name="bottom_bar_style_ios">玻璃</string>
     <string name="bottom_bar_style_summary">窄屏与未启用侧栏的宽屏使用该样式</string>
     <string name="rail_style">侧栏样式</string>
     <string name="rail_style_none">关闭</string>
@@ -216,7 +218,7 @@
     <!-- About -->
     <string name="about">关于</string>
     <string name="about_source_code">项目地址</string>
-    <string name="about_source_code_summary">https://github.com/your-name/your-repo</string>
+    <string name="about_source_code_summary" translatable="false">https://github.com/Ianzb/MiuixGuiTemplate</string>
     <string name="about_telegram">Telegram 群组</string>
     <string name="about_telegram_summary">https://t.me/your-channel</string>
     <string name="about_dependencies">第三方许可证与致谢</string>

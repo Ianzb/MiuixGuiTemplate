@@ -6,12 +6,13 @@
 
 ### 新增
 
+- **查看当前更新日志**：设置页「更新」分组新增入口，可离线查看已安装版本的更新日志。
 - **HyperOS 4 玻璃组件**：升级到 miuix 最新主干（含尚未上架 Maven Central 的 `miuix-glass` / `miuix-material` / `miuix-glass-icons`），全面改用 OS4 玻璃材质组件；`RuntimeShader` / `asBrush` / `isRuntimeShaderSupported` / `EdgeStroke` 统一迁移到 `top.yukonga.miuix.kmp.material`，`miuix-shader` 模块已并入 blur/material。
 - **玻璃顶栏 `AppTopAppBar`**：新增 `ui/component/AppTopAppBar.kt`，按运行时着色器可用性选择 `GlassTopAppBar`（采样页面 `backdrop`，滚动时标题与着色带渐显、支持展开/收起大标题、带区渐变取自 `GlassTopAppBarDefaults.bandBrush`）或回退到 `BlurredBar` + `BlurTopAppBar`；同时提供 `AppSubPageTopAppBar`、`AppTopAppBarIconAction`、`LocalIsGlassTopBar`。二级页与其它页面走同一条玻璃顶栏路径。
 - **页面级顶栏 backdrop**：`BlurUtils.kt` 新增 `rememberTopBarBackdrop(blurActive)`，各页面自建顶栏采样层，并把 `Modifier.layerBackdrop` 施加在**不含顶栏的内容容器**上；顶栏据此折射页面真实内容，模糊关闭时返回 `null` 走实色回退。
 - **`PageBackdrop` 页面根容器**：一次完成「把页面内容录入采样图层」与「通过 `LocalPreferenceBackdrop` 下发 backdrop」，主页、功能页、设置页、关于页、许可证页与二级页全部改用该容器。
 - **悬浮导航拆成两个独立选项**：设置页「界面」新增「底栏样式」与「侧栏样式」两个下拉，平板可组合出更合适的形态。
-  - **底栏样式**：`HyperOS 玻璃`（官方 `GlassNavigationBar`，默认）与 `iOS 液态玻璃`（移植自 miuix 官方示例的 `component/liquid`，带镜面折射、动态高光与拖动指示器）。
+  - **底栏样式**：`悬浮`（官方 `GlassNavigationBar`，默认）与 `玻璃`（移植自 miuix 官方示例的 iOS 液态玻璃，带镜面折射、动态高光与拖动指示器）。
   - **侧栏样式**：`关闭`、`顶部胶囊`（默认）、`左侧面板`；仅在宽屏生效，启用后由侧栏取代底栏，进入应用时停在所选形态，可点击胶囊上的按钮在胶囊/面板之间切换。
   - 旧的合并枚举 `NavBarStyle` 与 `nav_bar_style` 键自动迁移到新键 `bottom_bar_style` / `rail_style`，0.8.0 之前的 `floating_navbar` / `liquid_glass` / `show_navigation_rail` / `nav_rail_position` 同样兼容。
 - **iOS 液态玻璃底栏**：新增 `ui/component/liquid/`（`LiquidGlassNavigationBar`、`Lens`、`InnerShadow`、`Vibrancy`、`CombinedBackdrop`）与 `ui/component/animation/`（`DampedDragAnimation`、`InteractiveHighlight`），文件保留上游版权与 `SPDX-License-Identifier: Apache-2.0` 声明。
@@ -25,18 +26,20 @@
 
 ### 变更
 
-- **底栏改用官方 `GlassNavigationBar`**：移除此前移植的液态玻璃实现，改为官方 OS4 玻璃底栏（54dp 高、25dp 图标、11sp 标签、指示器外扩 5dp、按压缩放 0.6，自带底部安全区留白），图标换成 `MiuixIcons.Glass.*`（`HomeOutline` / `ListView` / `SettingsOutline` / `Info`）；悬浮底栏描边从 `Highlight.GlassStrokeMiddle*` 改为 `material.EdgeStrokes.Middle*` 配 `Modifier.edgeStroke`。
+- **悬浮底栏改用官方 `GlassNavigationBar`**：使用官方 OS4 玻璃底栏（54dp 高、25dp 图标、11sp 标签、指示器外扩 5dp、按压缩放 0.6，自带底部安全区留白），图标换成 `MiuixIcons.Glass.*`（`HomeOutline` / `ListView` / `SettingsOutline` / `Info`）；悬浮底栏描边使用 `material.EdgeStrokes.Middle*` 配 `Modifier.edgeStroke`。
 - **功能页与二级页组件统一到 miuix 新版组件**：开关 / 复选改 content-slot 版 `BasicComponent` + `Switch` / `Checkbox`（状态徽标跟随标题渲染），下拉 → `GlassDropdownPreference`（玻璃气泡弹层），单选 → `RadioButtonPreference`，滑条 → `SliderPreference`，文本、数值、包名列表 → `GlassDialog` + `GlassDialogButton`。
 - **顶栏统一走 `GlassTopAppBar`**：上游 0.9.5 把 `BlurTopAppBar` 收为 glass 模块内部实现，且玻璃组件在缺少运行时着色器的设备上会自行把 backdrop 视为 `null`、退化成实色带，因此删除 `AppTopAppBar` 里那份并行的 `BlurredBar` + `BlurTopAppBar` 回退实现，只按着色器可用性决定是否传入 backdrop。
 - **顶栏图标统一到玻璃样式**：返回按钮按官方示例改为 `GlassIconButton` + `MiuixIcons.Glass.ChevronBackward`（28dp，RTL 自动镜像），非玻璃环境仍用 `IconButton` + `MiuixIcons.Back`（24dp）；功能页右上角刷新动作改用 `AppTopAppBarIconAction`，跟随顶栏玻璃材质。
 - **移除 haze 依赖**：渐变模糊全部改用 miuix `drawBackdrop` / `textureBlur` / `progressiveTextureBlur` / `BlurDefaults.blurColors`，`libs.versions.toml` 与 `app/build.gradle.kts` 中的 `haze` 已删除。
 - **主页信息卡合并**：为让主页可滚动而拆开的「设备信息」/「系统版本」两张卡重新合并为一张「设备信息」卡，仍保留足够的可滚动高度。
-- **顶栏动作间距**：按 miuix 示例的规范，多个顶栏动作之间插入 `Spacer(Modifier.width(8.dp))`（功能页右上角「重启 / 刷新 / 搜索」不再相互贴边）。
-- **底栏宽度收敛**：复刻 miuix 示例 `GlassPage` 的底栏写法——胶囊可用宽度超过阈值（400.dp）时，把整条玻璃底栏收成「344.dp 胶囊 + 搜索按钮」并居中，手机上仍铺满、宽屏不再被拉满。
+- **功能页顶栏按钮**：右上角从左到右为「搜索功能」「重启应用」，两者相隔 8 dp。
+- **宽屏底栏宽度**：参照 miuix 示例 `GlassPage`，两种样式在宽屏上都将导航胶囊收窄至 344 dp 并居中。悬浮样式为独立搜索按钮预留空间，窄屏底栏随可用宽度伸缩。
 - **许可证页**：登记 iOS 液态玻璃示例（miuix 官方示例 `component/liquid`，Apache-2.0）；Miuix 版本标注为 `0.9.5-beta01`。
 
 ### 修复
 
+- **更新弹窗 Markdown 渲染**：当前版本日志与新版本发布说明共用 Markdown 渲染，支持标题、列表、强调、行内代码和链接，长日志可滚动查看。
+- **项目与更新链接**：应用内项目地址、更新检查和 README 克隆命令指向 `Ianzb/MiuixGuiTemplate`。
 - **启动即闪退（RenderNode 栈溢出）**：玻璃顶栏若采样「包含顶栏自身」的图层，会触发 `RenderNode::prepareTreeImpl` 与 `SkiaDisplayList::prepareListAndChildren` 成对无限递归，表现为启动首帧 `SIGSEGV` / `stack pointer is not in a rw map`。现改为顶栏只采样页面内容层（见上条），并在 `pagerContent` 中把整页 backdrop 固定为 `null` 作为安全网。
 - **主页没有渐变模糊**：主页内容不足一屏时 `LazyColumn` 无法滚动，`GlassTopAppBar` 的渐进模糊强度由滚动偏移驱动，`ramp` 恒为 0，条带永不出现。现拆卡并新增「快捷入口」卡片，主页可滚动后顶栏渐变模糊/标题渐显恢复正常。
 - **侧栏遮挡页面内容**：此前把留白加在 `HorizontalPager` 上，导致侧栏展开/收起过程中与页面内容错位。现改为页面级 inset；且留白来源从 `animateDpAsState(tween(300))` 改为 `GlassNavigationRailState.progress`，与侧栏形变逐帧同步，不再出现面板已展开而内容尚未让位的遮挡。

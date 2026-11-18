@@ -3,6 +3,27 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+abstract class BundleChangelog : DefaultTask() {
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val changelog: RegularFileProperty
+
+    @get:OutputDirectory
+    abstract val assets: DirectoryProperty
+
+    @TaskAction
+    fun copyChangelog() {
+        changelog.get().asFile.copyTo(assets.file("changelog.md").get().asFile, overwrite = true)
+    }
+}
+
+androidComponents.onVariants { variant ->
+    val bundleChangelog = tasks.register<BundleChangelog>("bundle${variant.name.replaceFirstChar { it.uppercaseChar() }}Changelog") {
+        changelog.set(rootProject.layout.projectDirectory.file("changelog.md"))
+    }
+    variant.sources.assets?.addGeneratedSourceDirectory(bundleChangelog, BundleChangelog::assets)
+}
+
 android {
     namespace = "cn.ianzb.miuixguitemplate"
     compileSdk {
@@ -96,4 +117,5 @@ dependencies {
     implementation(libs.miuix.glass)
     implementation(libs.miuix.glass.icons)
     implementation(libs.material.icons)
+    implementation(libs.commonmark)
 }

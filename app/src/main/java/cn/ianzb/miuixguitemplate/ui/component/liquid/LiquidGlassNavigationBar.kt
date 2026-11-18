@@ -404,7 +404,7 @@ internal fun IosLiquidGlassNavigationBar(
     Column(modifier = modifier.fillMaxWidth()) {
         Box(
             modifier = Modifier
-                .padding(bottom = floatingMargin + animatedCaptionBarHeight, start = 24.dp, end = 24.dp)
+                .padding(bottom = floatingMargin + animatedCaptionBarHeight)
                 .fillMaxWidth(),
             contentAlignment = Alignment.CenterStart,
         ) {

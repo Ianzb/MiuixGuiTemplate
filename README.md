@@ -48,7 +48,7 @@
 
 ```bash
 # 克隆项目
-git clone <your-repo-url>
+git clone https://github.com/Ianzb/MiuixGuiTemplate.git
 cd MiuixGuiTemplate
 
 # 设置 JDK 25（CI 使用 temurin 25）和 Android SDK

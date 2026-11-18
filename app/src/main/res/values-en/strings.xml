@@ -32,6 +32,8 @@
     <string name="settings_interface">Interface</string>
     <string name="settings_language">Language</string>
     <string name="settings_update">Update</string>
+    <string name="current_changelog">View Current Changelog</string>
+    <string name="current_changelog_unavailable">No changelog is available for this version.</string>
     <string name="settings_data">Data Management</string>
     <string name="settings_module">Module</string>
     <string name="theme_mode">Theme Mode</string>
@@ -42,8 +44,8 @@
     <string name="theme_monet_light">Monet Light</string>
     <string name="theme_monet_dark">Monet Dark</string>
     <string name="bottom_bar_style">Bottom Bar Style</string>
-    <string name="bottom_bar_style_hyperos">HyperOS Glass</string>
-    <string name="bottom_bar_style_ios">iOS Liquid Glass</string>
+    <string name="bottom_bar_style_hyperos">Floating</string>
+    <string name="bottom_bar_style_ios">Glass</string>
     <string name="bottom_bar_style_summary">Used on narrow screens and on wide screens without a rail</string>
     <string name="rail_style">Rail Style</string>
     <string name="rail_style_none">Off</string>
@@ -216,7 +218,6 @@
     <!-- About -->
     <string name="about">About</string>
     <string name="about_source_code">Source Code</string>
-    <string name="about_source_code_summary">https://github.com/your-name/your-repo</string>
     <string name="about_telegram">Telegram Group</string>
     <string name="about_telegram_summary">https://t.me/your-channel</string>
     <string name="about_dependencies">Third Party Licenses &amp; Credits</string>

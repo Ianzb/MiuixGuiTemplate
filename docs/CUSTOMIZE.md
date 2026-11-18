@@ -18,7 +18,7 @@
 | 应用名 | `res/values/strings.xml`、`res/values-en/strings.xml` → `app_name` |                                                     |
 | 应用图标 | `res/drawable/ic_launcher_*.xml`、`res/mipmap-anydpi*/ic_launcher*.xml`、`colors.xml` → `ic_launcher_background` |                                                     |
 | 关于页链接 | `strings.xml` → `about_source_code_summary`、`about_telegram_summary` | 展示与跳转均使用该值；`about_telegram` 的文案**须明确写「Telegram 群组」**（不要只写「反馈渠道 / 反馈方式」，否则用户不知道这是 TG 群组） |
-| 检查更新仓库 | `app/.../UpdateChecker.kt` → `REPO` | 改为自己的 GitHub 仓库（`owner/repo`）以启用「检查更新」；未修改则保持占位仓库 |
+| 检查更新仓库 | `app/.../UpdateChecker.kt` → `REPO` | 派生项目应换成自己的 GitHub 仓库（`owner/repo`）；默认查询 `Ianzb/MiuixGuiTemplate` 的 Releases |
 | 版权 | `strings.xml` → `copyright` |                                                     |
 | Based on 标注（可选） | `strings.xml` → `about_based_on` | 应用内「关于」页可保留 `Based on MiuixGuiTemplate <版本号>` 并更新为所依据的脚手架版本，也可删除；见第 11.2 节 |
 | 参考与致谢 | 应用内 `LicensePage.kt` → `licenses_section_refs` | 保留对参考项目的致谢（可增不可删），文档不展开具体借鉴说明 |
@@ -110,7 +110,7 @@ android {
 
 ```xml
 <string name="about_source_code">项目地址</string>
-<string name="about_source_code_summary">https://github.com/yourname/yourmodule</string>
+<string name="about_source_code_summary" translatable="false">https://github.com/Ianzb/MiuixGuiTemplate</string>
 <string name="about_telegram">Telegram 群组</string>
 <string name="about_telegram_summary">https://t.me/yourchannel</string>
 <string name="copyright">© 2026 Your Name.</string>
@@ -399,7 +399,7 @@ HookOptionsPage(
 
 ## 10. 修改后自检
 
-1. 全局搜索 `cn.ianzb.miuixguitemplate`、`MiuixGuiTemplate`、`miuix_template`、`your-name`、`your-channel`，确认无残留。
+1. 全局搜索 `cn.ianzb.miuixguitemplate`、`MiuixGuiTemplate`、`miuix_template`、`your-channel`，确认已按派生项目需求替换。
 2. `HookPrefs.GROUP` 与 `PrefsStore.REMOTE_GROUP` 一致。
 3. `scope.list` 已包含所有 `BaseLoad.targetPackages`。
 4. `META-INF/xposed/java_init.list` 指向正确的入口类。

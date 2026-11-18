@@ -15,6 +15,7 @@ materialIcons = "1.7.8"
 
 libxposed = "102.0.0"
 dexkit = "2.2.0"
+commonmark = "0.30.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -48,6 +49,7 @@ material-icons = { group = "androidx.compose.material", name = "material-icons-c
 libxposed-api = { group = "io.github.libxposed", name = "api", version.ref = "libxposed" }
 libxposed-service = { group = "io.github.libxposed", name = "service", version.ref = "libxposed" }
 dexkit = { group = "org.luckypray", name = "dexkit", version.ref = "dexkit" }
+commonmark = { group = "org.commonmark", name = "commonmark", version.ref = "commonmark" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

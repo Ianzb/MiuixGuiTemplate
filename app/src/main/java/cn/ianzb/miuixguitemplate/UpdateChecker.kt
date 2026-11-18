@@ -9,7 +9,7 @@ import java.net.URL
 
 object UpdateChecker {
 
-    private const val REPO = "your-name/your-repo"
+    private const val REPO = "Ianzb/MiuixGuiTemplate"
     private const val API_URL = "https://api.github.com/repos/$REPO/releases/latest"
     private const val RELEASES_URL = "https://github.com/$REPO/releases"
 
@@ -60,6 +60,16 @@ object UpdateChecker {
         context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0"
     } catch (_: Exception) {
         "1.0"
+    }
+
+    fun currentChangelog(context: Context, version: String): String {
+        val changelog = context.assets.open("changelog.md").bufferedReader().use { it.readText() }
+        val heading = Regex("""^##[ \t]+v?(\S+)[ \t]*\r?$""", RegexOption.MULTILINE)
+        val current = heading.findAll(changelog).firstOrNull { it.groupValues[1] == version }
+            ?: return ""
+        val start = current.range.last + 1
+        val end = heading.find(changelog, start)?.range?.first ?: changelog.length
+        return changelog.substring(start, end).trim()
     }
 
     fun isNewerVersion(latest: String, current: String): Boolean {
