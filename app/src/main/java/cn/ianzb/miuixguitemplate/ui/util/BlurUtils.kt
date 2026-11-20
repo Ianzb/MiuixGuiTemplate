@@ -19,6 +19,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Size
@@ -31,6 +32,7 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.collectLatest
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.blur.BlendColorEntry
 import top.yukonga.miuix.kmp.blur.BlurBlendMode
@@ -318,16 +320,25 @@ fun Modifier.pageScrollModifiers(
     contentState: LazyListState? = null,
 ): Modifier {
     val scrollGate = LocalSubPageScrollGate.current
+    val state = topAppBarScrollBehavior.state
     if (scrollGate != null && contentState != null) {
-        LaunchedEffect(scrollGate, contentState) {
+        LaunchedEffect(scrollGate, contentState, state) {
+            fun canClassify() = !contentState.isScrollInProgress &&
+                state.heightOffset == 0f && state.overscrollOffset == 0f
+            fun canScroll() = contentState.canScrollBackward || contentState.canScrollForward
             snapshotFlow {
-                contentState.canScrollBackward || contentState.canScrollForward
-            }.collect { scrollable -> scrollGate.contentScrollable = scrollable }
+                if (canClassify()) canScroll() else null
+            }.collectLatest { scrollable ->
+                if (scrollable == null) return@collectLatest
+                // Title collapse changes the viewport. Classify only after the expanded
+                // layout has settled so a near-full list cannot switch owners mid-gesture.
+                withFrameNanos { }
+                if (canClassify()) scrollGate.contentScrollable = canScroll()
+            }
         }
     }
 
     // 弹性回弹位移交给顶栏：带区透明度 / 模糊 / 胶囊材质都由 overscrollOffset 驱动。
-    val state = topAppBarScrollBehavior.state
     val onOffsetChanged: (Float) -> Unit = remember(state, scrollGate) {
         { offset ->
             state.overscrollOffset = offset
@@ -335,7 +346,7 @@ fun Modifier.pageScrollModifiers(
             // 这里按同一段回弹位移同步折叠量：大标题随内容上移淡出、松手后随回弹复位，
             // 不会出现「大标题压在已经上移的卡片上」。长页面不会走到这里（回弹时已折叠到位）。
             if (scrollGate != null && !scrollGate.contentScrollable) {
-                state.heightOffset = offset
+                state.heightOffset = offset.coerceAtMost(0f)
             }
         }
     }
