@@ -31,11 +31,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
-import cn.ianzb.miuixguitemplate.ui.screen.subpage.AppSubPage
-import cn.ianzb.miuixguitemplate.ui.screen.subpage.rememberOpenAppSubPage
+import cn.ianzb.miuixguitemplate.ui.component.AppArrowPreference
 import cn.ianzb.miuixguitemplate.ui.component.AppLazyPage
 import cn.ianzb.miuixguitemplate.ui.component.AppSectionCard
 import cn.ianzb.miuixguitemplate.ui.component.sectionCardPadding
+import cn.ianzb.miuixguitemplate.ui.icons.CheckCircleOutlineIcon
+import cn.ianzb.miuixguitemplate.ui.icons.ErrorOutlineIcon
+import cn.ianzb.miuixguitemplate.ui.icons.RemoveCircleOutlineIcon
+import cn.ianzb.miuixguitemplate.ui.screen.subpage.AppSubPage
+import cn.ianzb.miuixguitemplate.ui.screen.subpage.rememberOpenAppSubPage
 import cn.ianzb.miuixguitemplate.ui.util.isInDarkTheme
 import cn.ianzb.miuixguitemplate.ui.util.shouldShowSplitPane
 import cn.ianzb.miuixguitemplate.util.SystemVersionDetector
@@ -44,11 +48,6 @@ import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.glass.Error
-import top.yukonga.miuix.kmp.icon.glass.Ok
-import top.yukonga.miuix.kmp.icon.glass.Prohibit
-import cn.ianzb.miuixguitemplate.ui.component.AppArrowPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
@@ -124,9 +123,9 @@ fun HomePageView(
             }
             // 未激活 = 叉号；已激活但无 Root = 圈中横线；正常 = 对号。
             val statusIcon: ImageVector = when {
-                !activated -> MiuixIcons.Glass.Error
-                rootMissing -> MiuixIcons.Glass.Prohibit
-                else -> MiuixIcons.Glass.Ok
+                !activated -> ErrorOutlineIcon
+                rootMissing -> RemoveCircleOutlineIcon
+                else -> CheckCircleOutlineIcon
             }
 
             val openScopeList = {
