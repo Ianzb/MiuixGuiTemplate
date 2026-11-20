@@ -29,6 +29,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.blur.BlendColorEntry
@@ -89,7 +90,7 @@ val LocalPreferenceBackdrop: ProvidableCompositionLocal<LayerBackdrop?> = static
  * 页面内容自己通过该值让位。注意留白只作用于「内容」，页面背景/渐变仍铺满全宽，
  * 这样侧栏玻璃采样到的是连续的全宽内容，而不是被裁窄后的平色区域（m02678）。
  */
-val LocalAppPageStartInset: ProvidableCompositionLocal<Dp> = staticCompositionLocalOf { 0.dp }
+val LocalAppPageStartInset: ProvidableCompositionLocal<() -> Dp> = staticCompositionLocalOf { { 0.dp } }
 
 /**
  * 把 [LocalAppPageStartInset] 应用到内容容器的起始边。
@@ -97,9 +98,22 @@ val LocalAppPageStartInset: ProvidableCompositionLocal<Dp> = staticCompositionLo
  * 只给滚动容器/内容列使用，不要加到页面根布局或背景图层上。
  */
 @Composable
-fun Modifier.pageStartInset(): Modifier {
+fun Modifier.pageStartInset(): Modifier = padding(PaddingValues(0.dp).withPageStartInset())
+
+/** 在测量阶段随侧栏让出起始边距。 */
+@Composable
+internal fun PaddingValues.withPageStartInset(): PaddingValues {
+    val base = this
     val inset = LocalAppPageStartInset.current
-    return if (inset == 0.dp) this else this.padding(start = inset)
+    return remember(base, inset) {
+        object : PaddingValues by base {
+            override fun calculateLeftPadding(layoutDirection: LayoutDirection): Dp =
+                base.calculateLeftPadding(layoutDirection) + if (layoutDirection == LayoutDirection.Ltr) inset() else 0.dp
+
+            override fun calculateRightPadding(layoutDirection: LayoutDirection): Dp =
+                base.calculateRightPadding(layoutDirection) + if (layoutDirection == LayoutDirection.Rtl) inset() else 0.dp
+        }
+    }
 }
 
 /**
@@ -342,7 +356,6 @@ fun pageContentPadding(
     extraEnd: Dp = 0.dp,
     extraBottom: Dp = 0.dp,
 ): PaddingValues {
-    val startInset = LocalAppPageStartInset.current
     val topPadding = innerPadding.calculateTopPadding() + extraTop
     val bottomPadding = if (isWideScreen) {
         outerPadding.calculateBottomPadding() + extraBottom +
@@ -351,14 +364,14 @@ fun pageContentPadding(
     } else {
         outerPadding.calculateBottomPadding() + extraBottom
     }
-    return remember(topPadding, bottomPadding, extraStart, extraEnd, startInset) {
+    return remember(topPadding, bottomPadding, extraStart, extraEnd) {
         PaddingValues(
             top = topPadding,
-            start = extraStart + startInset,
+            start = extraStart,
             end = extraEnd,
             bottom = bottomPadding,
         )
-    }
+    }.withPageStartInset()
 }
 
 @Composable

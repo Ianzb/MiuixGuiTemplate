@@ -29,38 +29,41 @@ class FeatureSubPageActivity : BaseSubPageActivity() {
     override fun SubPageContent(
         isBlurEnabled: Boolean,
         contentPadding: PaddingValues,
+    ) = FeatureSubPageContent(contentPadding)
+}
+
+@Composable
+internal fun FeatureSubPageContent(contentPadding: PaddingValues) {
+    val scrollBehavior = LocalSubPageScrollBehavior.current
+    val specs = remember { featureSpecs() }
+    val section = remember(specs) {
+        HookSection(
+            titleRes = R.string.example_arrow_sub_title,
+            specs = listOf(specs.first { it.key == "example_sub_text" }),
+        )
+    }
+    val listState = rememberLazyListState()
+    LazyColumn(
+        state = listState,
+        modifier = Modifier
+            .fillMaxSize()
+            .then(
+                if (scrollBehavior != null) {
+                    Modifier.pageScrollModifiers(
+                        showTopAppBar = true,
+                        topAppBarScrollBehavior = scrollBehavior,
+                        contentState = listState,
+                    )
+                } else {
+                    Modifier
+                }
+            ),
+        contentPadding = contentPadding,
     ) {
-        val scrollBehavior = LocalSubPageScrollBehavior.current
-        val specs = remember { featureSpecs() }
-        val section = remember(specs) {
-            HookSection(
-                titleRes = R.string.example_arrow_sub_title,
-                specs = listOf(specs.first { it.key == "example_sub_text" }),
-            )
-        }
-        val listState = rememberLazyListState()
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .then(
-                    if (scrollBehavior != null) {
-                        Modifier.pageScrollModifiers(
-                            showTopAppBar = true,
-                            topAppBarScrollBehavior = scrollBehavior,
-                            contentState = listState,
-                        )
-                    } else {
-                        Modifier
-                    }
-                ),
-            contentPadding = contentPadding,
-        ) {
-            item {
-                HookSectionCard(section) {
-                    section.specs.forEach { spec ->
-                        HookOptionView(spec = spec)
-                    }
+        item {
+            HookSectionCard(section) {
+                section.specs.forEach { spec ->
+                    HookOptionView(spec = spec)
                 }
             }
         }

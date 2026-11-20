@@ -24,9 +24,10 @@ import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.ui.component.AppPageScaffold
 import cn.ianzb.miuixguitemplate.ui.component.AppSectionCard
 import cn.ianzb.miuixguitemplate.ui.util.pageScrollModifiers
+import cn.ianzb.miuixguitemplate.ui.util.pageStartInset
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.SmallTitle
-import top.yukonga.miuix.kmp.preference.ArrowPreference
+import cn.ianzb.miuixguitemplate.ui.component.AppArrowPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 
@@ -62,7 +63,7 @@ private val licenseSections: List<LicenseSection> = listOf(
         libraries = listOf(
             LibraryInfo(
                 "Miuix (compose-miuix-ui)",
-                "0.9.5-beta01",
+                "0.9.5-beta02",
                 "Apache-2.0",
                 "https://github.com/compose-miuix-ui/miuix",
             ),
@@ -77,12 +78,6 @@ private val licenseSections: List<LicenseSection> = listOf(
                 "BOM 2026.09.00",
                 "Apache-2.0",
                 "https://developer.android.com/jetpack/androidx/releases/compose-material3",
-            ),
-            LibraryInfo(
-                "Material Icons Extended",
-                "BOM 2026.09.00",
-                "Apache-2.0",
-                "https://developer.android.com/jetpack/androidx/compose/material-icons",
             ),
             LibraryInfo(
                 "commonmark-java",
@@ -191,6 +186,7 @@ fun LicensePageContent(
             state = lazyListState,
             modifier = Modifier
                 .fillMaxSize()
+                .pageStartInset()
                 .pageScrollModifiers(
                     showTopAppBar = true,
                     topAppBarScrollBehavior = topAppBarScrollBehavior,
@@ -225,7 +221,7 @@ fun LicensePageContent(
                     key = { "${section.titleRes}_${it.name}" },
                 ) { library ->
                     AppSectionCard {
-                        ArrowPreference(
+                        AppArrowPreference(
                             title = library.name,
                             summary = buildString {
                                 if (library.version.isNotBlank() && library.version != "-") {

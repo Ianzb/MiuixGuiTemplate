@@ -27,11 +27,13 @@
 - **统一配置系统** — 自定义键名、默认值、持久化、跨进程镜像、JSON 导出导入
 - **组件与 Hook 绑定** — 开关 / 箭头 / 下拉 / 滑块 / 复选框 / 单选 / 文本卡片，标题接入全局搜索
 - **设备独占控制** — 配置项声明 `deviceScope`（手机 / 平板 / 折叠屏）后，非白名单设备上**禁用灰显不隐藏**，切换「当前设备类型」实时生效；hook 侧同步跳过
-- **二级页面模板** — 独立 Activity，自动套用主题与背景模糊配置
+- **二级页面模板** — 主导航内打开，宽屏继续显示顶部胶囊或左侧导航；支持独立 Activity 入口
 - **应用内检查更新** — 设置页「更新」分区支持启动自动检查与手动检查；发现新版本弹窗展示 Release 更新说明并跳转下载页（仓库地址见 `UpdateChecker.REPO`，需改为自己的仓库）
 - **功能标签页** — 以「功能页 + 子页面搜索」的形态内置每种组件类型的示例，便于快速上手
 - **两种悬浮底栏** — 设置页可切换 `HyperOS 玻璃`（官方 `GlassNavigationBar`）与 `iOS 液态玻璃`（移植自 miuix 官方示例，镜面折射 + 动态高光），窄屏与未启用侧栏的宽屏生效
 - **可切换侧栏** — 宽屏可用 `GlassNavigationRail` 取代底栏，形态可选「顶部胶囊」与「左侧面板」；页面内容按侧栏宽度让位，侧栏玻璃可连续采样页面内容
+- **宽屏全局搜索** — 搜索时可操作顶部胶囊或左侧面板，搜索框和结果随导航栏形变调整位置
+- **默认外观** — 悬浮底栏、宽屏左侧面板、开启背景模糊
 - **渐变模糊统一走 miuix** — 顶栏 / 底栏 / 侧栏的模糊全部由 `drawBackdrop`、`textureBlur`、`progressiveTextureBlur` 与 `BlurDefaults.blurColors` 提供，不再依赖 haze
 
 <br>
@@ -52,6 +54,7 @@ git clone https://github.com/Ianzb/MiuixGuiTemplate.git
 cd MiuixGuiTemplate
 
 # 设置 JDK 25（CI 使用 temurin 25）和 Android SDK
+# app 模块编译目标为 JVM 21，以使用 miuix-nav 的内联路由 API
 # 编辑 local.properties 指向你的 SDK 路径
 # 需要 Android SDK Platform 37.2（compileSdk = 37 minor 2，miuix AAR 以此编译）
 
@@ -64,11 +67,11 @@ cd MiuixGuiTemplate
 
 ## miuix 依赖
 
-OS4 玻璃组件（`miuix-glass`、`miuix-material`、`miuix-glass-icons`）自 **0.9.5-beta01** 起已随 miuix 一起发布到 Maven Central，本项目直接使用正式版本，**不需要**克隆源码或执行 `publishToMavenLocal`：
+OS4 玻璃组件（`miuix-glass`、`miuix-material`、`miuix-glass-icons`）随 miuix 发布到 Maven Central，本项目直接使用 **0.9.5-beta02**。
 
 ```toml
 # gradle/libs.versions.toml
-miuix = "0.9.5-beta01"
+miuix = "0.9.5-beta02"
 ```
 
 `settings.gradle.kts` 只保留 `google()` 与 `mavenCentral()`（已移除 `mavenLocal()`），因此任意机器 / CI 上 `./gradlew assembleDebug` 都能直接解析依赖。

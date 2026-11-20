@@ -64,7 +64,7 @@ android {
 }
 ```
 
-> **miuix OS4 玻璃组件**：`gradle/libs.versions.toml` 的 `miuix` 使用 Maven Central 上的正式版本 `0.9.5-beta01`（含 `miuix-glass` / `miuix-material` / `miuix-glass-icons`），无需本地发布，`settings.gradle.kts` 也不再声明 `mavenLocal()`。
+> `gradle/libs.versions.toml` 配置的 miuix `0.9.5-beta02` 由 Maven Central 提供，包含 `miuix-glass`、`miuix-material` 和 `miuix-glass-icons`。
 
 ### 1.2 源码包重命名
 
@@ -314,7 +314,7 @@ HookOptionsPage(
 模板的「功能」页 `ui/screen/features/FeaturesPage.kt`（子页 `FeatureSubPageActivity.kt`、配置项 `featureSpecs()`）已按真实模块的形态组织：**页面名以功能命名、小标题用单语言**。二次开发时：
 
 - 把 `FeaturesPage.kt` 的示例分区替换为你的真实功能，示例配置项 `featureSpecs()` 一并替换；
-- 新增子页面时继承 `BaseSubPageActivity` 并在 `AndroidManifest.xml` 注册；把子页配置项通过 `HookSubPage` 传入父页 `subPages`，即可被搜索直达；多级页面继续在 `HookSubPage.subPages` 中嵌套登记（见 7.2）；
+- 新增主导航内的子页时，在 `AppSubPage` 和 `AppSubPageContent` 登记，通过 `rememberOpenAppSubPage` 打开，页面正文使用 `SubPageScaffold` 下发的内容边距。独立入口可继承 `BaseSubPageActivity` 并注册到 `AndroidManifest.xml`。把子页配置项通过 `HookSubPage` 传入父页 `subPages` 即可被搜索直达（见 7.2）；
 - Tab 标签已为「功能」，无需再改；若删除该页，请同步更新 `MainActivity.kt` 的标签页列表与 `TemplateApp.onCreate()` 的注册。
 
 ### 7.4 导出文件名
@@ -386,7 +386,7 @@ HookOptionsPage(
 | 项目 | 位置 | 说明 |
 |---|---|---|
 | 应用类 | `TemplateApp.kt` | 初始化配置、服务绑定；改包名后自动生效 |
-| 底栏 / 侧栏样式 | `AppSettings.kt` + `MainActivity.kt` + `SettingsPage.kt` | 默认 `BottomBarStyle.HyperOS` + `RailStyle.Top`；新增样式需同时改两处枚举、`MainActivity` 的 `when` 分支与 `strings.xml` |
+| 底栏 / 侧栏样式 | `AppSettings.kt` + `MainActivity.kt` + `SettingsPage.kt` | 默认 `BottomBarStyle.HyperOS` + `RailStyle.Left`，背景模糊默认开启 |
 | 检查更新 | `SettingsPage.kt` / `MainActivity.kt` | 当前为占位（点击仅提示），接入真实更新逻辑时替换 |
 | 清空 DexKit 缓存 | `SettingsPage.kt` + `xposed/RootHelper.kt` | 需要 Root，删除作用域应用的 `cache/<CACHE_DIR>` |
 | README | `README.md` | 项目简介、链接、构建说明 |

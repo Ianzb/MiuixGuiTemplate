@@ -9,6 +9,7 @@
     <string name="action_cancel">取消</string>
     <string name="action_confirm">确定</string>
     <string name="search_hint">搜索功能</string>
+    <string name="search_clear">清空搜索</string>
     <string name="search_empty">未找到匹配的功能</string>
 
     <!-- Home -->
@@ -78,20 +79,15 @@
     <string name="module_scope">作用域</string>
     <string name="module_scope_count">已授权 %d 个应用</string>
     <string name="module_scope_request">申请全部作用域</string>
-    <string name="module_scope_request_summary">为所有配置项的目标应用申请作用域</string>
     <string name="module_scope_request_success">作用域申请已提交</string>
     <string name="module_scope_request_failed">作用域申请失败：%s</string>
     <string name="module_clear_dexkit">清空 DexKit 缓存</string>
-    <string name="module_clear_dexkit_summary">删除所有作用域应用的 DexKit 缓存文件</string>
     <string name="module_clear_dexkit_success">DexKit 缓存已清空</string>
     <string name="module_clear_dexkit_failed">清空失败，请检查权限与作用域</string>
 
     <!-- Module: safe mode -->
     <string name="safe_mode_active_title">模块安全模式已启用</string>
-    <string name="safe_mode_active_summary">有 %d 个应用的 Hook 已被自动禁用，可逐项恢复</string>
     <string name="safe_mode_manage">安全模式</string>
-    <string name="safe_mode_manage_summary_none">点击设置各应用的安全模式</string>
-    <string name="safe_mode_manage_summary_active">已禁用 %d 个应用 · 点击逐项设置</string>
     <string name="safe_mode_declaration">安全模式是模块的保护机制：当目标应用在加载 Hook 后短时间内反复崩溃时，会自动跳过该应用的 Hook，避免系统应用崩溃导致无法开机。你可以在此手动开关每个被 Hook 应用的安全模式——打开即跳过该应用全部 Hook，关闭则恢复并清空崩溃计数。</string>
     <string name="safe_mode_crash_count">崩溃 %d 次</string>
 

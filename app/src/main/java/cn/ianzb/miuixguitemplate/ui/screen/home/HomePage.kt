@@ -1,6 +1,5 @@
 package cn.ianzb.miuixguitemplate.ui.screen.home
 
-import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,9 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import cn.ianzb.miuixguitemplate.ui.icons.CheckCircleOutlineIcon
-import cn.ianzb.miuixguitemplate.ui.icons.ErrorOutlineIcon
-import cn.ianzb.miuixguitemplate.ui.icons.RemoveCircleOutlineIcon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -35,7 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cn.ianzb.miuixguitemplate.R
 import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
-import cn.ianzb.miuixguitemplate.ui.screen.scope.ScopeListActivity
+import cn.ianzb.miuixguitemplate.ui.screen.subpage.AppSubPage
+import cn.ianzb.miuixguitemplate.ui.screen.subpage.rememberOpenAppSubPage
 import cn.ianzb.miuixguitemplate.ui.component.AppLazyPage
 import cn.ianzb.miuixguitemplate.ui.component.AppSectionCard
 import cn.ianzb.miuixguitemplate.ui.component.sectionCardPadding
@@ -47,7 +44,11 @@ import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.preference.ArrowPreference
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.glass.Error
+import top.yukonga.miuix.kmp.icon.glass.Ok
+import top.yukonga.miuix.kmp.icon.glass.Prohibit
+import cn.ianzb.miuixguitemplate.ui.component.AppArrowPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
@@ -75,7 +76,7 @@ fun HomePageView(
         extraBottomPadding = extraBottomPadding,
     ) {
         item {
-            val context = LocalContext.current
+            val openScopePage = rememberOpenAppSubPage(AppSubPage.Scope)
             val isWideScreen = shouldShowSplitPane()
             val darkTheme = isInDarkTheme()
             val dynamicColor = MiuixTheme.isDynamicColor
@@ -123,15 +124,15 @@ fun HomePageView(
             }
             // 未激活 = 叉号；已激活但无 Root = 圈中横线；正常 = 对号。
             val statusIcon: ImageVector = when {
-                !activated -> ErrorOutlineIcon
-                rootMissing -> RemoveCircleOutlineIcon
-                else -> CheckCircleOutlineIcon
+                !activated -> MiuixIcons.Glass.Error
+                rootMissing -> MiuixIcons.Glass.Prohibit
+                else -> MiuixIcons.Glass.Ok
             }
 
             val openScopeList = {
                 // 进入二级页面前先刷新作用域，避免页面内刷新打断打开动画。
                 XposedServiceManager.refreshScope()
-                context.startActivity(Intent(context, ScopeListActivity::class.java))
+                openScopePage()
             }
 
             val cardsModifier = Modifier
@@ -268,17 +269,17 @@ fun HomePageView(
             val sourceCodeUrl = stringResource(R.string.about_source_code_summary)
             val telegramUrl = stringResource(R.string.about_telegram_summary)
             AppSectionCard(title = stringResource(R.string.home_shortcuts)) {
-                ArrowPreference(
+                AppArrowPreference(
                     title = stringResource(R.string.home_component_demo),
                     summary = stringResource(R.string.home_component_demo_summary),
                     onClick = onOpenExamples,
                 )
-                ArrowPreference(
+                AppArrowPreference(
                     title = stringResource(R.string.about_source_code),
                     summary = sourceCodeUrl,
                     onClick = { runCatching { uriHandler.openUri(sourceCodeUrl) } },
                 )
-                ArrowPreference(
+                AppArrowPreference(
                     title = stringResource(R.string.about_telegram),
                     summary = telegramUrl,
                     onClick = { runCatching { uriHandler.openUri(telegramUrl) } },

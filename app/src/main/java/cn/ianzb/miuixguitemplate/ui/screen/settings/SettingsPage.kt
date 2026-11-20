@@ -1,7 +1,6 @@
 package cn.ianzb.miuixguitemplate.ui.screen.settings
 
 import android.app.Activity
-import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -32,7 +31,8 @@ import cn.ianzb.miuixguitemplate.hook.device.DeviceType
 import cn.ianzb.miuixguitemplate.prefs.ConfigBackup
 import cn.ianzb.miuixguitemplate.prefs.ConfigState
 import cn.ianzb.miuixguitemplate.prefs.OptionRegistry
-import cn.ianzb.miuixguitemplate.ui.screen.safemode.SafeModeActivity
+import cn.ianzb.miuixguitemplate.ui.screen.subpage.AppSubPage
+import cn.ianzb.miuixguitemplate.ui.screen.subpage.rememberOpenAppSubPage
 import cn.ianzb.miuixguitemplate.BottomBarStyle
 import cn.ianzb.miuixguitemplate.RailStyle
 import cn.ianzb.miuixguitemplate.UpdateChecker
@@ -49,7 +49,7 @@ import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.glass.GlassDropdownPreference
-import top.yukonga.miuix.kmp.preference.ArrowPreference
+import cn.ianzb.miuixguitemplate.ui.component.AppArrowPreference
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.ColorSchemeMode
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -76,6 +76,7 @@ fun SettingsPageView(
     extraBottomPadding: Dp = 0.dp,
 ) {
     val context = LocalContext.current
+    val openSafeMode = rememberOpenAppSubPage(AppSubPage.SafeMode)
     val resources = LocalResources.current
     val activity = context as? Activity
     val scope = rememberCoroutineScope()
@@ -170,30 +171,15 @@ fun SettingsPageView(
                     if (safeModePackages.isNotEmpty()) {
                         BasicComponent(
                             title = stringResource(R.string.safe_mode_active_title),
-                            summary = stringResource(
-                                R.string.safe_mode_active_summary,
-                                safeModePackages.size,
-                            ),
                         )
                     }
-                    ArrowPreference(
+                    AppArrowPreference(
                         title = stringResource(R.string.safe_mode_manage),
-                        summary = if (safeModePackages.isEmpty()) {
-                            stringResource(R.string.safe_mode_manage_summary_none)
-                        } else {
-                            stringResource(
-                                R.string.safe_mode_manage_summary_active,
-                                safeModePackages.size,
-                            )
-                        },
-                        onClick = {
-                            context.startActivity(Intent(context, SafeModeActivity::class.java))
-                        },
+                        onClick = openSafeMode,
                     )
 
-                    ArrowPreference(
+                    AppArrowPreference(
                         title = stringResource(R.string.module_scope_request),
-                        summary = stringResource(R.string.module_scope_request_summary),
                         onClick = {
                             val packages = OptionRegistry.all()
                                 .flatMap { it.targetPackages }
@@ -208,9 +194,8 @@ fun SettingsPageView(
                             }
                         },
                     )
-                    ArrowPreference(
+                    AppArrowPreference(
                         title = stringResource(R.string.module_clear_dexkit),
-                        summary = stringResource(R.string.module_clear_dexkit_summary),
                         onClick = {
                             val targets = XposedServiceManager.scope
                             scope.launch {
@@ -348,7 +333,7 @@ fun SettingsPageView(
                         onCheckedChange = onCheckUpdateOnLaunchChange,
                     )
 
-                    ArrowPreference(
+                    AppArrowPreference(
                         title = stringResource(R.string.check_update),
                         summary = if (isCheckingUpdate) {
                             stringResource(R.string.check_update_checking)
@@ -357,7 +342,7 @@ fun SettingsPageView(
                         },
                         onClick = onCheckUpdate,
                     )
-                    ArrowPreference(
+                    AppArrowPreference(
                         title = stringResource(R.string.current_changelog),
                         onClick = { showChangelog = true },
                     )
@@ -374,7 +359,7 @@ fun SettingsPageView(
                 }
 
                 AppSectionCard(title = stringResource(R.string.settings_data)) {
-                    ArrowPreference(
+                    AppArrowPreference(
                         title = stringResource(R.string.export_settings),
                         summary = stringResource(R.string.export_settings_summary),
                         onClick = {
@@ -382,7 +367,7 @@ fun SettingsPageView(
                         }
                     )
 
-                    ArrowPreference(
+                    AppArrowPreference(
                         title = stringResource(R.string.import_settings),
                         summary = stringResource(R.string.import_settings_summary),
                         onClick = { importLauncher.launch("application/json") }

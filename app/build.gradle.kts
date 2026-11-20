@@ -27,7 +27,7 @@ androidComponents.onVariants { variant ->
 android {
     namespace = "cn.ianzb.miuixguitemplate"
     compileSdk {
-        // miuix 0.9.5-beta01 的 AAR 以 Android 37.2 编译，compileSdk 必须跟上（37.0 会被 AGP 拒绝）。
+        // miuix 0.9.5 的 AAR 要求 compileSdk 至少为 Android 37.2。
         version = release(37) { minorApiLevel = 2 }
     }
 
@@ -35,8 +35,8 @@ android {
         applicationId = "cn.ianzb.miuixguitemplate"
         minSdk = 35
         targetSdk = 37
-        versionCode = 17
-        versionName = "0.8.0"
+        versionCode = 18
+        versionName = "0.8.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -71,8 +71,9 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        // miuix-nav 的 inline 路由 API 使用 JVM 21 字节码。
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         compose = true
@@ -112,10 +113,9 @@ dependencies {
     implementation(libs.miuix.icons)
     implementation(libs.miuix.squircle)
     implementation(libs.miuix.navigation)
-    // OS4 玻璃组件（HyperOS 4 材质），依赖本地发布的 miuix 快照
+    // OS4 玻璃组件（HyperOS 4 材质）
     implementation(libs.miuix.material)
     implementation(libs.miuix.glass)
     implementation(libs.miuix.glass.icons)
-    implementation(libs.material.icons)
     implementation(libs.commonmark)
 }

@@ -1,9 +1,9 @@
 package cn.ianzb.miuixguitemplate.ui.screen.features
 
-import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
+import cn.ianzb.miuixguitemplate.ui.screen.subpage.AppSubPage
+import cn.ianzb.miuixguitemplate.ui.screen.subpage.rememberOpenAppSubPage
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -33,15 +33,15 @@ fun FeaturesPageView(
     pendingSearchKey: String? = null,
     onSearchKeyHandled: () -> Unit = {},
 ) {
-    val context = LocalContext.current
+    val openSubPage = rememberOpenAppSubPage(AppSubPage.Features)
     val specs = remember { featureSpecs() }
     val sections = remember(specs) { featureSections(specs) }
-    val subPages = remember(specs) {
+    val subPages = remember(specs, openSubPage) {
         listOf(
             HookSubPage(
                 titleRes = R.string.example_arrow_sub_title,
                 specs = listOf(specByKey(specs, "example_sub_text")),
-                onOpen = { context.startActivity(Intent(context, FeatureSubPageActivity::class.java)) },
+                onOpen = openSubPage,
             ),
         )
     }
@@ -52,9 +52,7 @@ fun FeaturesPageView(
         subPages = subPages,
         isBlurEnabled = isBlurEnabled,
         extraBottomPadding = extraBottomPadding,
-        onArrowClick = {
-            context.startActivity(Intent(context, FeatureSubPageActivity::class.java))
-        },
+        onArrowClick = { openSubPage() },
         externalSearchKey = pendingSearchKey,
         onExternalSearchHandled = onSearchKeyHandled,
     )
