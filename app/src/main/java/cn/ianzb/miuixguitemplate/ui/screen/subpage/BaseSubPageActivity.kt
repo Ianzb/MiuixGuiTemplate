@@ -15,6 +15,7 @@ import cn.ianzb.miuixguitemplate.ui.component.SubPageScaffold
 import cn.ianzb.miuixguitemplate.ui.theme.AppTheme
 import cn.ianzb.miuixguitemplate.ui.util.applyWindowBackground
 import top.yukonga.miuix.kmp.theme.ColorSchemeMode
+import top.yukonga.miuix.kmp.basic.Scaffold
 
 /**
  * 二级页面 Activity 模板。
@@ -61,13 +62,15 @@ abstract class BaseSubPageActivity : ComponentActivity() {
 
         setContent {
             AppTheme(themeMode = themeMode) {
-                SubPageScaffold(
-                    title = stringResource(titleRes),
-                    isBlurEnabled = settings.isBlurEnabled,
-                    onBack = { finish() },
-                    topBarActions = topBarActions,
-                ) { padding ->
-                    SubPageContent(settings.isBlurEnabled, padding)
+                Scaffold {
+                    SubPageScaffold(
+                        title = stringResource(titleRes),
+                        isBlurEnabled = settings.isBlurEnabled,
+                        onBack = { finish() },
+                        topBarActions = topBarActions,
+                    ) { padding ->
+                        SubPageContent(settings.isBlurEnabled, padding)
+                    }
                 }
             }
         }

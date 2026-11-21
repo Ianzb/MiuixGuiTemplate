@@ -1,5 +1,7 @@
 package cn.ianzb.miuixguitemplate.ui.component.pref
 
+import androidx.compose.foundation.layout.size
+
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -237,6 +239,7 @@ fun HookOptionsPage(
                 AppTopAppBarIconAction(onClick = { showQuickActions = true }) {
                     Icon(
                         imageVector = MiuixIcons.Glass.Refresh,
+                        modifier = Modifier.size(28.dp),
                         contentDescription = stringResource(R.string.quick_action_title),
                         tint = MiuixTheme.colorScheme.onSurface,
                     )

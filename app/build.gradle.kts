@@ -35,8 +35,8 @@ android {
         applicationId = "cn.ianzb.miuixguitemplate"
         minSdk = 35
         targetSdk = 37
-        versionCode = 18
-        versionName = "0.8.1"
+        versionCode = 19
+        versionName = "0.8.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -1024,6 +1024,7 @@ Scaffold                     ← 只负责弹层：无顶栏 / 底栏，contentW
 
 - `MainActivity` 里这层「只负责弹层」的 `Scaffold` 同时包住 pager、悬浮底栏与侧栏，它的 `popupHost` 因此在绘制顺序上位于底栏 / 侧栏**之上**。
 - 所有弹层一律使用 `renderInRootScaffold = true`：`AppDialog` 已固定；`GlassDropdownPreference` 也要显式传 `true`（默认值为 `true`，但**不要**改成 `false`）。
+- `AppPageScaffold` 分别录制全宽正文和整页。顶栏采样正文，`LocalPreferenceBackdrop` 提供整页采样，根 `Scaffold` 在采样层外绘制弹窗。关闭模糊或缺少运行时着色器时，采样源为 `null`。
 - 这样贴底弹层与遮罩会直接盖在底栏上（与 miuix 示例一致），既不会被底栏遮挡，也**不需要任何避让垫高**；没有底栏的页面（二级页、许可证页）位置同样是库默认值，不做任何特殊处理。
 - 页面内容仍然铺满全屏、从底栏下方穿过（玻璃底栏要采样滚动中的内容），所以**不要**给 pager 或页面根布局加底栏高度的 padding；内容底部留白由各页面的 `extraBottomPadding` 负责。
 
@@ -1122,6 +1123,8 @@ fun SubPageScaffold(
 提供顶栏返回、背景模糊与主题统一的脚手架；`topBarActions` 用于注入「重启应用」等右上角入口。
 
 主导航通过 miuix `NavDisplay` 展示 `AppSubPage`，侧栏在路由宿主外持续显示。列表直接使用 `SubPageScaffold` 提供的 `contentPadding`，侧栏起始留白在测量阶段读取。独立的二级页入口可继续使用 `BaseSubPageActivity`。
+
+宽屏二级页通过 `selectedIndex = -1` 清除主标签高亮。点击侧栏标签会即时退出二级路由，再由主界面 Pager 负责标签切换动画。
 
 顶栏与「第三方许可证与致谢」页完全同一条代码路径（`AppPageScaffold` 默认的 miuix `GlassTopAppBar`），不自行绘制任何顶栏 / 返回按钮：返回按钮就是组件库的 `GlassIconButton` + `MiuixIcons.Glass.ChevronBackward`。
 

@@ -5,8 +5,12 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -44,9 +48,8 @@ import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.basic.InputField
-import top.yukonga.miuix.kmp.basic.SearchBarDefaults
+import top.yukonga.miuix.kmp.glass.GlassIconButton
+import top.yukonga.miuix.kmp.glass.GlassTextField
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.glass.Close
@@ -95,7 +98,8 @@ internal fun ScopeListContent(contentPadding: PaddingValues) {
     val coroutineScope = rememberCoroutineScope()
     val scrollBehavior = LocalSubPageScrollBehavior.current
     val listState = rememberLazyListState()
-    var query by remember { mutableStateOf("") }
+    val searchField = rememberTextFieldState()
+    val query = searchField.text.toString()
     val packageManager = context.packageManager
     val filteredScope = remember(scope, query) { filterPackages(scope, query, packageManager) }
 
@@ -122,30 +126,27 @@ internal fun ScopeListContent(contentPadding: PaddingValues) {
                     .padding(horizontal = 12.dp)
                     .padding(top = 12.dp)
             ) {
-                InputField(
-                    query = query,
-                    onQueryChange = { query = it },
-                    onSearch = {},
-                    expanded = false,
-                    onExpandedChange = {},
+                GlassTextField(
+                    state = searchField,
+                    modifier = Modifier.fillMaxWidth(),
                     label = stringResource(R.string.search_hint),
+                    useLabelAsPlaceholder = true,
+                    lineLimits = TextFieldLineLimits.SingleLine,
                     leadingIcon = {
                         Icon(
                             imageVector = MiuixIcons.Glass.Search,
                             contentDescription = null,
                             tint = MiuixTheme.colorScheme.onSurfaceContainerHigh,
-                            modifier = Modifier.padding(
-                                start = SearchBarDefaults.LeadingIconStartPadding,
-                                end = SearchBarDefaults.LeadingIconEndPadding,
-                            ),
+                            modifier = Modifier.size(28.dp),
                         )
                     },
                     trailingIcon = {
                         if (query.isNotEmpty()) {
-                            IconButton(onClick = { query = "" }) {
+                            GlassIconButton(onClick = searchField::clearText, surfaceAlpha = 0f, size = 36.dp) {
                                 Icon(
                                     imageVector = MiuixIcons.Glass.Close,
                                     contentDescription = stringResource(R.string.search_clear),
+                                    modifier = Modifier.size(28.dp),
                                     tint = MiuixTheme.colorScheme.onSurfaceContainerHighest,
                                 )
                             }
